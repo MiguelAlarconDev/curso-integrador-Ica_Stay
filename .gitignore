@@ -1,0 +1,50 @@
+# Sistemas e IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# Secretos y configuración local
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+application-local.yml
+application-local.yaml
+application-local.properties
+
+# Angular / Node
+node_modules/
+dist/
+.angular/
+coverage/
+.npm/
+*.tsbuildinfo
+
+# Java / Maven / Gradle
+target/
+build/
+.gradle/
+*.class
+*.log
+.mvn/wrapper/maven-wrapper.jar
+
+# Python, si algún servicio lo utiliza
+.venv/
+__pycache__/
+*.py[cod]
+
+# Datos locales y modelos
+data/
+*.db
+*.sqlite
+*.sqlite3
+models/
+ollama/

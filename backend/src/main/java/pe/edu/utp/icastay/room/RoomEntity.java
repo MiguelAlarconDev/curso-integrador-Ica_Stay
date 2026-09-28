@@ -42,4 +42,12 @@ public class RoomEntity {
 
     protected RoomEntity() {
     }
+
+    public UUID getId() { return id; }
+    public UUID getHotelId() { return hotelId; }
+    public String getNumber() { return number; }
+    public String getDescription() { return description; }
+    public int getCapacity() { return capacity; }
+    public BigDecimal getPricePerNight() { return pricePerNight; }
+    public String getCurrency() { return currency; }
 }

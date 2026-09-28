@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ica_stay
+      POSTGRES_USER: ica_stay
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
+    ports:
+      - "127.0.0.1:${DB_PORT:-5433}:5432"
+    volumes:
+      - ica_stay_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ica_stay -d ica_stay"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  ica_stay_postgres:

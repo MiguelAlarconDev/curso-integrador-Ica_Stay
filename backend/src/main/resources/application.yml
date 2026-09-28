@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: ica-stay-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/ica_stay}
+    username: ${DB_USER:ica_stay}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

@@ -8,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "rooms")
@@ -31,7 +33,8 @@ public class RoomEntity {
     @Column(name = "price_per_night", nullable = false, precision = 12, scale = 2)
     private BigDecimal pricePerNight;
 
-    @Column(nullable = false, columnDefinition = "char(3)")
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(nullable = false, length = 3)
     private String currency;
 
     @Column(nullable = false, length = 20)

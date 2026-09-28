@@ -1,12 +1,14 @@
 package pe.edu.utp.icastay.hotel;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,5 +54,34 @@ class HotelServiceTest {
         assertEquals(1, response.totalPages());
         assertEquals(List.of(new HotelView(hotelId, "Hotel Ica", "Cerca de la plaza",
                 "Av. Principal 123", "Ica")), response.content());
+    }
+
+    @Test
+    void obtieneHotelActivoPorId() {
+        UUID hotelId = UUID.fromString("22222222-2222-2222-2222-222222222222");
+        HotelEntity hotel = mock(HotelEntity.class);
+        when(hotel.getId()).thenReturn(hotelId);
+        when(hotel.getName()).thenReturn("Hotel Oasis");
+        when(hotel.getDescription()).thenReturn("Vista al desierto");
+        when(hotel.getAddress()).thenReturn("Calle Palmeras 456");
+        when(hotel.getCity()).thenReturn("Ica");
+        when(hotels.findByIdAndStatus(hotelId, "ACTIVE")).thenReturn(Optional.of(hotel));
+
+        Optional<HotelView> response = new HotelService(hotels).findActive(hotelId);
+
+        assertEquals(Optional.of(new HotelView(hotelId, "Hotel Oasis", "Vista al desierto",
+                "Calle Palmeras 456", "Ica")), response);
+        verify(hotels).findByIdAndStatus(hotelId, "ACTIVE");
+    }
+
+    @Test
+    void noObtieneHotelInexistenteONoActivo() {
+        UUID hotelId = UUID.fromString("33333333-3333-3333-3333-333333333333");
+        when(hotels.findByIdAndStatus(hotelId, "ACTIVE")).thenReturn(Optional.empty());
+
+        Optional<HotelView> response = new HotelService(hotels).findActive(hotelId);
+
+        assertTrue(response.isEmpty());
+        verify(hotels).findByIdAndStatus(hotelId, "ACTIVE");
     }
 }

@@ -1,6 +1,8 @@
 package pe.edu.utp.icastay.hotel;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -24,6 +26,11 @@ public class HotelService {
                 .toList();
         return new HotelPage(content, result.getNumber(), result.getSize(),
                 result.getTotalElements(), result.getTotalPages());
+    }
+
+    public Optional<HotelView> findActive(UUID id) {
+        return hotels.findByIdAndStatus(id, ACTIVE_STATUS)
+                .map(this::toView);
     }
 
     private HotelView toView(HotelEntity hotel) {

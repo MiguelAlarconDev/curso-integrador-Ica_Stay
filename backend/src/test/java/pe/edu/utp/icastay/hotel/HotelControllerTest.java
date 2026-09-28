@@ -8,6 +8,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -39,5 +41,30 @@ class HotelControllerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         verifyNoInteractions(hotelService);
+    }
+
+    @Test
+    void devuelveHotelActivoPorId() {
+        UUID hotelId = UUID.fromString("22222222-2222-2222-2222-222222222222");
+        HotelView expected = new HotelView(hotelId, "Hotel Oasis", "Vista al desierto",
+                "Calle Palmeras 456", "Ica");
+        when(hotelService.findActive(hotelId)).thenReturn(Optional.of(expected));
+
+        HotelView response = new HotelController(hotelService).getById(hotelId);
+
+        assertSame(expected, response);
+        verify(hotelService).findActive(hotelId);
+    }
+
+    @Test
+    void devuelve404CuandoElHotelNoExisteONoEstaActivo() {
+        UUID hotelId = UUID.fromString("33333333-3333-3333-3333-333333333333");
+        when(hotelService.findActive(hotelId)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> new HotelController(hotelService).getById(hotelId));
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        verify(hotelService).findActive(hotelId);
     }
 }

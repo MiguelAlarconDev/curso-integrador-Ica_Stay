@@ -7,7 +7,24 @@ Primera etapa: proyecto Maven, PostgreSQL y migración Flyway inicial. El esquem
 - JDK 21 y Maven compatible (3.6.3 o posterior).
 - Docker con Compose para la base local, o una instancia PostgreSQL propia.
 
-## Arranque local (terminal Bash)
+## Arranque local en PowerShell (Windows)
+
+Desde la raíz del repositorio:
+
+```powershell
+Copy-Item .env.example .env
+# Edita .env y cambia DB_PASSWORD por una contraseña local.
+docker compose --env-file .env up -d postgres
+cd backend
+$linea = Get-Content ..\.env | Where-Object { $_ -match '^DB_PASSWORD=' } | Select-Object -First 1
+if (-not $linea) { throw 'Falta DB_PASSWORD en .env' }
+$env:DB_PASSWORD = ($linea -split '=', 2)[1]
+mvn spring-boot:run
+```
+
+La aplicación usa por defecto `localhost:5433` y el usuario `ica_stay`. Si cambias el puerto en `.env`, asigna también `$env:DB_URL = 'jdbc:postgresql://localhost:<puerto>/ica_stay'` antes de Maven. Docker Compose lee `.env`, pero Maven no lo carga automáticamente. En otra terminal, verifica con `Invoke-RestMethod http://localhost:8080/actuator/health`.
+
+## Arranque local en Bash
 
 Desde la raíz del repositorio:
 
@@ -27,7 +44,7 @@ cd backend
 mvn spring-boot:run
 ```
 
-En PowerShell puedes asignar `$env:DB_PASSWORD` y, si cambias los valores por defecto, `$env:DB_URL` y `$env:DB_USER` antes de ejecutar Maven. La conexión por defecto usa `localhost:5433`.
+En Linux o macOS, `source .env` requiere una terminal Bash; en PowerShell usa las instrucciones de arriba.
 
 Verificación manual: `http://localhost:8080/actuator/health` debe devolver `{"status":"UP"}`. Al arrancar, Flyway aplica `V1__initial_schema.sql`; si falla la migración o PostgreSQL no responde, la aplicación no queda lista. Revisa con `mvn test` y `docker compose exec postgres psql -U ica_stay -d ica_stay -c '\dt'`.
 

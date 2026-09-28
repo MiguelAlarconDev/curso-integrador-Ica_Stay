@@ -1,7 +1,7 @@
 # Arquitectura del sistema
 
-**Estado:** diseño conceptual acordado; contratos técnicos por definir.  
-**Actualizado:** 2026-09-27.
+**Estado:** diseño conceptual acordado; modelo ER y endpoints iniciales propuestos.  
+**Actualizado:** 2026-09-28.
 
 Ica Stay es una plataforma de reservas de hoteles orientada inicialmente a Ica. El núcleo del negocio se mantiene en un monolito modular Spring Boot. Tres servicios especializados se incorporarán de forma progresiva.
 
@@ -37,20 +37,20 @@ Los servicios no comparten escritura directa sobre las tablas del núcleo. Los c
 | Rol | Alcance |
 |---|---|
 | `USER` | Buscar, reservar, consultar y gestionar sus propias reservas; usar asistente |
-| `HOTEL_ADMIN` | Gestionar hoteles asignados, habitaciones y reservas de esos hoteles |
+| `HOTEL_ADMIN` | Gestionar un hotel asignado, sus habitaciones y reservas |
 | `SUPER_ADMIN` | Administración y métricas globales |
 
 El backend valida tanto el rol como la propiedad del recurso. La autorización no depende de ocultar botones en Angular ni de instrucciones al modelo.
 
 ## Flujo principal previsto
 
-1. El usuario consulta disponibilidad.
+1. El usuario consulta disponibilidad de una habitación física.
 2. El core verifica la disponibilidad en PostgreSQL al crear una reserva y evita solapamientos mediante una estrategia transaccional aún por definir.
-3. Crea una reserva pendiente de pago y solicita iniciar pago a `payment-service`.
-4. Tras confirmar el pago por un canal confiable, el core confirma la reserva.
+3. Crea una reserva `PENDING_PAYMENT` con retención de 10 minutos; más adelante solicitará el pago a `payment-service`.
+4. Solo un pago verificado mientras la retención siga vigente confirma la reserva. Un pago tardío se concilia sin confirmar automáticamente.
 5. Los servicios de comprobantes y notificaciones procesan las acciones correspondientes, con manejo de fallos y reintentos por especificar.
 
-Los pasos 3–5 son diseño objetivo, no funcionalidad implementada.
+La integración real de los servicios externos es diseño objetivo, no funcionalidad implementada. Ver [ER](database.md), [spec de reservas](../features/reservations.md) y [API mínima](api.md).
 
 ## Orden de implementación
 

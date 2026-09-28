@@ -1,6 +1,6 @@
 # Núcleo Spring Boot
 
-Primera etapa: proyecto Maven, PostgreSQL y migración Flyway inicial. El esquema todavía no incorpora entidades JPA ni endpoints de negocio; `ddl-auto: validate` evita cambios automáticos del esquema.
+Primera etapa: proyecto Maven, PostgreSQL y migración Flyway inicial. El esquema tiene entidades JPA y un primer endpoint público de lectura; `ddl-auto: validate` verifica su correspondencia sin cambiar tablas. La carga de datos, autenticación y reservas se implementarán después.
 
 ## Requisitos
 
@@ -47,5 +47,11 @@ mvn spring-boot:run
 En Linux o macOS, `source .env` requiere una terminal Bash; en PowerShell usa las instrucciones de arriba.
 
 Verificación manual: `http://localhost:8080/actuator/health` debe devolver `{"status":"UP"}`. Al arrancar, Flyway aplica `V1__initial_schema.sql`; si falla la migración o PostgreSQL no responde, la aplicación no queda lista. Revisa con `mvn test` y `docker compose exec postgres psql -U ica_stay -d ica_stay -c '\dt'`.
+
+## Primera consulta de catálogo
+
+Con el backend levantado, abre `http://localhost:8080/api/v1/hotels`. La respuesta inicial tiene `content: []` porque aún no hay datos de prueba ni endpoints administrativos para crear hoteles. Acepta `page` (desde 0) y `size` (1–100); solo muestra hoteles `ACTIVE` y no expone identificadores ni datos de administradores.
+
+Para comprobar esta etapa desde la raíz del repositorio, detén y reinicia Spring Boot tras actualizar la rama y ejecuta `mvn test` dentro de `backend`; con PostgreSQL disponible, `ddl-auto: validate` verifica las entidades al iniciar. Si Hibernate indica un desajuste de tipo o columna, conserva el error completo para corregir el mapeo sin modificar la migración aplicada.
 
 La base del contenedor queda en un volumen Docker. `docker compose down` detiene los servicios; `down -v` borra los datos y solo debe ejecutarse si quieres reiniciar la base deliberadamente.

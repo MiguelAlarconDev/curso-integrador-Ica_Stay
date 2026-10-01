@@ -1,5 +1,13 @@
 # Frontend
 
+## Integración inicial con API
+
+`app.config.ts` registra `provideHttpClient()`. El token `API_BASE_URL` de `core/api.config.ts` centraliza la URL local y puede sobrescribirse en los providers al desplegar en otro entorno.
+
+Al cargar `/`, `Home.ngOnInit()` se suscribe a `HotelService.list()` y solicita `GET http://localhost:8080/api/v1/hotels?page=0&size=20`. Los modelos reflejan `HotelView` y `HotelPage` del backend; `description` es nullable según la entidad y la migración. La Home guarda el resultado en signals y presenta estados de carga, error y respuesta vacía, sin bloquear el resto de la página.
+
+Se muestran como máximo los tres primeros hoteles en el orden recibido (el backend ordena por nombre e ID). Las fotografías editoriales se asignan por posición y no representan los hoteles reales. No se agregan autenticación, interceptores ni configuración CORS al backend. Una respuesta bloqueada por CORS se muestra como error de carga; permitir el origen del frontend requiere un ajuste independiente y controlado del backend.
+
 ## Home pública — iteración visual 2
 
 Implementa [la SPEC de Home](../docs/specs/frontend/home.md) en `/`, con carga diferida mediante Angular Router. `app.html` contiene el outlet; `features/home/` compone la página y `shared/` contiene header, buscador y footer.
@@ -7,7 +15,7 @@ Implementa [la SPEC de Home](../docs/specs/frontend/home.md) en `/`, con carga d
 Decisiones de presentación para esta iteración:
 
 - Las siete fotografías locales de `public/images/home/` sustituyen los marcadores visuales siguiendo el mapeo de la SPEC. Se mantienen las alturas y la composición editorial, con `object-fit: cover`, textos alternativos y carga diferida salvo el Hero, que tiene prioridad alta. No se solicitan imágenes externas. El Hero original mide 280 × 180 px y puede perder nitidez al ampliarse.
-- Los alojamientos ilustrativos están localizados en `home.ts`; no representan oferta real, precios ni disponibilidad.
+- Los textos de los alojamientos provienen ahora de la API; las fotografías continúan siendo referenciales. No se muestran precios ni disponibilidad que el DTO no proporcione.
 - Buscar, Mis reservas e Iniciar sesión permanecen deshabilitados y acompañados de avisos de disponibilidad futura. Los campos son editables; no se ejecutan búsquedas ni se almacenan datos.
 - La navegación usa anclas a secciones existentes. Sobre el proyecto y Contacto apuntan a notas del footer; no se inventa un correo de contacto.
 - Los estilos reutilizan los tokens globales. Se conserva el foco visible de los campos y se respeta la preferencia de movimiento reducido.

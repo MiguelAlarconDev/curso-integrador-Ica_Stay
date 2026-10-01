@@ -12,6 +12,10 @@ spring:
   flyway:
     enabled: true
 
+icastay:
+  cors:
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:4200}
+
 management:
   endpoints:
     web:

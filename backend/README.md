@@ -50,6 +50,10 @@ Verificación manual: `http://localhost:8080/actuator/health` debe devolver `{"s
 
 ## Primera consulta de catálogo
 
+CORS está centralizado en `SecurityConfig` e integrado con la cadena de Spring Security para `/api/**`. El único origen local permitido es `http://localhost:4200`. Se permiten GET, POST, PUT, PATCH, DELETE y OPTIONS, con headers Content-Type, Authorization y Accept. No se habilitan credenciales basadas en cookies; Authorization queda disponible para Bearer JWT. El preflight no requiere JWT, pero la petición real conserva todas las reglas de autorización. CSRF ya estaba deshabilitado en la configuración stateless y permanece sin cambios.
+
+`icastay.cors.allowed-origin` en `application.yml` permite configurar otro origen exacto mediante `CORS_ALLOWED_ORIGIN` al cambiar de ambiente; no usar comodines. Reinicia Spring Boot para aplicar esta configuración a un proceso que ya estaba levantado.
+
 Con el backend levantado, abre `http://localhost:8080/api/v1/hotels`. La respuesta inicial tiene `content: []` porque aún no hay datos de prueba ni endpoints administrativos para crear hoteles. Acepta `page` (desde 0) y `size` (1–100); solo muestra hoteles `ACTIVE` y no expone identificadores ni datos de administradores.
 
 Para comprobar esta etapa desde la raíz del repositorio, detén y reinicia Spring Boot tras actualizar la rama y ejecuta `mvn test` dentro de `backend`; con PostgreSQL disponible, `ddl-auto: validate` verifica las entidades al iniciar. Si Hibernate indica un desajuste de tipo o columna, conserva el error completo para corregir el mapeo sin modificar la migración aplicada.

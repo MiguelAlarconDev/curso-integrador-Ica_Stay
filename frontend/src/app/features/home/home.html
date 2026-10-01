@@ -16,13 +16,22 @@
   <section id="alojamientos" class="container section" aria-labelledby="stays-title">
     <div class="section-heading">
       <div><span class="eyebrow">DÓNDE QUEDARTE</span><h2 id="stays-title">Hospedajes para<br>descubrir Ica</h2></div>
-      <p>Distintas formas de habitar la región.<br><span class="preview-note">Selección ilustrativa · alojamientos de ejemplo.</span></p>
+      <p>Distintas formas de habitar la región.<br><span class="preview-note">Fotografías referenciales; no representan los hoteles mostrados.</span></p>
     </div>
-    <div class="stays">
-      @for (stay of stays; track stay.name) {
+    <div role="status" aria-live="polite">
+      @if (loading()) {
+        <p class="text-muted">Cargando alojamientos…</p>
+      } @else if (error()) {
+        <p class="text-muted">No pudimos cargar los alojamientos. Inténtalo de nuevo más tarde.</p>
+      } @else if (stays().length === 0) {
+        <p class="text-muted">Todavía no hay alojamientos disponibles para mostrar.</p>
+      }
+    </div>
+    <div class="stays" [attr.aria-busy]="loading()">
+      @for (stay of stays(); track stay.id) {
         <article class="stay" [class.stay-main]="stay.type === 'principal'">
           <img class="stay-photo" [src]="stay.photo" [alt]="stay.alt" [attr.width]="stay.width" [attr.height]="stay.height" loading="lazy" decoding="async">
-          <div class="stay-copy"><span class="eyebrow">{{ stay.location }}</span><h3>{{ stay.name }}</h3><p>{{ stay.description }}</p></div>
+          <div class="stay-copy"><span class="eyebrow">{{ stay.city }}</span><h3>{{ stay.name }}</h3><p>{{ stay.address }}</p>@if (stay.description) { <p>{{ stay.description }}</p> }</div>
         </article>
       }
     </div>

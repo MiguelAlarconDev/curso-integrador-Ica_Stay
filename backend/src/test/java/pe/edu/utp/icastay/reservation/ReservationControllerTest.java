@@ -1,0 +1,61 @@
+package pe.edu.utp.icastay.reservation;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ExtendWith(MockitoExtension.class)
+class ReservationControllerTest {
+
+    @Mock
+    private ReservationService reservationService;
+
+    @Test
+    void delegaCreacionYDevuelveDtoDelService() {
+        CreateReservationRequest request = new CreateReservationRequest(
+                UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                UUID.fromString("22222222-2222-2222-2222-222222222222"),
+                LocalDate.of(2026, 10, 10),
+                LocalDate.of(2026, 10, 13),
+                2);
+        ReservationView expected = new ReservationView(
+                UUID.fromString("33333333-3333-3333-3333-333333333333"),
+                request.guestUserId(),
+                request.roomId(),
+                request.checkIn(),
+                request.checkOut(),
+                request.guests(),
+                "PENDING_PAYMENT",
+                Instant.parse("2026-09-30T15:15:00Z"),
+                new BigDecimal("150.00"),
+                new BigDecimal("450.00"),
+                "PEN");
+        when(reservationService.create(request)).thenReturn(expected);
+
+        ReservationView response = new ReservationController(reservationService).create(request);
+
+        assertSame(expected, response);
+        verify(reservationService).create(request);
+    }
+
+    @Test
+    void endpointCreateDeclaraHttp201() throws NoSuchMethodException {
+        Method method = ReservationController.class.getMethod("create", CreateReservationRequest.class);
+        ResponseStatus responseStatus = method.getAnnotation(ResponseStatus.class);
+
+        assertEquals(HttpStatus.CREATED, responseStatus.value());
+    }
+}

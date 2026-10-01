@@ -59,4 +59,40 @@ public class ReservationEntity {
 
     protected ReservationEntity() {
     }
+
+    static ReservationEntity pendingPayment(
+            UUID guestUserId,
+            UUID roomId,
+            LocalDate checkIn,
+            LocalDate checkOut,
+            int guests,
+            Instant expiresAt,
+            BigDecimal nightlyPriceSnapshot,
+            BigDecimal totalAmount,
+            String currency) {
+        ReservationEntity reservation = new ReservationEntity();
+        reservation.guestUserId = guestUserId;
+        reservation.roomId = roomId;
+        reservation.checkIn = checkIn;
+        reservation.checkOut = checkOut;
+        reservation.guests = guests;
+        reservation.status = "PENDING_PAYMENT";
+        reservation.expiresAt = expiresAt;
+        reservation.nightlyPriceSnapshot = nightlyPriceSnapshot;
+        reservation.totalAmount = totalAmount;
+        reservation.currency = currency;
+        return reservation;
+    }
+
+    public UUID getId() { return id; }
+    public UUID getGuestUserId() { return guestUserId; }
+    public UUID getRoomId() { return roomId; }
+    public LocalDate getCheckIn() { return checkIn; }
+    public LocalDate getCheckOut() { return checkOut; }
+    public int getGuests() { return guests; }
+    public String getStatus() { return status; }
+    public Instant getExpiresAt() { return expiresAt; }
+    public BigDecimal getNightlyPriceSnapshot() { return nightlyPriceSnapshot; }
+    public BigDecimal getTotalAmount() { return totalAmount; }
+    public String getCurrency() { return currency; }
 }

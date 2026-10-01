@@ -1,0 +1,18 @@
+:host { display: block; border-bottom: 1px solid var(--ica-line); }
+.header { min-height: 112px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+.wordmark { font-size: 1.65rem; letter-spacing: .12em; font-weight: 700; white-space: nowrap; }
+.wordmark span { display: block; font-size: .55rem; letter-spacing: .15em; margin-top: 2px; color: var(--ica-clay); }
+nav { display: flex; align-items: center; gap: 28px; margin-left: auto; }
+nav a { padding-block: 12px; font-size: .875rem; }
+nav a:hover { color: var(--ica-clay); text-decoration: underline; text-underline-offset: 6px; }
+button { background: transparent; border: 0; color: var(--ica-muted); font-size: .875rem; padding: 8px 0; text-align: left; }
+small { display: block; font-size: .65rem; }
+.session { border-left: 1px solid var(--ica-line); padding-left: 28px; }
+.skip-link { position: absolute; top: 8px; left: 16px; transform: translateY(-200%); padding: 10px 16px; background: var(--ica-paper); z-index: 2; }
+.skip-link:focus { transform: translateY(0); }
+@media (max-width: 900px) {
+  .header { flex-wrap: wrap; gap: 16px; padding-block: 22px; }
+  nav { order: 3; width: 100%; margin: 0; justify-content: space-between; gap: 12px; }
+  .session { margin-left: auto; padding-left: 16px; }
+}
+@media (max-width: 380px) { .wordmark { font-size: 1.3rem; } nav a, nav button { font-size: .8rem; } }

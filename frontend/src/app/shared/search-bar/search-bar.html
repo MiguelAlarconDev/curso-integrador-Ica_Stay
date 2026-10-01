@@ -1,0 +1,14 @@
+<section aria-labelledby="search-title">
+  <div class="search-heading">
+    <h2 id="search-title">Tu próxima estancia empieza aquí.</h2>
+    <span>Ica, a tu manera</span>
+  </div>
+  <form aria-label="Buscar alojamiento" aria-describedby="search-note" (submit)="$event.preventDefault()">
+    <div class="field"><label for="destination">Destino</label><input id="destination" name="destination" type="text" value="Ica" autocomplete="off"></div>
+    <div class="field"><label for="arrival">Llegada</label><input id="arrival" name="arrival" type="date"></div>
+    <div class="field"><label for="departure">Salida</label><input id="departure" name="departure" type="date"></div>
+    <div class="field"><label for="guests">Huéspedes</label><select id="guests" name="guests"><option value="1">1 huésped</option><option value="2" selected>2 huéspedes</option><option value="3">3 huéspedes</option><option value="4">4 huéspedes</option><option value="5">5 o más</option></select></div>
+    <button class="btn btn-primary" type="submit" disabled>Buscar <span aria-hidden="true">↗</span></button>
+  </form>
+  <p id="search-note">Vista previa del buscador. La búsqueda de disponibilidad estará habilitada próximamente.</p>
+</section>

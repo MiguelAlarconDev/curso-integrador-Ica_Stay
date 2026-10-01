@@ -1,0 +1,45 @@
+<app-site-header />
+<main id="contenido" tabindex="-1">
+  <section class="container hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <span class="eyebrow">UN LUGAR PARA QUEDARTE · ICA, PERÚ</span>
+      <h1 id="hero-title">Encuentra dónde quedarte <em>en Ica.</em></h1>
+      <p>Hoteles y alojamientos para descubrir la región a tu manera.</p>
+      <a class="text-link" href="#alojamientos">Descubre los alojamientos <span aria-hidden="true">↓</span></a>
+    </div>
+    <figure class="hero-figure">
+      <img class="hero-photo" src="/images/home/hero-ica.webp" alt="Palmeras y dunas reflejadas en la laguna de Huacachina" width="280" height="180" fetchpriority="high">
+      <figcaption><span>Desierto, viñedos y caminos por descubrir.</span><span>REGIÓN ICA — PERÚ</span></figcaption>
+    </figure>
+  </section>
+  <div class="container"><app-search-bar /></div>
+  <section id="alojamientos" class="container section" aria-labelledby="stays-title">
+    <div class="section-heading">
+      <div><span class="eyebrow">DÓNDE QUEDARTE</span><h2 id="stays-title">Hospedajes para<br>descubrir Ica</h2></div>
+      <p>Distintas formas de habitar la región.<br><span class="preview-note">Selección ilustrativa · alojamientos de ejemplo.</span></p>
+    </div>
+    <div class="stays">
+      @for (stay of stays; track stay.name) {
+        <article class="stay" [class.stay-main]="stay.type === 'principal'">
+          <img class="stay-photo" [src]="stay.photo" [alt]="stay.alt" [attr.width]="stay.width" [attr.height]="stay.height" loading="lazy" decoding="async">
+          <div class="stay-copy"><span class="eyebrow">{{ stay.location }}</span><h3>{{ stay.name }}</h3><p>{{ stay.description }}</p></div>
+        </article>
+      }
+    </div>
+  </section>
+  <section id="explorar" class="section section--sand" aria-labelledby="explore-title">
+    <div class="container">
+      <div class="section-heading"><div><span class="eyebrow">MÁS ALLÁ DE TU ESTANCIA</span><h2 id="explore-title">Explorar Ica</h2></div><p>Elige un paisaje.<br>Imagina tu próximo recorrido.</p></div>
+      <div class="destinations">
+        @for (destination of destinations; track destination.name) {
+          <article class="destination">
+            <img class="destination-photo" [src]="destination.photo" [alt]="destination.alt" [attr.width]="destination.width" [attr.height]="destination.height" loading="lazy" decoding="async">
+            <span class="eyebrow">{{ destination.category }}</span><h3>{{ destination.name }}</h3><p>{{ destination.description }}</p>
+          </article>
+        }
+      </div>
+      <p class="preview-note explore-note">Próximamente: alojamientos y recorridos por destino.</p>
+    </div>
+  </section>
+</main>
+<app-site-footer />

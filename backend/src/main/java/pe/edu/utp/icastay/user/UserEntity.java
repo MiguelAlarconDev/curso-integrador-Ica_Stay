@@ -36,4 +36,10 @@ public class UserEntity {
 
     protected UserEntity() {
     }
+
+    public UUID getId() { return id; }
+    public String getEmail() { return email; }
+    public String getPasswordHash() { return passwordHash; }
+    public String getRole() { return role; }
+    public String getStatus() { return status; }
 }

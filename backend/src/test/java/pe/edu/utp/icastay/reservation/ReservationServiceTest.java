@@ -59,7 +59,7 @@ class ReservationServiceTest {
         when(reservations.findOverlapping(ROOM_ID, CHECK_IN, CHECK_OUT)).thenReturn(List.of());
         when(reservations.save(any(ReservationEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        ReservationView response = service.create(validRequest());
+        ReservationView response = service.create(GUEST_ID, validRequest());
 
         ArgumentCaptor<ReservationEntity> reservationCaptor = ArgumentCaptor.forClass(ReservationEntity.class);
         verify(reservations).save(reservationCaptor.capture());
@@ -84,7 +84,7 @@ class ReservationServiceTest {
         when(users.existsByIdAndStatus(GUEST_ID, "ACTIVE")).thenReturn(false);
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
-                () -> service.create(validRequest()));
+                () -> service.create(GUEST_ID, validRequest()));
 
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         verifyNoInteractions(rooms, hotels, reservations);
@@ -96,7 +96,7 @@ class ReservationServiceTest {
         when(rooms.findByIdAndStatus(ROOM_ID, "ACTIVE")).thenReturn(Optional.empty());
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
-                () -> service.create(validRequest()));
+                () -> service.create(GUEST_ID, validRequest()));
 
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         verifyNoInteractions(hotels, reservations);
@@ -110,7 +110,7 @@ class ReservationServiceTest {
         when(hotels.findActive(HOTEL_ID)).thenReturn(Optional.empty());
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
-                () -> service.create(validRequest()));
+                () -> service.create(GUEST_ID, validRequest()));
 
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         verifyNoInteractions(reservations);
@@ -119,10 +119,10 @@ class ReservationServiceTest {
     @Test
     void checkOutIgualOAnteriorACheckInDevuelve400() {
         CreateReservationRequest request = new CreateReservationRequest(
-                GUEST_ID, ROOM_ID, CHECK_IN, CHECK_IN, 2);
+                ROOM_ID, CHECK_IN, CHECK_IN, 2);
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
-                () -> service.create(request));
+                () -> service.create(GUEST_ID, request));
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         verifyNoInteractions(users, rooms, hotels, reservations);
@@ -131,10 +131,10 @@ class ReservationServiceTest {
     @Test
     void guestsMenorOIgualACeroDevuelve400() {
         CreateReservationRequest request = new CreateReservationRequest(
-                GUEST_ID, ROOM_ID, CHECK_IN, CHECK_OUT, 0);
+                ROOM_ID, CHECK_IN, CHECK_OUT, 0);
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
-                () -> service.create(request));
+                () -> service.create(GUEST_ID, request));
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         verifyNoInteractions(users, rooms, hotels, reservations);
@@ -149,7 +149,7 @@ class ReservationServiceTest {
                 new HotelView(HOTEL_ID, "Hotel Ica", "Centro", "Av. Principal", "Ica")));
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
-                () -> service.create(validRequest()));
+                () -> service.create(GUEST_ID, validRequest()));
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         verifyNoInteractions(reservations);
@@ -183,7 +183,7 @@ class ReservationServiceTest {
                 .thenReturn(List.of(cancelled, expired, expiredPendingPayment));
         when(reservations.save(any(ReservationEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        ReservationView response = service.create(validRequest());
+        ReservationView response = service.create(GUEST_ID, validRequest());
 
         assertEquals("PENDING_PAYMENT", response.status());
         assertEquals(new BigDecimal("300.00"), response.totalAmount());
@@ -199,13 +199,13 @@ class ReservationServiceTest {
                 .thenReturn(List.of(blockingReservation));
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
-                () -> service.create(validRequest()));
+                () -> service.create(GUEST_ID, validRequest()));
 
         assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
     }
 
     private CreateReservationRequest validRequest() {
-        return new CreateReservationRequest(GUEST_ID, ROOM_ID, CHECK_IN, CHECK_OUT, 2);
+        return new CreateReservationRequest(ROOM_ID, CHECK_IN, CHECK_OUT, 2);
     }
 
     private RoomEntity activeRoom(int capacity, BigDecimal pricePerNight) {

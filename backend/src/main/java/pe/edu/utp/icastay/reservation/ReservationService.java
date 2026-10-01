@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import java.time.temporal.ChronoUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -49,7 +50,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public ReservationView create(CreateReservationRequest request) {
+    public ReservationView create(UUID guestUserId, CreateReservationRequest request) {
         if (request.checkOut() == null || request.checkIn() == null
                 || !request.checkOut().isAfter(request.checkIn())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "checkOut debe ser posterior a checkIn");
@@ -57,7 +58,7 @@ public class ReservationService {
         if (request.guests() <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "guests debe ser mayor que 0");
         }
-        if (!users.existsByIdAndStatus(request.guestUserId(), ACTIVE_STATUS)) {
+        if (!users.existsByIdAndStatus(guestUserId, ACTIVE_STATUS)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
@@ -79,7 +80,7 @@ public class ReservationService {
         BigDecimal nightlyPriceSnapshot = room.getPricePerNight();
         BigDecimal totalAmount = nightlyPriceSnapshot.multiply(BigDecimal.valueOf(nights));
         ReservationEntity reservation = ReservationEntity.pendingPayment(
-                request.guestUserId(),
+                guestUserId,
                 request.roomId(),
                 request.checkIn(),
                 request.checkOut(),

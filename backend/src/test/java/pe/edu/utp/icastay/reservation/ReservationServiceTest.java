@@ -1,7 +1,6 @@
 package pe.edu.utp.icastay.reservation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -105,8 +104,9 @@ class ReservationServiceTest {
 
     @Test
     void hotelInactivoDevuelve404() {
+        RoomEntity room = activeRoom(2, BigDecimal.TEN);
         when(users.existsByIdAndStatus(GUEST_ID, "ACTIVE")).thenReturn(true);
-        when(rooms.findByIdAndStatus(ROOM_ID, "ACTIVE")).thenReturn(Optional.of(activeRoom(2, BigDecimal.TEN)));
+        when(rooms.findByIdAndStatus(ROOM_ID, "ACTIVE")).thenReturn(Optional.of(room));
         when(hotels.findActive(HOTEL_ID)).thenReturn(Optional.empty());
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
@@ -142,8 +142,9 @@ class ReservationServiceTest {
 
     @Test
     void guestsSuperiorACapacidadDevuelve400() {
+        RoomEntity room = activeRoom(1, BigDecimal.TEN);
         when(users.existsByIdAndStatus(GUEST_ID, "ACTIVE")).thenReturn(true);
-        when(rooms.findByIdAndStatus(ROOM_ID, "ACTIVE")).thenReturn(Optional.of(activeRoom(1, BigDecimal.TEN)));
+        when(rooms.findByIdAndStatus(ROOM_ID, "ACTIVE")).thenReturn(Optional.of(room));
         when(hotels.findActive(HOTEL_ID)).thenReturn(Optional.of(
                 new HotelView(HOTEL_ID, "Hotel Ica", "Centro", "Av. Principal", "Ica")));
 
@@ -156,26 +157,30 @@ class ReservationServiceTest {
 
     @Test
     void conflictoConReservaConfirmedDevuelve409() {
-        assertConflictWhenRepositoryReportsBlockingOverlap(overlappingReservation("CONFIRMED", null));
+        ReservationEntity blockingReservation = overlappingReservation("CONFIRMED", null);
+
+        assertConflictWhenRepositoryReportsBlockingOverlap(blockingReservation);
     }
 
     @Test
     void conflictoConPendingPaymentVigenteDevuelve409() {
-        assertConflictWhenRepositoryReportsBlockingOverlap(
-                overlappingReservation("PENDING_PAYMENT", NOW.plusSeconds(1)));
+        ReservationEntity blockingReservation = overlappingReservation("PENDING_PAYMENT", NOW.plusSeconds(1));
+
+        assertConflictWhenRepositoryReportsBlockingOverlap(blockingReservation);
     }
 
     @Test
     void cancelledExpiredYPendingPaymentVencidaNoBloqueanCuandoNoHaySolapamientoBloqueante() {
         RoomEntity room = activeRoom(2, new BigDecimal("100.00"));
+        ReservationEntity cancelled = overlappingReservation("CANCELLED", null);
+        ReservationEntity expired = overlappingReservation("EXPIRED", NOW.plusSeconds(3600));
+        ReservationEntity expiredPendingPayment = overlappingReservation("PENDING_PAYMENT", NOW.minusSeconds(1));
         when(users.existsByIdAndStatus(GUEST_ID, "ACTIVE")).thenReturn(true);
         when(rooms.findByIdAndStatus(ROOM_ID, "ACTIVE")).thenReturn(Optional.of(room));
         when(hotels.findActive(HOTEL_ID)).thenReturn(Optional.of(
                 new HotelView(HOTEL_ID, "Hotel Ica", "Centro", "Av. Principal", "Ica")));
-        when(reservations.findOverlapping(ROOM_ID, CHECK_IN, CHECK_OUT)).thenReturn(List.of(
-                overlappingReservation("CANCELLED", null),
-                overlappingReservation("EXPIRED", NOW.plusSeconds(3600)),
-                overlappingReservation("PENDING_PAYMENT", NOW.minusSeconds(1))));
+        when(reservations.findOverlapping(ROOM_ID, CHECK_IN, CHECK_OUT))
+                .thenReturn(List.of(cancelled, expired, expiredPendingPayment));
         when(reservations.save(any(ReservationEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         ReservationView response = service.create(validRequest());
@@ -185,8 +190,9 @@ class ReservationServiceTest {
     }
 
     private void assertConflictWhenRepositoryReportsBlockingOverlap(ReservationEntity blockingReservation) {
+        RoomEntity room = activeRoom(2, BigDecimal.TEN);
         when(users.existsByIdAndStatus(GUEST_ID, "ACTIVE")).thenReturn(true);
-        when(rooms.findByIdAndStatus(ROOM_ID, "ACTIVE")).thenReturn(Optional.of(activeRoom(2, BigDecimal.TEN)));
+        when(rooms.findByIdAndStatus(ROOM_ID, "ACTIVE")).thenReturn(Optional.of(room));
         when(hotels.findActive(HOTEL_ID)).thenReturn(Optional.of(
                 new HotelView(HOTEL_ID, "Hotel Ica", "Centro", "Av. Principal", "Ica")));
         when(reservations.findOverlapping(ROOM_ID, CHECK_IN, CHECK_OUT))

@@ -5,6 +5,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.time.temporal.ChronoUnit;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ public class ReservationService {
     private final HotelService hotels;
     private final Clock clock;
 
+    @Autowired
     public ReservationService(
             ReservationRepository reservations,
             ReservationUserRepository users,

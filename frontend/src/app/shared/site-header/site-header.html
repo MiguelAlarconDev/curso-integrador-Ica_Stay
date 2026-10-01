@@ -2,9 +2,16 @@
 <header class="container header">
   <a class="wordmark" routerLink="/" aria-label="Ica Stay, inicio">ICA STAY<span>ALOJARSE. EXPLORAR. VOLVER.</span></a>
   <nav aria-label="Navegación principal">
-    <a href="#alojamientos">Alojamientos</a>
-    <a href="#explorar">Explorar Ica</a>
+    <a routerLink="/" fragment="alojamientos">Alojamientos</a>
+    <a routerLink="/" fragment="explorar">Explorar Ica</a>
     <button type="button" disabled>Mis reservas <small>Próximamente</small></button>
   </nav>
-  <button class="session" type="button" disabled>Iniciar sesión <small>Próximamente</small></button>
+  <div class="session">
+    @if (auth.session(); as session) {
+      <span class="session-email">{{ session.email }}</span>
+      <button type="button" (click)="auth.logout()">Cerrar sesión</button>
+    } @else {
+      <a routerLink="/login">Iniciar sesión</a>
+    }
+  </div>
 </header>

@@ -15,6 +15,9 @@ spring:
 icastay:
   cors:
     allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:4200}
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
 
 management:
   endpoints:

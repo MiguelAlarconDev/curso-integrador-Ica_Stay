@@ -9,6 +9,7 @@ import { API_BASE_URL } from './core/api.config';
 
 describe('App', () => {
   beforeEach(async () => {
+    sessionStorage.clear();
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [provideRouter(routes), provideHttpClient(), provideHttpClientTesting()],
@@ -54,7 +55,8 @@ describe('App', () => {
       expect(page.querySelector(`label[for="${control.id}"]`)?.textContent?.trim()).toBeTruthy();
     });
     expect(page.querySelector<HTMLButtonElement>('form button')?.disabled).toBe(true);
-    expect(page.querySelectorAll('header button:disabled').length).toBe(2);
+    expect(page.querySelectorAll('header button:disabled').length).toBe(1);
+    expect(page.querySelector('header a[href="/login"]')).not.toBeNull();
   });
   it('loads real hotel data while retaining only three editorial images', async () => {
     const harness = await RouterTestingHarness.create('/');

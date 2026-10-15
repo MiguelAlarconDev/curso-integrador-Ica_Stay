@@ -1,0 +1,63 @@
+<p>Consulta las reservas de tu hotel. Las fechas filtran estancias que coinciden con el intervalo.</p>
+<form [formGroup]="form" (ngSubmit)="apply()" aria-label="Filtros de reservas">
+  <div class="filters">
+    <div class="field"><label for="reservation-status">Estado</label>
+      <select id="reservation-status" formControlName="status"><option value="">Todos</option>
+        @for (status of statuses; track status) { <option [value]="status">{{ labels[status] }}</option> }
+      </select>
+    </div>
+    <div class="field"><label for="reservation-from">Estancias desde</label><input id="reservation-from" type="date" min="0001-01-01" max="9999-12-31" formControlName="from" aria-describedby="dates-help" [attr.aria-invalid]="form.invalid"></div>
+    <div class="field"><label for="reservation-to">Estancias hasta</label><input id="reservation-to" type="date" min="0001-01-01" max="9999-12-31" formControlName="to" aria-describedby="dates-help" [attr.aria-invalid]="form.invalid"></div>
+  </div>
+  <p id="dates-help">La salida debe ser posterior a «desde» y la entrada anterior o igual a «hasta».</p>
+  @if (form.invalid) { <p role="alert">Introduce fechas válidas; «desde» no puede ser posterior a «hasta».</p> }
+  <div class="actions"><button class="btn btn-primary" type="submit" [disabled]="form.invalid">Aplicar filtros</button>
+    <button class="btn btn-outline" type="button" (click)="clear()">Limpiar filtros</button></div>
+</form>
+<section #listRegion tabindex="-1" aria-label="Listado de reservas" [attr.aria-busy]="loading()">
+  @if (loading()) { <p role="status">Cargando reservas…</p> }
+  @else if (error()) { <p role="alert">{{ error() }}</p><button class="btn btn-outline retry" (click)="retry()">Reintentar</button> }
+  @else if (result(); as result) {
+    <p role="status">{{ result.totalElements }} reservas encontradas.</p>
+    @if (result.content.length === 0) { <p>No hay reservas para esta consulta.</p> }
+    <ul class="reservations">
+      @for (reservation of result.content; track reservation.id) {
+        <li><h2>Habitación {{ reservation.roomNumber }}</h2><p>{{ reservation.guestName }} · {{ labels[reservation.status] }}</p>
+          <p>Entrada: {{ reservation.checkIn }} · Salida: {{ reservation.checkOut }}</p>
+          <p>{{ reservation.totalAmount | number:'1.2-2' }} {{ reservation.currency }}</p>
+          <button class="btn btn-outline details" (click)="showDetail(reservation.id)" [attr.aria-label]="'Ver reserva ' + reservation.id" [attr.aria-expanded]="selectedId() === reservation.id" aria-controls="reservation-detail">Ver detalles</button>
+        </li>
+      }
+    </ul>
+    @if (result.totalPages > 0) {
+      <nav class="actions" aria-label="Paginación de reservas">
+        <button class="btn btn-outline previous" (click)="page(result.page - 1)" [disabled]="result.page === 0">Anterior</button>
+        <span>Página {{ result.page + 1 }} de {{ result.totalPages }}</span>
+        <button class="btn btn-outline next" (click)="page(result.page + 1)" [disabled]="result.page + 1 >= result.totalPages">Siguiente</button>
+      </nav>
+    }
+  }
+</section>
+<section id="reservation-detail" aria-label="Detalle de reserva" aria-live="polite" [attr.aria-busy]="detailLoading()">
+  @if (selectedId(); as id) {
+    <div class="detail"><h2>Detalle de reserva</h2>
+      <button class="btn btn-outline back" (click)="closeDetail(true)">Volver al listado</button>
+      @if (detailLoading()) { <p role="status">Cargando detalle…</p> }
+      @else if (detailError()) { <p role="alert">{{ detailError() }}</p><button class="btn btn-outline" (click)="showDetail(id)">Reintentar detalle</button> }
+      @else if (detail(); as reservation) {
+        <dl>
+          <div><dt>Identificador</dt><dd>{{ reservation.id }}</dd></div>
+          <div><dt>Habitación</dt><dd>{{ reservation.roomNumber }} ({{ reservation.roomId }})</dd></div>
+          <div><dt>Entrada</dt><dd>{{ reservation.checkIn }}</dd></div><div><dt>Salida</dt><dd>{{ reservation.checkOut }}</dd></div>
+          <div><dt>Huéspedes</dt><dd>{{ reservation.guests }}</dd></div><div><dt>Estado</dt><dd>{{ labels[reservation.status] }}</dd></div>
+          <div><dt>Importe total</dt><dd>{{ reservation.totalAmount | number:'1.2-2' }} {{ reservation.currency }}</dd></div>
+          <div><dt>Precio por noche al reservar</dt><dd>{{ reservation.nightlyPriceSnapshot | number:'1.2-2' }} {{ reservation.currency }}</dd></div>
+          <div><dt>Huésped titular</dt><dd>{{ reservation.guestName }} · {{ reservation.guestEmail }}</dd></div>
+          <div><dt>Identificador del huésped</dt><dd>{{ reservation.guestUserId }}</dd></div>
+          <div><dt>Creación (UTC)</dt><dd>{{ reservation.createdAt | date:'yyyy-MM-dd HH:mm':'UTC' }}</dd></div>
+          @if (reservation.expiresAt) { <div><dt>Expiración (UTC)</dt><dd>{{ reservation.expiresAt | date:'yyyy-MM-dd HH:mm':'UTC' }}</dd></div> }
+        </dl>
+      }
+    </div>
+  }
+</section>

@@ -1,0 +1,17 @@
+:host { display: block; min-width: 0; overflow-wrap: anywhere; }
+p { line-height: 1.6; }
+form { padding: 1rem 0 2rem; border-bottom: 1px solid var(--ica-line); }
+.filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.field { min-width: 0; }
+select, input { width: 100%; min-width: 0; min-height: 44px; padding: .75rem; border: 1px solid var(--ica-line); background: var(--ica-paper); color: var(--ica-ink); font: inherit; }
+.actions { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+.btn { min-height: 44px; white-space: normal; }
+.reservations { padding: 0; list-style: none; }
+.reservations li { padding: 1.5rem 0; border-bottom: 1px solid var(--ica-line); }
+h2 { font-family: var(--font-display); font-size: 1.5rem; }
+.detail { margin-top: 2rem; padding: 1.5rem; border-top: 2px solid var(--ica-clay); background: var(--ica-sand); }
+dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+dt { color: var(--ica-muted); margin-bottom: .4rem; }
+dd { margin: 0; }
+[role="alert"] { color: var(--ica-clay-dark); }
+@media (max-width: 700px) { .filters, dl { grid-template-columns: minmax(0, 1fr); } .detail { padding: 1rem; } }

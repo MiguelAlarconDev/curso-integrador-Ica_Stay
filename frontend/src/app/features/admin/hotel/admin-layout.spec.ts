@@ -58,7 +58,12 @@ describe('Hotel administration routes', () => {
         harness.detectChanges();
         expect(page.textContent).toContain('todavía no tiene habitaciones');
       }
-      if (index > 2) expect(page.textContent).toContain(`incremento 4.${index + 1}`);
+      if (path.endsWith('/reservations')) {
+        TestBed.inject(HttpTestingController).expectOne(request => request.url.endsWith('/api/v1/admin/hotel/reservations'))
+          .flush({ content: [], page: 0, size: 20, totalElements: 0, totalPages: 0 });
+        harness.detectChanges();
+        expect(page.textContent).toContain('No hay reservas');
+      }
     }
     TestBed.inject(HttpTestingController).expectNone(() => true);
   });

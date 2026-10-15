@@ -1,4 +1,4 @@
-# Panel HOTEL_ADMIN — incrementos 4.1, 4.2 y 4.3
+# Panel HOTEL_ADMIN — incrementos 4.1 a 4.4
 
 **Estado:** implementado, pendiente de revisión visual del equipo.
 **Actualizado:** 2026-10-15.
@@ -8,7 +8,7 @@
 Layout y navegación administrativa standalone con carga diferida. Reutiliza
 la paleta y tipografía globales, AuthService, sessionStorage y authGuard.
 El incremento 4.2 conecta el perfil del hotel con GET/PUT reales. No hay métricas
-inventadas. El incremento 4.3 incorpora habitaciones; reservas sigue previsto para 4.4.
+inventadas. El incremento 4.3 incorpora habitaciones; 4.4 incorpora consulta de reservas.
 
 ## Rutas y permisos
 
@@ -17,7 +17,7 @@ inventadas. El incremento 4.3 incorpora habitaciones; reservas sigue previsto pa
 | `/admin/hotel` | Resumen: bienvenida y cuatro indicadores «Próximamente» |
 | `/admin/hotel/profile` | Mi hotel: consulta y edición del perfil |
 | `/admin/hotel/rooms` | Listado, detalle, registro, edición y estado de habitaciones |
-| `/admin/hotel/reservations` | Reservas: aviso del incremento 4.4 |
+| `/admin/hotel/reservations` | Reservas: listado paginado, filtros y detalle |
 
 El padre usa `canActivate` y `canActivateChild` con el authGuard existente.
 Padre e hijas declaran `data.roles: ['HOTEL_ADMIN']`. Sin sesión se navega a
@@ -69,8 +69,37 @@ No se validó un login real contra Spring Boot para este incremento.
 
 ## Pendientes
 
-Consulta de reservas 4.4 y métricas cuando existan contratos.
+Métricas cuando existan contratos. Sin pagos, cancelaciones ni cambios de estado de reservas.
 Sin cambios en backend, base de datos, roles, interceptor ni formato JWT.
+
+## Incremento 4.4 — Consulta de reservas
+
+- Ruta lazy `/admin/hotel/reservations`, bajo los guards HOTEL_ADMIN existentes.
+  GET `/api/v1/admin/hotel/reservations?page=0&size=20` y GET `/{id}` sobre
+  API_BASE_URL, con interceptor JWT. No se envía hotelId ni adminUserId.
+- Página real: `{content, page, size, totalElements, totalPages}`. Se muestran
+  20 elementos por página; backend admite size 1–100 y page desde cero.
+  Orden del servidor: createdAt descendente, luego id descendente.
+- DTO de lista/detalle: id, checkIn, checkOut, guests, status, expiresAt nullable,
+  nightlyPriceSnapshot, totalAmount, currency, createdAt, roomId, roomNumber,
+  guestUserId, guestName, guestEmail. Los importes son números; fechas e instantes,
+  strings ISO. Fechas de estancia se muestran sin conversión horaria; instantes en UTC.
+- Filtros opcionales: status (PENDING_PAYMENT, CONFIRMED, CANCELLED, EXPIRED),
+  from y to (YYYY-MM-DD, from <= to). Son filtros de solapamiento de estancia:
+  checkOut > from y checkIn <= to, no fechas exactas de entrada/salida.
+  Ejemplo: `?page=0&size=20&status=CONFIRMED&from=2026-11-01&to=2026-11-30`.
+- Aplicar/Limpiar reinician página; paginar conserva filtros aplicados, no los
+  cambios del formulario todavía sin aplicar. No hay filtrado local. Peticiones
+  idénticas pendientes se evitan; nuevas búsquedas cancelan listas y detalles obsoletos.
+- Lista y detalle tienen carga/error/reintento independientes. Detalle dentro de
+  la pantalla, con retorno al listado y foco accesible, conservando página y filtros.
+  Seleccionar otra reserva cancela el detalle anterior; salir destruye las suscripciones.
+- Estados vacíos y mensajes propios para red, 400, 401, 403, 404 y otros errores.
+  401 utiliza logout del interceptor; 403 mantiene sesión. 404 no revela reservas
+  ajenas. El backend resuelve pertenencia; el frontend no calcula expiración ni estado.
+- Aceptación: lista, filtros, paginación, detalle, vacíos, errores, reintentos,
+  cancelación de consultas obsoletas y navegación protegida cubiertos con HTTP simulado.
+  Pendiente validación manual real. Sin modificaciones en habitaciones ni backend.
 
 ## Incremento 4.3 — Habitaciones
 

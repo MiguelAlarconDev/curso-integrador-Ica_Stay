@@ -105,6 +105,32 @@ confirmación y luego confirmando; reactivar y recargar para verificar persisten
 Estas acciones sí modifican datos reales. Las pruebas automatizadas usan HTTP
 simulado: `npx ng test --watch=false`; compilación: `npm run build`.
 
+## Reservas del hotel — incremento 4.4
+
+`/admin/hotel/reservations` consulta reservas con paginación de 20 elementos,
+filtros aplicables/limpiables y detalle independiente dentro de la pantalla.
+Reutiliza guards HOTEL_ADMIN, API_BASE_URL e interceptor JWT.
+
+GET `/api/v1/admin/hotel/reservations?page=0&size=20` devuelve
+`{content,page,size,totalElements,totalPages}`; GET `/{id}` devuelve el detalle.
+Filtros opcionales reales: status (PENDING_PAYMENT, CONFIRMED, CANCELLED, EXPIRED),
+from y to. Las fechas buscan estancias coincidentes: checkOut > from y checkIn <= to.
+No son filtros de entrada/salida exactas. Cambiar filtros reinicia página y cancela
+consultas obsoletas; paginar conserva filtros aplicados. No hay filtrado local.
+
+Se muestran habitación, titular, fechas, estado e importes reales. El detalle
+incluye huéspedes, IDs, precio histórico por noche, creación y expiración nullable.
+Instantes en UTC; fechas de estancia sin desplazamiento horario. El estado procede
+del servidor. Hay carga, vacío, errores HTTP/red y reintento. No hay pagos,
+cancelaciones ni cambios de estado; habitaciones permanece intacto.
+
+Validación manual: iniciar sesión como HOTEL_ADMIN y abrir Reservas; aplicar estado
+y rango de estancias, paginar, limpiar y consultar detalles. Volver al listado
+conserva página y filtros. Probar servidor detenido/reintento y acceso sin sesión
+o con USER/SUPER_ADMIN. La paginación requiere más de 20 reservas coincidentes.
+Pruebas automatizadas con HTTP simulado: `npx ng test --watch=false`;
+compilación: `npm run build`. La integración real queda para revisión manual.
+
 ## Integración inicial con API
 
 `app.config.ts` registra `provideHttpClient()`. El token `API_BASE_URL` de `core/api.config.ts` centraliza la URL local y puede sobrescribirse en los providers al desplegar en otro entorno.

@@ -16,11 +16,9 @@ export const adminRoutes: Routes = [
     data: { roles: ['HOTEL_ADMIN'], section: 'Habitaciones' },
     loadComponent: () => import('./rooms/rooms').then(m => m.HotelRooms),
   },
-  ...[
-    { path: 'reservations', section: 'Reservas', message: 'La consulta administrativa de reservas estará disponible en el incremento 4.4.' },
-  ].map(({ path, section, message }) => ({
-    path, title: `${section} | Ica Stay`,
-    data: { roles: ['HOTEL_ADMIN'], section, message },
-    loadComponent: () => import('./section-placeholder').then(m => m.SectionPlaceholder),
-  })),
+  {
+    path: 'reservations', title: 'Reservas | Ica Stay',
+    data: { roles: ['HOTEL_ADMIN'], section: 'Reservas' },
+    loadComponent: () => import('./reservations/reservations').then(m => m.HotelReservations),
+  },
 ];

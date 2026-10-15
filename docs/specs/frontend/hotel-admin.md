@@ -1,4 +1,4 @@
-# Panel HOTEL_ADMIN — incrementos 4.1 y 4.2
+# Panel HOTEL_ADMIN — incrementos 4.1, 4.2 y 4.3
 
 **Estado:** implementado, pendiente de revisión visual del equipo.
 **Actualizado:** 2026-10-15.
@@ -8,7 +8,7 @@
 Layout y navegación administrativa standalone con carga diferida. Reutiliza
 la paleta y tipografía globales, AuthService, sessionStorage y authGuard.
 El incremento 4.2 conecta el perfil del hotel con GET/PUT reales. No hay métricas
-inventadas ni gestión de habitaciones/reservas, previstas para 4.3 y 4.4.
+inventadas. El incremento 4.3 incorpora habitaciones; reservas sigue previsto para 4.4.
 
 ## Rutas y permisos
 
@@ -16,7 +16,7 @@ inventadas ni gestión de habitaciones/reservas, previstas para 4.3 y 4.4.
 |---|---|
 | `/admin/hotel` | Resumen: bienvenida y cuatro indicadores «Próximamente» |
 | `/admin/hotel/profile` | Mi hotel: consulta y edición del perfil |
-| `/admin/hotel/rooms` | Habitaciones: aviso del incremento 4.3 |
+| `/admin/hotel/rooms` | Listado, detalle, registro, edición y estado de habitaciones |
 | `/admin/hotel/reservations` | Reservas: aviso del incremento 4.4 |
 
 El padre usa `canActivate` y `canActivateChild` con el authGuard existente.
@@ -69,8 +69,39 @@ No se validó un login real contra Spring Boot para este incremento.
 
 ## Pendientes
 
-Gestión de habitaciones 4.3, consulta 4.4 y métricas cuando existan contratos.
+Consulta de reservas 4.4 y métricas cuando existan contratos.
 Sin cambios en backend, base de datos, roles, interceptor ni formato JWT.
+
+## Incremento 4.3 — Habitaciones
+
+- Vista lazy existente `/admin/hotel/rooms`; listado y detalle en la misma pantalla,
+  con carga, vacío, errores y reintento. No se crean rutas públicas nuevas.
+- GET `/api/v1/admin/hotel/rooms` devuelve `AdminRoomView[]`; GET `/{id}` devuelve
+  un `AdminRoomView`: id, number, description nullable, capacity, pricePerNight,
+  currency, status ACTIVE/INACTIVE. No hay paginación ni campos inventados.
+- POST a la colección devuelve 201; PUT `/{id}` y PATCH `/{id}/status` devuelven
+  200 con el recurso actualizado. Se usa API_BASE_URL y Bearer existente.
+- POST/PUT reciben únicamente:
+  `{"number":"201","description":null,"capacity":2,"pricePerNight":180.50,"currency":"PEN"}`.
+  PATCH recibe únicamente `{"status":"INACTIVE"}` o `{"status":"ACTIVE"}`.
+- Formulario reactivo separado, precargado al editar: número obligatorio máximo
+  40, sin espacios exteriores según Java strip; capacidad entera positiva hasta
+  2147483647; precio positivo máximo 9999999999.99, hasta dos decimales.
+  Descripción opcional sin máximo inventado. Moneda inicial PEN; formato de tres
+  mayúsculas en cliente y validez ISO 4217 en backend (400 si no existe).
+- Cancelar no escribe; errores conservan el formulario. Solo una operación activa:
+  no se puede cambiar de habitación mientras se edita/confirma/guarda. Se cancelan
+  consultas de detalle pendientes para evitar sobrescribir respuestas de cambios.
+- Cambio de estado con confirmación explícita y bloqueo de duplicados. Las
+  respuestas actualizan lista y detalle seleccionado sin modificar otras habitaciones.
+  Desactivar impide nuevas reservas, no cancela las existentes (regla del backend).
+- Mensajes propios para 0, 400, 401, 403, 404, 409 y otros; 401 conserva el flujo
+  interceptor/layout hacia login. 404 nunca expone datos de hoteles ajenos.
+- Criterios de aceptación: crear, consultar, editar/cancelar, activar/desactivar
+  con confirmación/cancelación, preservar datos ante fallos, impedir duplicados,
+  actualizar ambas vistas y conservar guards/navegación. Sin cambios backend,
+  dependencias, eliminación, reservas ni pagos. Pruebas HTTP simuladas, sin escrituras
+  reales. La moneda admite formato en cliente, sin duplicar el catálogo de Java.
 
 ## Incremento 4.2 — Mi hotel
 

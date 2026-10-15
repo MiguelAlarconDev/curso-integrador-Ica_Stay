@@ -53,7 +53,12 @@ describe('Hotel administration routes', () => {
       expect(page.querySelectorAll('nav a.active').length).toBe(1);
       expect(page.querySelector('nav a[aria-current="page"]')?.getAttribute('href')).toBe(path);
       expect(page.querySelector('h1')?.textContent).toBe(['Resumen', 'Mi hotel', 'Habitaciones', 'Reservas'][index]);
-      if (index > 1) expect(page.textContent).toContain(`incremento 4.${index + 1}`);
+      if (path.endsWith('/rooms')) {
+        TestBed.inject(HttpTestingController).expectOne(request => request.url.endsWith('/api/v1/admin/hotel/rooms')).flush([]);
+        harness.detectChanges();
+        expect(page.textContent).toContain('todavía no tiene habitaciones');
+      }
+      if (index > 2) expect(page.textContent).toContain(`incremento 4.${index + 1}`);
     }
     TestBed.inject(HttpTestingController).expectNone(() => true);
   });
@@ -79,6 +84,7 @@ describe('Hotel administration routes', () => {
   it('logs out through the existing service and redirects to login', async () => {
     sessionStorage.setItem(AUTH_STORAGE_KEY, token('HOTEL_ADMIN'));
     const harness = await RouterTestingHarness.create('/admin/hotel/rooms');
+    TestBed.inject(HttpTestingController).expectOne(request => request.url.endsWith('/api/v1/admin/hotel/rooms')).flush([]);
     harness.routeNativeElement!.querySelector<HTMLButtonElement>('.sidebar-actions button')!.click();
     await harness.fixture.whenStable();
     expect(TestBed.inject(AuthService).session()).toBeNull();

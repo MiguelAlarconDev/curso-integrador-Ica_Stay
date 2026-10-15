@@ -75,6 +75,36 @@ con HOTEL_ADMIN, abrir Mi hotel, editar y Cancelar; luego editar y Guardar,
 comprobar PUT 200 y recargar. Este último paso modifica datos reales. Probar
 campos inválidos, backend detenido/reintento y administrador sin hotel.
 
+## Habitaciones — incremento 4.3
+
+`/admin/hotel/rooms` permite listar, consultar, crear, editar y activar/desactivar
+habitaciones del hotel autenticado. Reutiliza guards HOTEL_ADMIN, interceptor JWT
+y API_BASE_URL. No recibe hotelId ni adminUserId del cliente.
+
+`AdminRoomService` utiliza GET/POST `/api/v1/admin/hotel/rooms`, GET/PUT `/{id}`
+y PATCH `/{id}/status`. El DTO real contiene id, number, description nullable,
+capacity, pricePerNight, currency y status (ACTIVE/INACTIVE). El listado es un array.
+
+El formulario separado valida número (1–40, sin espacios exteriores), capacidad
+entera positiva hasta 2147483647, precio positivo hasta 9999999999.99 con dos
+decimales y formato de moneda ISO 4217 (PEN inicial; código validado por backend).
+Descripción opcional. POST/PUT envían solo los cinco campos editables.
+Cancelar no envía solicitudes. Guardado y confirmación de estado bloquean
+duplicados y el cambio de habitación; los errores conservan datos. Un 401 utiliza
+el cierre de sesión existente; 403 no cierra sesión. 404, 409, red y errores de
+servidor tienen mensajes propios sin exponer detalles internos.
+
+Las respuestas actualizan listado y detalle; el estado exige confirmación antes
+del PATCH. Desactivar no cancela reservas existentes. No hay eliminación ni
+gestión de reservas. El backend sigue comprobando pertenencia.
+
+Prueba manual: iniciar sesión como HOTEL_ADMIN, abrir Habitaciones, crear una
+habitación, consultar detalle, editar y cancelar; luego editar y guardar.
+Probar número duplicado y datos inválidos. Desactivar primero cancelando la
+confirmación y luego confirmando; reactivar y recargar para verificar persistencia.
+Estas acciones sí modifican datos reales. Las pruebas automatizadas usan HTTP
+simulado: `npx ng test --watch=false`; compilación: `npm run build`.
+
 ## Integración inicial con API
 
 `app.config.ts` registra `provideHttpClient()`. El token `API_BASE_URL` de `core/api.config.ts` centraliza la URL local y puede sobrescribirse en los providers al desplegar en otro entorno.

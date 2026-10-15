@@ -32,13 +32,13 @@ Layout padre lazy con router-outlet y cuatro rutas hijas:
 Exclusivo de HOTEL_ADMIN mediante el guard existente en padre e hijas.
 
 `features/admin/hotel/` contiene layout, rutas, resumen y un componente informativo
-compartido para las tres secciones futuras. Navegación lateral en escritorio y
+compartido para las secciones futuras. Navegación lateral en escritorio y
 compacta en móvil; título, correo, rol, foco visible y ruta activa accesible.
 No duplica el header público. Logout usa AuthService y redirige a `/login`;
 la pérdida de sesión por expiración también abandona el panel.
 
-Sin HTTP administrativo, formularios ni estadísticas: todos los indicadores
-muestran «Próximamente». Perfil, habitaciones y reservas se conectarán en 4.2,
+El Resumen mantiene indicadores «Próximamente» sin estadísticas ficticias.
+El perfil se conecta en 4.2; habitaciones y reservas quedan pendientes para
 4.3 y 4.4. Contrato y criterios en [la spec del panel](../docs/specs/frontend/hotel-admin.md).
 
 Validación de este incremento: 85 pruebas exitosas con `npm test -- --watch=false`
@@ -49,6 +49,31 @@ o SUPER_ADMIN para verificar las redirecciones. Este incremento no crea cuentas.
 Chrome headless comprobó las cuatro secciones a 320, 375, 768 y 1440 px, sin
 desbordamiento horizontal y con movimiento reducido; sesión sintética local,
 sin llamadas al backend. Se revisaron capturas móvil y escritorio.
+
+## Mi hotel — incremento 4.2
+
+`/admin/hotel/profile` consulta y actualiza el hotel de la identidad autenticada.
+`AdminHotelService` usa GET/PUT `/api/v1/admin/hotel` sobre `API_BASE_URL`, con el
+interceptor JWT existente. Se reutiliza HotelView; PUT recibe únicamente name,
+description, address y city, y devuelve el recurso actualizado sin un GET adicional.
+
+Formulario reactivo: nombre/dirección/ciudad obligatorios, máximos 180/255/120;
+descripción opcional máximo 5000. Normalización equivalente a String.strip del
+backend; descripción vacía se envía null. ID solo lectura; estado y propietario
+no se muestran porque no están en el DTO. Guardar requiere cambios válidos y evita
+duplicados. Cancelar restaura los últimos datos guardados; fallos conservan ediciones.
+
+Carga y guardado visibles, reintento de GET, mensaje de hotel no asignado para
+404, validación 400, permisos 403, conexión 0 y errores generales. Un 401 deja
+actuar al interceptor/layout y vuelve a login. 409 tiene manejo defensivo aunque
+el contrato actual no define conflictos. No se cambió backend ni PostgreSQL.
+
+Validación: 107 pruebas exitosas, build correcto y revisión Chrome a 320, 375,
+768 y 1440 px sin overflow. HTTP simulado en tests y en revisión visual; no se
+verificó guardado real contra Spring Boot. Para probar manualmente, iniciar sesión
+con HOTEL_ADMIN, abrir Mi hotel, editar y Cancelar; luego editar y Guardar,
+comprobar PUT 200 y recargar. Este último paso modifica datos reales. Probar
+campos inválidos, backend detenido/reintento y administrador sin hotel.
 
 ## Integración inicial con API
 

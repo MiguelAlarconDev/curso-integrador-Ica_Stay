@@ -6,8 +6,12 @@ export const adminRoutes: Routes = [
     data: { roles: ['HOTEL_ADMIN'], section: 'Resumen' },
     loadComponent: () => import('./overview').then(m => m.Overview),
   },
+  {
+    path: 'profile', title: 'Mi hotel | Ica Stay',
+    data: { roles: ['HOTEL_ADMIN'], section: 'Mi hotel' },
+    loadComponent: () => import('./profile/profile').then(m => m.HotelProfile),
+  },
   ...[
-    { path: 'profile', section: 'Mi hotel', message: 'La gestión del perfil de tu hotel estará disponible en el incremento 4.2.' },
     { path: 'rooms', section: 'Habitaciones', message: 'La gestión de habitaciones estará disponible en el incremento 4.3.' },
     { path: 'reservations', section: 'Reservas', message: 'La consulta administrativa de reservas estará disponible en el incremento 4.4.' },
   ].map(({ path, section, message }) => ({

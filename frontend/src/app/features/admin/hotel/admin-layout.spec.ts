@@ -43,12 +43,17 @@ describe('Hotel administration routes', () => {
       const link = harness.routeNativeElement!.querySelector<HTMLAnchorElement>(`nav a[href="${path}"]`)!;
       link.click();
       await harness.fixture.whenStable(); harness.detectChanges();
+      if (path.endsWith('/profile')) {
+        TestBed.inject(HttpTestingController).expectOne(request => request.url.endsWith('/api/v1/admin/hotel'))
+          .flush({ id: 'hotel-test', name: 'Hotel de prueba', description: null, address: 'Calle 1', city: 'Ica' });
+        harness.detectChanges();
+      }
       expect(TestBed.inject(Router).url).toBe(path);
       const page = harness.routeNativeElement!;
       expect(page.querySelectorAll('nav a.active').length).toBe(1);
       expect(page.querySelector('nav a[aria-current="page"]')?.getAttribute('href')).toBe(path);
       expect(page.querySelector('h1')?.textContent).toBe(['Resumen', 'Mi hotel', 'Habitaciones', 'Reservas'][index]);
-      if (index > 0) expect(page.textContent).toContain(`incremento 4.${index + 1}`);
+      if (index > 1) expect(page.textContent).toContain(`incremento 4.${index + 1}`);
     }
     TestBed.inject(HttpTestingController).expectNone(() => true);
   });

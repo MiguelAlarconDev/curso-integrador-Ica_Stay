@@ -1,7 +1,6 @@
 package pe.edu.utp.icastay.hotel;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -19,8 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import pe.edu.utp.icastay.auth.JwtTokenService;
-import pe.edu.utp.icastay.user.UserEntity;
 import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
@@ -31,21 +30,24 @@ class AdminHotelHttpIntegrationTest {
     @Value("${local.server.port}") private int port;
     @Autowired private JdbcTemplate jdbc;
     @Autowired private JwtTokenService tokens;
+    @Autowired private PasswordEncoder passwords;
     private final JsonMapper json = JsonMapper.builder().build();
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
     private UUID adminA, adminB, hotelA, hotelB;
     private String tokenA, tokenB;
+    private String fixturePassword;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         adminA = UUID.randomUUID();
         adminB = UUID.randomUUID();
         hotelA = UUID.randomUUID();
         hotelB = UUID.randomUUID();
+        fixturePassword = UUID.randomUUID().toString();
         createFixture(adminA, hotelA, "Hotel A");
         createFixture(adminB, hotelB, "Hotel B");
-        tokenA = token(adminA, "HOTEL_ADMIN");
-        tokenB = token(adminB, "HOTEL_ADMIN");
+        tokenA = login(adminA);
+        tokenB = login(adminB);
     }
 
     @AfterEach
@@ -57,6 +59,8 @@ class AdminHotelHttpIntegrationTest {
 
     @Test
     void eachAdministratorReadsOnlyTheirAssignedHotel() throws Exception {
+        assertEquals(adminA.toString(), tokens.validateAndReadClaims(tokenA).get("userId"));
+        assertEquals(adminB.toString(), tokens.validateAndReadClaims(tokenB).get("userId"));
         var a = request("GET", PATH + "?adminUserId=" + adminB + "&hotelId=" + hotelB, tokenA, null);
         assertEquals(200, a.statusCode());
         assertEquals(hotelA.toString(), json.readTree(a.body()).get("id").asString());
@@ -90,7 +94,8 @@ class AdminHotelHttpIntegrationTest {
     @ValueSource(strings = {"USER", "SUPER_ADMIN"})
     void otherRolesCannotReadOrUpdate(String role) throws Exception {
         var before = row(hotelA);
-        String wrongRole = token(adminA, role);
+        jdbc.update("UPDATE users SET role = ? WHERE id = ?", role, adminA);
+        String wrongRole = login(adminA);
         assertEquals(403, request("GET", PATH, wrongRole, null).statusCode());
         assertEquals(403, request("PUT", PATH, wrongRole, validBody()).statusCode());
         assertEquals(before, row(hotelA));
@@ -166,17 +171,16 @@ class AdminHotelHttpIntegrationTest {
 
     private void createFixture(UUID admin, UUID hotel, String name) {
         jdbc.update("INSERT INTO users (id, name, email, password_hash, role) VALUES (?, ?, ?, ?, 'HOTEL_ADMIN')",
-                admin, "HTTP hotel test", admin + "@example.test", "not-a-login-credential");
+                admin, "HTTP hotel test", admin + "@example.test", passwords.encode(fixturePassword));
         jdbc.update("INSERT INTO hotels (id, admin_user_id, name, description, address, city) VALUES (?, ?, ?, ?, ?, ?)",
                 hotel, admin, name, "Original", "Original street", "Ica");
     }
 
-    private String token(UUID id, String role) {
-        UserEntity user = mock(UserEntity.class);
-        when(user.getId()).thenReturn(id);
-        when(user.getEmail()).thenReturn(id + "@example.test");
-        when(user.getRole()).thenReturn(role);
-        return tokens.createToken(user);
+    private String login(UUID id) throws Exception {
+        var response = request("POST", "/api/v1/auth/login", null,
+                json.writeValueAsString(Map.of("email", id + "@example.test", "password", fixturePassword)));
+        assertEquals(200, response.statusCode());
+        return json.readTree(response.body()).get("token").asString();
     }
 
     private Map<String, Object> row(UUID id) {

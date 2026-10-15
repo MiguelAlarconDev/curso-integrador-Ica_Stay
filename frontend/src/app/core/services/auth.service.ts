@@ -2,7 +2,7 @@ import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core'
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs';
 import { API_BASE_URL } from '../api.config';
-import { AuthRole, AuthSession, LoginRequest, LoginResponse } from '../models/auth';
+import { AuthRole, AuthSession, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '../models/auth';
 import { readJwt } from '../auth/jwt';
 
 export const AUTH_STORAGE_KEY = 'icastay.auth.token';
@@ -37,6 +37,11 @@ export class AuthService {
         try { sessionStorage.setItem(AUTH_STORAGE_KEY, response.token); } catch { /* Keep the session in memory. */ }
       }),
     );
+  }
+
+  register(request: RegisterRequest) {
+    const { name, email, password } = request;
+    return this.http.post<RegisterResponse>(`${this.api}/api/v1/auth/register`, { name, email, password });
   }
 
   token(): string | null {

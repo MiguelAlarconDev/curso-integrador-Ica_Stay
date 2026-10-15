@@ -2,13 +2,19 @@
 
 ## Autenticación
 
-`/login` es pública y envía únicamente `{ email, password }` a `POST /api/v1/auth/login` usando `API_BASE_URL`. La respuesta real es `{ token, tokenType: "Bearer" }`. No hay registro, refresh token ni logout de servidor.
+`/login` es pública y envía únicamente `{ email, password }` a `POST /api/v1/auth/login` usando `API_BASE_URL`. La respuesta real es `{ token, tokenType: "Bearer" }`. No hay refresh token ni logout de servidor.
+
+`/register` es pública y usa el mismo diseño editorial del Login. El formulario valida nombre obligatorio (máximo 160), correo válido (máximo 254), contraseña de al menos 8 caracteres y confirmación coincidente. `AuthService.register()` envía únicamente `{ name, email, password }` a `POST /api/v1/auth/register`; la confirmación nunca sale del formulario. Mientras se envía, se bloquean cambios y envíos duplicados. Los errores 400, 409, de conexión y generales se muestran con mensajes propios.
+
+Tras el registro, se redirige a `/login?registered=1`, que muestra una confirmación informativa sin datos personales en la URL. Este indicador no prueba identidad ni concede permisos. No se inicia sesión, no se guarda la contraseña y una sesión previa permanece intacta. Login incluye «Crear cuenta» y Registro incluye «Ya tengo una cuenta».
+
+Para probar manualmente: iniciar backend y frontend, abrir `http://localhost:4200/register`, probar campos vacíos y contraseñas distintas; después registrar un correo nuevo y verificar el 201, la redirección y el aviso. Iniciar sesión con esa cuenta; repetir el registro del correo para comprobar 409. Probar el error de conexión con el backend detenido. Estas comprobaciones manuales sí crean una cuenta; las pruebas unitarias usan HTTP simulado y no modifican PostgreSQL.
 
 `AuthService` mantiene una sesión con signals de solo lectura y guarda exclusivamente el JWT bajo `icastay.auth.token` en `sessionStorage`. La recarga restaura la sesión si el payload contiene `sub`, `userId`, `role`, `iat` y `exp` válidos. Los roles admitidos son `USER`, `HOTEL_ADMIN` y `SUPER_ADMIN`. Se elimina la sesión al expirar, al cerrar sesión o ante un 401 de la petición enviada con el token todavía vigente. Si el navegador bloquea storage, la sesión funciona solo en memoria. El JWT es accesible desde JavaScript; esta persistencia no equivale a una cookie HttpOnly.
 
 La utilidad JWT comprueba estructura, Base64URL, claims, rol y expiración; no verifica la firma. Spring Security sigue siendo la autoridad. Logout no revoca el token en el servidor y no existe renovación automática.
 
-El interceptor funcional agrega Bearer solo al origen y prefijo `/api/` de la API configurada, excluyendo login, archivos estáticos y otros dominios. No usa `withCredentials`. Un 401 de login no elimina una sesión previa, un 401 de una petición antigua no elimina una sesión nueva y un 403 conserva la sesión.
+El interceptor funcional agrega Bearer solo al origen y prefijo `/api/` de la API configurada, excluyendo login, registro, archivos estáticos y otros dominios. No usa `withCredentials`. Un 401 de login o registro no elimina una sesión previa, un 401 de una petición antigua no elimina una sesión nueva y un 403 conserva la sesión.
 
 `authGuard` está disponible para futuras rutas con `canActivate: [authGuard]` y `data: { roles: ['USER'] }` opcional. Sin sesión devuelve `/login`; con rol insuficiente devuelve `/` sin cerrar sesión. Home y Login siguen siendo públicas y no se añaden pantallas protegidas ficticias.
 

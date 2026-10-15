@@ -13,6 +13,9 @@
     <span class="eyebrow">TU CUENTA</span>
     <h2 id="form-title">Iniciar sesión</h2>
     <p>Ingresa tu correo y contraseña.</p>
+    @if (registered) {
+      <p class="registration-success" role="status">Tu cuenta se creó correctamente. Ya puedes iniciar sesión.</p>
+    }
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate [attr.aria-busy]="sending()">
       <div class="field">
         <label for="email">Correo electrónico</label>
@@ -28,6 +31,9 @@
       <button class="btn btn-primary" type="submit" [disabled]="sending()">{{ sending() ? 'Ingresando…' : 'Iniciar sesión' }}</button>
       <span class="text-muted" role="status">{{ sending() ? 'Estamos comprobando tus datos.' : '' }}</span>
     </form>
-    <a class="back-link" routerLink="/">Volver a explorar Ica <span aria-hidden="true">↗</span></a>
+    <nav class="auth-links" aria-label="Opciones de acceso">
+      <a class="back-link" routerLink="/register">Crear cuenta</a>
+      <a class="back-link" routerLink="/">Volver a explorar Ica <span aria-hidden="true">↗</span></a>
+    </nav>
   </section>
 </main>

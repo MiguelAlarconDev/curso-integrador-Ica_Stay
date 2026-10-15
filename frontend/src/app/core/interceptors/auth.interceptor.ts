@@ -9,7 +9,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const url = new URL(request.url, globalThis.location.origin);
   const apiPath = `${base.pathname.replace(/\/$/, '')}/api/`;
   if (url.origin !== base.origin || !url.pathname.startsWith(apiPath)
-    || url.pathname.replace(/\/$/, '') === `${apiPath}v1/auth/login`) return next(request);
+    || ['login', 'register'].some(action => url.pathname.replace(/\/$/, '') === `${apiPath}v1/auth/${action}`)) return next(request);
   const auth = inject(AuthService);
   const token = auth.token();
   if (!token) return next(request);

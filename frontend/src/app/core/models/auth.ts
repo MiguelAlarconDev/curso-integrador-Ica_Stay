@@ -2,6 +2,8 @@ export type AuthRole = 'USER' | 'HOTEL_ADMIN' | 'SUPER_ADMIN';
 
 export interface LoginRequest { email: string; password: string; }
 export interface LoginResponse { token: string; tokenType: 'Bearer'; }
+export interface RegisterRequest { name: string; email: string; password: string; }
+export interface RegisterResponse { id: string; name: string; email: string; role: 'USER'; }
 export interface JwtClaims {
   sub: string;
   userId: string;

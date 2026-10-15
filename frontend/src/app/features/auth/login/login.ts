@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
@@ -12,6 +12,7 @@ import { SiteHeader } from '../../../shared/site-header/site-header';
   templateUrl: './login.html', styleUrl: './login.css', changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Login {
+  protected readonly registered = inject(ActivatedRoute).snapshot.queryParamMap.get('registered') === '1';
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);

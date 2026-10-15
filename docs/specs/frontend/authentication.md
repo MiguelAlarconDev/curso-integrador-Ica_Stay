@@ -151,16 +151,7 @@ El prefijo `ROLE_` es utilizado internamente por Spring Security y no forma part
 
 ## Registro
 
-El backend no implementa actualmente un endpoint de registro.
-
-Por tanto, en esta iteración:
-
-- no crear `/register`;
-- no crear `/signup`;
-- no crear formulario de registro;
-- no simular registro desde Angular.
-
-El registro podrá implementarse en una iteración posterior si se añade el contrato correspondiente al backend.
+Actualización 2026-10-15: el backend implementa `POST /api/v1/auth/register` y se incorpora la ruta pública `/register`. El contrato, las validaciones y los estados están definidos en [Registro público de usuarios](../../features/user-registration.md). El registro no inicia sesión: tras 201 redirige a `/login` con confirmación informativa. Esta ampliación reemplaza la exclusión de registro de la iteración inicial descrita más abajo; no agrega refresh token ni recuperación de contraseña.
 
 ---
 

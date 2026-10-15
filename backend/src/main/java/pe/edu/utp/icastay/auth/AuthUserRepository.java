@@ -7,4 +7,6 @@ import pe.edu.utp.icastay.user.UserEntity;
 
 interface AuthUserRepository extends JpaRepository<UserEntity, UUID> {
     Optional<UserEntity> findByEmailAndStatus(String email, String status);
+
+    boolean existsByEmail(String email);
 }

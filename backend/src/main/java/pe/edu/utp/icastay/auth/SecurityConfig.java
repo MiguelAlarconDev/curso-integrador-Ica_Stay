@@ -1,5 +1,6 @@
 package pe.edu.utp.icastay.auth;
 
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +38,10 @@ public class SecurityConfig {
                                 response.sendError(HttpServletResponse.SC_FORBIDDEN)))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Preserve the original status when the container dispatches to /error.
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/hotels", "/api/v1/hotels/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/reservations").hasRole("USER")

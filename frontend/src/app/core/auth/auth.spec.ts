@@ -102,6 +102,17 @@ describe('Authentication integration', () => {
     request.flush({}, { status: 401, statusText: 'Unauthorized' });
     expect(auth.token()).toBe(current);
   });
+  it.each([201, 401, 409])('registration response %s leaves an existing session unchanged', status => {
+    const auth = restore(); const current = auth.token();
+    auth.register({ name: 'Test', email: 'new@example.test', password: 'test-only' })
+      .subscribe({ error: () => {} });
+    const request = http.expectOne(`${api}/api/v1/auth/register`);
+    expect(request.request.headers.has('Authorization')).toBe(false);
+    request.flush({ id: 'test-id', name: 'Test', email: 'new@example.test', role: 'USER' },
+      { status, statusText: status === 201 ? 'Created' : 'Rejected' });
+    expect(auth.token()).toBe(current);
+    expect(sessionStorage.getItem(AUTH_STORAGE_KEY)).toBe(current);
+  });
   it('does not attach a header without a session', () => {
     TestBed.inject(HttpClient).get(`${api}/api/v1/hotels`).subscribe();
     const request = http.expectOne(`${api}/api/v1/hotels`);

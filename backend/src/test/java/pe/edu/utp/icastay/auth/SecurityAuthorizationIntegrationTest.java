@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.UUID;
@@ -37,6 +38,9 @@ class SecurityAuthorizationIntegrationTest {
     @Autowired
     private JwtTokenService jwtTokenService;
 
+    @Autowired
+    private AuthUserRepository users;
+
     @BeforeEach
     void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(context)
@@ -48,6 +52,42 @@ class SecurityAuthorizationIntegrationTest {
     void endpointPublicoHotelesEsAccesibleSinJwt() throws Exception {
         mvc.perform(get("/api/v1/hotels"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void registroEsPublicoYPermiteLoginPosterior() throws Exception {
+        String email = "registro-" + UUID.randomUUID() + "@icastay.com";
+        try {
+            mvc.perform(post("/api/v1/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                      "name": " Usuario de Prueba ",
+                                      "email": "%s",
+                                      "password": "ClaveSegura123!"
+                                    }
+                                    """.formatted(email.toUpperCase())))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.id").isNotEmpty())
+                    .andExpect(jsonPath("$.name").value("Usuario de Prueba"))
+                    .andExpect(jsonPath("$.email").value(email))
+                    .andExpect(jsonPath("$.role").value("USER"))
+                    .andExpect(jsonPath("$.token").doesNotExist());
+
+            mvc.perform(post("/api/v1/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                      "email": "%s",
+                                      "password": "ClaveSegura123!"
+                                    }
+                                    """.formatted(email)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.token").isNotEmpty())
+                    .andExpect(jsonPath("$.tokenType").value("Bearer"));
+        } finally {
+            users.findByEmailAndStatus(email, "ACTIVE").ifPresent(users::delete);
+        }
     }
 
     @Test

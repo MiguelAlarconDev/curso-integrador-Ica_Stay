@@ -1,5 +1,11 @@
 # Ica Stay — Autenticación frontend
 
+> Actualización del incremento 4.1: el login de HOTEL_ADMIN ahora conduce a
+> `/admin/hotel`; USER y SUPER_ADMIN mantienen `/`. El panel reutiliza authGuard
+> y AuthService. Ver [spec del layout administrativo](hotel-admin.md).
+> Las restricciones históricas de este documento sobre no crear paneles
+> corresponden únicamente a la primera iteración de autenticación.
+
 ## Estado
 
 Acordado

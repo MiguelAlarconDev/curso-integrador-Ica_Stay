@@ -16,13 +16,39 @@ La utilidad JWT comprueba estructura, Base64URL, claims, rol y expiración; no v
 
 El interceptor funcional agrega Bearer solo al origen y prefijo `/api/` de la API configurada, excluyendo login, registro, archivos estáticos y otros dominios. No usa `withCredentials`. Un 401 de login o registro no elimina una sesión previa, un 401 de una petición antigua no elimina una sesión nueva y un 403 conserva la sesión.
 
-`authGuard` está disponible para futuras rutas con `canActivate: [authGuard]` y `data: { roles: ['USER'] }` opcional. Sin sesión devuelve `/login`; con rol insuficiente devuelve `/` sin cerrar sesión. Home y Login siguen siendo públicas y no se añaden pantallas protegidas ficticias.
+`authGuard` protege las rutas administrativas con `canActivate` y `canActivateChild`, y admite `data.roles`. Sin sesión devuelve `/login`; con rol insuficiente devuelve `/` sin cerrar sesión. Home, Login y Registro siguen siendo públicas.
 
-El Login utiliza la paleta global y una composición editorial con fotografía local. Tras autenticarse navega a `/`; el Header muestra el email y permite cerrar sesión. Los enlaces del Header vuelven a las secciones de Home desde Login.
+El Login utiliza la paleta global y una composición editorial con fotografía local. Tras autenticarse, HOTEL_ADMIN navega a `/admin/hotel`; USER y SUPER_ADMIN a `/`. El Header muestra el email, permite cerrar sesión y ofrece «Mi panel» a HOTEL_ADMIN. Los enlaces del Header vuelven a las secciones de Home desde Login.
 
 Se comprobó el Login en Chrome a 320, 375, 768, 1024 y 1440 px, sin desbordamiento horizontal, con imagen local cargada, validación de campos vacíos y movimiento reducido respetado. El mínimo global del body se ajustó para admitir el ancho útil cuando hay barra de desplazamiento vertical. `frontend/.gitignore` exceptúa los DTO TypeScript de la regla global `models/`, que los ocultaba junto con los modelos descargables.
 
 Validación: `npm run build` y `npm test -- --watch=false`. Los JWT de pruebas son fixtures sin firma criptográfica usados exclusivamente en unit tests con HTTP simulado. No crean reservas. Para la verificación manual real, iniciar sesión con un usuario existente, recargar, comprobar Header y logout. Con un usuario `USER`, una solicitud de diagnóstico a `POST /api/v1/reservations` con `{}` debe superar autenticación y devolver 400 sin crear reserva; hoteles es público y no demuestra por sí solo la aceptación del token. No se dispone de credenciales de prueba en esta implementación.
+
+## Panel HOTEL_ADMIN — incremento 4.1
+
+Layout padre lazy con router-outlet y cuatro rutas hijas:
+`/admin/hotel` (Resumen), `/admin/hotel/profile` (Mi hotel),
+`/admin/hotel/rooms` (Habitaciones), `/admin/hotel/reservations` (Reservas).
+Exclusivo de HOTEL_ADMIN mediante el guard existente en padre e hijas.
+
+`features/admin/hotel/` contiene layout, rutas, resumen y un componente informativo
+compartido para las tres secciones futuras. Navegación lateral en escritorio y
+compacta en móvil; título, correo, rol, foco visible y ruta activa accesible.
+No duplica el header público. Logout usa AuthService y redirige a `/login`;
+la pérdida de sesión por expiración también abandona el panel.
+
+Sin HTTP administrativo, formularios ni estadísticas: todos los indicadores
+muestran «Próximamente». Perfil, habitaciones y reservas se conectarán en 4.2,
+4.3 y 4.4. Contrato y criterios en [la spec del panel](../docs/specs/frontend/hotel-admin.md).
+
+Validación de este incremento: 85 pruebas exitosas con `npm test -- --watch=false`
+y build correcto con `npm run build`. Para revisión manual, iniciar sesión con
+un HOTEL_ADMIN existente, recorrer las cuatro rutas, regresar al catálogo y usar
+«Mi panel», luego cerrar sesión. Repetir el acceso directo sin sesión y con USER
+o SUPER_ADMIN para verificar las redirecciones. Este incremento no crea cuentas.
+Chrome headless comprobó las cuatro secciones a 320, 375, 768 y 1440 px, sin
+desbordamiento horizontal y con movimiento reducido; sesión sintética local,
+sin llamadas al backend. Se revisaron capturas móvil y escritorio.
 
 ## Integración inicial con API
 

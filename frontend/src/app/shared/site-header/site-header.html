@@ -9,6 +9,9 @@
   <div class="session">
     @if (auth.session(); as session) {
       <span class="session-email">{{ session.email }}</span>
+      @if (session.role === 'HOTEL_ADMIN') {
+        <a routerLink="/admin/hotel">Mi panel</a>
+      }
       <button type="button" (click)="auth.logout()">Cerrar sesión</button>
     } @else {
       <a routerLink="/login">Iniciar sesión</a>

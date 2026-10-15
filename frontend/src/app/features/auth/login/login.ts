@@ -32,7 +32,10 @@ export class Login {
     this.auth.login(this.form.getRawValue()).pipe(takeUntilDestroyed(this.destroyRef),
       finalize(() => this.sending.set(false)),
     ).subscribe({
-      next: () => { this.form.controls.password.reset(); void this.router.navigateByUrl('/'); },
+      next: () => {
+        this.form.controls.password.reset();
+        void this.router.navigateByUrl(this.auth.hasRole('HOTEL_ADMIN') ? '/admin/hotel' : '/');
+      },
       error: (error: unknown) => {
         this.form.controls.password.reset();
         this.error.set(error instanceof HttpErrorResponse && error.status === 401

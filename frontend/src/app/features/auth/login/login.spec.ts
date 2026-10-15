@@ -41,16 +41,16 @@ describe('Login', () => {
     expect(page.textContent).not.toContain('PRIVATE SERVER DETAIL');
     expect(page.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(false);
   });
-  it('navigates home after success and updates the header; logout removes it', () => {
+  it.each(['USER', 'HOTEL_ADMIN', 'SUPER_ADMIN'])('redirects %s after success and updates the header; logout removes it', role => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     const { fixture, page, submit, fill } = setup();
     fill('email', 'user@example.com'); fill('password', 'test-only'); submit();
     const now = Math.floor(Date.now() / 1000);
     const encode = (value: unknown) => btoa(JSON.stringify(value)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-    const token = `${encode({ alg: 'HS256' })}.${encode({ sub: 'user@example.com', userId: 'test-user', role: 'USER', iat: now, exp: now + 3600 })}.c2ln`;
+    const token = `${encode({ alg: 'HS256' })}.${encode({ sub: 'user@example.com', userId: 'test-user', role, iat: now, exp: now + 3600 })}.c2ln`;
     TestBed.inject(HttpTestingController).expectOne(`${TestBed.inject(API_BASE_URL)}/api/v1/auth/login`).flush({ token, tokenType: 'Bearer' });
     fixture.detectChanges();
-    expect(navigate).toHaveBeenCalledWith('/');
+    expect(navigate).toHaveBeenCalledWith(role === 'HOTEL_ADMIN' ? '/admin/hotel' : '/');
     expect(page.querySelector('header')!.textContent).toContain('user@example.com');
     page.querySelector<HTMLButtonElement>('.session button')!.click(); fixture.detectChanges();
     expect(page.querySelector('header')!.textContent).not.toContain('user@example.com');

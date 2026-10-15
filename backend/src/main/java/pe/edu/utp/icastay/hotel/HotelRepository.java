@@ -10,4 +10,6 @@ interface HotelRepository extends JpaRepository<HotelEntity, UUID> {
     Page<HotelEntity> findByStatus(String status, Pageable pageable);
 
     Optional<HotelEntity> findByIdAndStatus(UUID id, String status);
+
+    Optional<HotelEntity> findByAdminUserId(UUID adminUserId);
 }

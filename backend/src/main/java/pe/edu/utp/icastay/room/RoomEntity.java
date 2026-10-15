@@ -43,6 +43,25 @@ public class RoomEntity {
     protected RoomEntity() {
     }
 
+    static RoomEntity create(UUID hotelId) {
+        RoomEntity room = new RoomEntity();
+        room.hotelId = hotelId;
+        room.status = "ACTIVE";
+        return room;
+    }
+
+    void updateDetails(String number, String description, int capacity, BigDecimal pricePerNight, String currency) {
+        this.number = number;
+        this.description = description;
+        this.capacity = capacity;
+        this.pricePerNight = pricePerNight;
+        this.currency = currency;
+    }
+
+    void changeStatus(String status) { this.status = status; }
+
+    public String getStatus() { return status; }
+
     public UUID getId() { return id; }
     public UUID getHotelId() { return hotelId; }
     public String getNumber() { return number; }

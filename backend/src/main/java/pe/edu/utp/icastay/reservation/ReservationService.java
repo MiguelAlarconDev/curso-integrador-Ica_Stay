@@ -3,6 +3,9 @@ package pe.edu.utp.icastay.reservation;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Set;
+import org.springframework.data.domain.PageRequest;
 import java.util.List;
 import java.util.UUID;
 import java.time.temporal.ChronoUnit;
@@ -91,6 +94,27 @@ public class ReservationService {
                 room.getCurrency());
 
         return toView(reservations.save(reservation));
+    }
+
+    @Transactional(readOnly = true)
+    public AdminReservationPage listAssigned(UUID adminId, int page, int size, String status,
+            LocalDate from, LocalDate to) {
+        if (page < 0 || size < 1 || size > 100 || (long) page * size > Integer.MAX_VALUE
+                || (status != null && !Set.of("PENDING_PAYMENT", "CONFIRMED", "CANCELLED", "EXPIRED").contains(status))
+                || (from != null && to != null && from.isAfter(to))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "filtros de reservas invalidos");
+        }
+        UUID hotelId = hotels.findAssigned(adminId).id();
+        var result = reservations.findAdminPage(hotelId, status, from, to, PageRequest.of(page, size));
+        return new AdminReservationPage(result.getContent(), result.getNumber(), result.getSize(),
+                result.getTotalElements(), result.getTotalPages());
+    }
+
+    @Transactional(readOnly = true)
+    public AdminReservationView findAssigned(UUID adminId, UUID reservationId) {
+        UUID hotelId = hotels.findAssigned(adminId).id();
+        return reservations.findAdminDetail(hotelId, reservationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     private boolean hasBlockingOverlap(CreateReservationRequest request, Instant now) {

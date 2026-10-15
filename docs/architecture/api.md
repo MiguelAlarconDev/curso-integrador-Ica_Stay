@@ -1,5 +1,48 @@
 # Contrato mínimo de API — propuesta v0
 
+El contrato implementado de gestión del hotel propio se documenta en
+[Gestión hotelera — incrementos 1, 2 y 3](../features/hotel-management.md):
+`GET /api/v1/admin/hotel` y `PUT /api/v1/admin/hotel`, exclusivos de `HOTEL_ADMIN`.
+También están implementados los siguientes endpoints de habitaciones, exclusivos
+de `HOTEL_ADMIN` y limitados al hotel de su identidad:
+
+| Método | Ruta | Resultado |
+|---|---|---|
+| GET | `/api/v1/admin/hotel/rooms` | 200, lista propia (activas e inactivas) |
+| GET | `/api/v1/admin/hotel/rooms/{id}` | 200, detalle propio |
+| POST | `/api/v1/admin/hotel/rooms` | 201 + Location |
+| PUT | `/api/v1/admin/hotel/rooms/{id}` | 200, datos actualizados |
+| PATCH | `/api/v1/admin/hotel/rooms/{id}/status` | 200, estado actualizado |
+
+POST/PUT: `{"number":"201","description":null,"capacity":2,"pricePerNight":180.50,"currency":"PEN"}`.
+PATCH: `{"status":"INACTIVE"}` (también admite ACTIVE).
+Respuesta: campos anteriores más `id` y `status`; importes como números JSON,
+conforme al contrato implementado. Errores: 400 validación, 401 sin JWT válido,
+403 rol no autorizado, 404 recurso ajeno/inexistente o sin hotel y 409 número
+duplicado por hotel. Validaciones, ejemplos completos y concurrencia en la spec enlazada.
+
+Consulta administrativa de reservas implementada (solo `HOTEL_ADMIN`):
+
+- `GET /api/v1/admin/hotel/reservations`: `page=0`, `size=20` (máximo 100),
+  `status`, `from`, `to`; orden `createdAt DESC, id DESC` y respuesta
+  `{content, page, size, totalElements, totalPages}`.
+- `GET /api/v1/admin/hotel/reservations/{id}`: detalle del hotel propio.
+- Fechas inclusivas YYYY-MM-DD: solapamiento `checkOut > from AND checkIn <= to`,
+  omitiendo cada condición cuyo extremo no se proporcione. Fechas inválidas,
+  rango invertido, estado desconocido o paginación inválida devuelven 400.
+- DTO: `id`, `checkIn`, `checkOut`, `guests`, `status`, `expiresAt`,
+  `nightlyPriceSnapshot`, `totalAmount`, `currency`, `createdAt`, `roomId`,
+  `roomNumber`, `guestUserId`, `guestName`, `guestEmail`. Sin credenciales ni pagos.
+- 200 éxito; 401 sin JWT; 403 otros roles; 404 sin hotel o detalle ajeno/inexistente.
+  Pertenencia y paginación resueltas en base de datos. Incluye habitaciones inactivas.
+- Estado persistido: una pendiente vencida sigue apareciendo como PENDING_PAYMENT;
+  no hay expiración automática persistida ni cambios al consultar.
+  Ejemplos JSON completos en la spec enlazada.
+
+La tabla siguiente conserva la propuesta original del MVP, no el inventario de
+endpoints implementados. Reservas actualmente retiene 15 minutos y devuelve 404
+para habitaciones inactivas; esas diferencias con la propuesta siguen pendientes.
+
 **Estado:** diseño para MVP; no implementado.  
 **Actualizado:** 2026-09-28.  
 Base pública: `/api/v1`. JSON, fechas `YYYY-MM-DD`, instantes ISO 8601 en UTC, importes decimales serializados como cadenas. Endpoints autenticados requieren `Authorization: Bearer <token>`.

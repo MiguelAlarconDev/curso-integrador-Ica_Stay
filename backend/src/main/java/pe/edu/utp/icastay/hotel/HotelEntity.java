@@ -41,4 +41,11 @@ public class HotelEntity {
     public String getDescription() { return description; }
     public String getAddress() { return address; }
     public String getCity() { return city; }
+
+    void updateDetails(String name, String description, String address, String city) {
+        this.name = name;
+        this.description = description;
+        this.address = address;
+        this.city = city;
+    }
 }

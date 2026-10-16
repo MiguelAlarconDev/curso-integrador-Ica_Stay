@@ -2,6 +2,12 @@
 
 ## Catálogo público implementado — 5.1
 
+Creación 5.3: POST `/api/v1/reservations`, solo USER. Payload inalterado
+`{roomId,checkIn,checkOut,guests}`; identidad del JWT y cálculo/snapshot del servidor.
+Se rechaza checkIn anterior a hoy UTC (400). Conserva bloqueo pesimista y retención
+15 minutos. 201 devuelve ReservationView con PENDING_PAYMENT, no pago confirmado.
+No hay idempotencia: un fallo de transporte puede dejar resultado incierto.
+
 Disponibilidad 5.2: GET `/api/v1/hotels/{hotelId}/rooms` admite opcionalmente
 `checkIn=YYYY-MM-DD&checkOut=YYYY-MM-DD&guests=2`. Si aparece alguno, son obligatorios
 los tres; entrada desde hoy UTC, salida posterior y huéspedes enteros positivos.

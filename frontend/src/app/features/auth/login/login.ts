@@ -6,12 +6,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { SiteHeader } from '../../../shared/site-header/site-header';
+import { bookingReturn } from '../../../core/auth/booking-return';
 
 @Component({
   selector: 'app-login', imports: [ReactiveFormsModule, RouterLink, SiteHeader],
   templateUrl: './login.html', styleUrl: './login.css', changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Login {
+  private readonly returnUrl = bookingReturn(inject(ActivatedRoute).snapshot.queryParamMap.get('returnUrl'));
   protected readonly registered = inject(ActivatedRoute).snapshot.queryParamMap.get('registered') === '1';
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
@@ -34,7 +36,8 @@ export class Login {
     ).subscribe({
       next: () => {
         this.form.controls.password.reset();
-        void this.router.navigateByUrl(this.auth.hasRole('HOTEL_ADMIN') ? '/admin/hotel' : '/');
+        void this.router.navigateByUrl(this.auth.hasRole('HOTEL_ADMIN') ? '/admin/hotel'
+          : this.auth.hasRole('USER') && this.returnUrl ? this.returnUrl : '/');
       },
       error: (error: unknown) => {
         this.form.controls.password.reset();

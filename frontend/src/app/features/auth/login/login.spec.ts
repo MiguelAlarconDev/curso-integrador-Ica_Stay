@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter, Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { vi } from 'vitest';
 import { Login } from './login';
 import { API_BASE_URL } from '../../../core/api.config';
@@ -22,6 +22,21 @@ describe('Login', () => {
     };
     return { fixture, page, submit, fill };
   }
+  it.each([
+    ['USER', '/hotels/id?checkIn=2030-01-01&checkOut=2030-01-03&guests=2', '/hotels/id?checkIn=2030-01-01&checkOut=2030-01-03&guests=2'],
+    ['USER', 'https://evil.test', '/'],
+    ['HOTEL_ADMIN', '/hotels/id', '/admin/hotel'],
+    ['SUPER_ADMIN', '/hotels/id', '/'],
+  ])('uses only safe USER return (%s, %s)', (role, returnUrl, expected) => {
+    TestBed.overrideProvider(ActivatedRoute, { useValue: { snapshot: { queryParamMap: convertToParamMap({ returnUrl }) } } });
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    const { submit, fill } = setup(); fill('email', 'user@example.test'); fill('password', 'test-only'); submit();
+    const now = Math.floor(Date.now() / 1000);
+    const encode = (value: unknown) => btoa(JSON.stringify(value)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+    const token = `${encode({ alg: 'HS256' })}.${encode({ sub: 'user@example.test', userId: 'test-user', role, iat: now, exp: now + 3600 })}.c2ln`;
+    TestBed.inject(HttpTestingController).expectOne(`${TestBed.inject(API_BASE_URL)}/api/v1/auth/login`).flush({ token, tokenType: 'Bearer' });
+    expect(navigate).toHaveBeenCalledWith(expected);
+  });
   it('validates missing values and invalid email without sending', () => {
     const { page, submit, fill } = setup(); submit();
     expect(page.textContent).toContain('Ingresa un correo electrónico válido');

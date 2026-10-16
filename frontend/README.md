@@ -1,5 +1,18 @@
 # Frontend
 
+## Reserva pendiente — incremento 5.3
+
+Seleccionar una habitación abre un resumen con importe estimado y confirmación
+explícita. Solo USER puede enviar POST `/api/v1/reservations`, únicamente roomId,
+checkIn, checkOut y guests. La respuesta real muestra PENDING_PAYMENT, importe y
+expiresAt UTC; no confirma pago. Retención de 15 minutos sin cambios.
+Visitantes van a login con retorno limitado a detalle de hotel y criterios públicos;
+al volver se reconsulta y se exige seleccionar/confirmar de nuevo. No hay JWT en URL.
+Errores 400/401/403/404/409 tienen mensajes propios. Red/5xx se consideran resultado
+incierto, sin reenvío automático. Sin pagos, historial ni cancelación.
+Validación manual: USER de desarrollo, consulta/selección/confirmación, doble clic,
+retorno de login, conflicto y expiración de sesión. Confirmar sí crea una reserva.
+
 ## Disponibilidad — incremento 5.2
 
 El detalle `/hotels/:id` incorpora consulta pública de habitaciones por entrada,

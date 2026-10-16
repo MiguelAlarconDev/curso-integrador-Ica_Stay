@@ -61,6 +61,9 @@ public class ReservationService {
         if (request.guests() <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "guests debe ser mayor que 0");
         }
+        if (request.checkIn().isBefore(LocalDate.ofInstant(clock.instant(), java.time.ZoneOffset.UTC))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "checkIn no puede ser anterior a hoy UTC");
+        }
         if (!users.existsByIdAndStatus(guestUserId, ACTIVE_STATUS)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }

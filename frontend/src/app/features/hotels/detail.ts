@@ -6,9 +6,10 @@ import { HotelService } from '../../core/services/hotel.service';
 import { HotelView } from '../../core/models/hotel';
 import { SiteHeader } from '../../shared/site-header/site-header';
 import { SiteFooter } from '../../shared/site-footer/site-footer';
+import { Availability } from './availability';
 
 @Component({
-  selector: 'app-hotel-detail', imports: [RouterLink, SiteHeader, SiteFooter],
+  selector: 'app-hotel-detail', imports: [RouterLink, SiteHeader, SiteFooter, Availability],
   templateUrl: './detail.html', styleUrl: './hotels.css', changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HotelDetail implements OnInit {

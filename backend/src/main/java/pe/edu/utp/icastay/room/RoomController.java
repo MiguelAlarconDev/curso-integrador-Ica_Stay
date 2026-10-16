@@ -19,6 +19,20 @@ public class RoomController {
     }
 
     @GetMapping
+    public List<RoomView> search(@PathVariable UUID hotelId,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String checkIn,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String checkOut,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String guests) {
+        if (checkIn == null && checkOut == null && guests == null) return listByHotel(hotelId);
+        Integer count = null;
+        if (guests != null) {
+            try { count = Integer.valueOf(guests); }
+            catch (NumberFormatException exception) { throw new ResponseStatusException(HttpStatus.BAD_REQUEST); }
+        }
+        return roomService.available(hotelId, checkIn, checkOut, count)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
     public List<RoomView> listByHotel(@PathVariable UUID hotelId) {
         return roomService.listVisibleByActiveHotel(hotelId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));

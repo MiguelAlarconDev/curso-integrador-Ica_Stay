@@ -15,14 +15,37 @@ import pe.edu.utp.icastay.hotel.HotelService;
 
 @Service
 public class RoomService {
+    private final java.time.Clock clock;
     private static final String ACTIVE_STATUS = "ACTIVE";
 
     private final RoomRepository rooms;
     private final HotelService hotels;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public RoomService(RoomRepository rooms, HotelService hotels) {
+        this(rooms, hotels, java.time.Clock.systemUTC());
+    }
+
+    RoomService(RoomRepository rooms, HotelService hotels, java.time.Clock clock) {
+        this.clock = clock;
         this.rooms = rooms;
         this.hotels = hotels;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<List<RoomView>> available(UUID hotelId, String checkIn, String checkOut, Integer guests) {
+        if (checkIn == null && checkOut == null && guests == null) return listVisibleByActiveHotel(hotelId);
+        if (checkIn == null || checkOut == null || guests == null || guests <= 0) throw invalid("indique fechas y huespedes positivos");
+        java.time.LocalDate start, end;
+        java.time.Instant now = clock.instant();
+        try {
+            if (!checkIn.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}") || !checkOut.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) throw new IllegalArgumentException();
+            start = java.time.LocalDate.parse(checkIn);
+            end = java.time.LocalDate.parse(checkOut);
+        } catch (java.time.DateTimeException | IllegalArgumentException exception) { throw invalid("fechas invalidas"); }
+        if (start.isBefore(now.atZone(java.time.ZoneOffset.UTC).toLocalDate()) || !end.isAfter(start)) throw invalid("rango de fechas invalido");
+        if (hotels.findActive(hotelId).isEmpty()) return Optional.empty();
+        return Optional.of(rooms.findAvailable(hotelId, start, end, guests, now).stream().map(this::toView).toList());
     }
 
     public Optional<List<RoomView>> listVisibleByActiveHotel(UUID hotelId) {

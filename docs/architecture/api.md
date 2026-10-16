@@ -2,6 +2,16 @@
 
 ## Catálogo público implementado — 5.1
 
+Disponibilidad 5.2: GET `/api/v1/hotels/{hotelId}/rooms` admite opcionalmente
+`checkIn=YYYY-MM-DD&checkOut=YYYY-MM-DD&guests=2`. Si aparece alguno, son obligatorios
+los tres; entrada desde hoy UTC, salida posterior y huéspedes enteros positivos.
+400 para parámetros inválidos/incompletos; 404 para hotel inexistente/inactivo.
+Sin parámetros conserva la lista pública original. RoomView sin cambios.
+Con filtros exige habitación ACTIVE/capacidad suficiente y excluye solapamientos
+CONFIRMED o PENDING_PAYMENT con expiresAt > now. Salida exclusiva; expiración
+exactamente igual a now no bloquea. Solo consulta, no retiene habitaciones.
+Ver [spec 5.2](../specs/frontend/user-room-availability.md).
+
 GET `/api/v1/hotels` admite `name` parcial literal y `city` exacta, sin distinguir
 mayúsculas, combinados con AND. Se recortan espacios; vacíos se omiten. Máximos
 180/120 caracteres. Solo ACTIVE, orden name ASC/id ASC, page desde 0 y size 1–100

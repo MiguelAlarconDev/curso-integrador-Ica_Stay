@@ -1,5 +1,16 @@
 # Frontend
 
+## Disponibilidad — incremento 5.2
+
+El detalle `/hotels/:id` incorpora consulta pública de habitaciones por entrada,
+salida y huéspedes. Valida entrada desde hoy UTC, salida posterior y entero positivo.
+RoomService envía los tres parámetros a GET `/api/v1/hotels/{id}/rooms` y presenta
+RoomView sin campos inventados. Editar cancela peticiones y retira resultados;
+carga, vacío, errores y reintento son independientes del hotel. Consultar no reserva.
+Se conserva el retorno al catálogo. Retención backend existente: 15 minutos.
+Revisión manual: hotel activo, fechas futuras y capacidad válida; probar vacío,
+edición durante carga, error/reintento y navegación de retorno. Sin pagos ni historial.
+
 ## Catálogo público — incremento 5.1
 
 `/hotels` busca por nombre parcial y ciudad exacta, con 20 resultados por página.

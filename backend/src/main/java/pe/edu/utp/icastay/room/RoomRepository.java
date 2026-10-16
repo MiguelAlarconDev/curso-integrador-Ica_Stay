@@ -9,6 +9,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 interface RoomRepository extends JpaRepository<RoomEntity, UUID> {
+    @Query("""
+            select room from RoomEntity room
+            where room.hotelId = :hotelId and room.status = 'ACTIVE' and room.capacity >= :guests
+            and not exists (select r.id from ReservationEntity r where r.roomId = room.id
+                and r.checkIn < :checkOut and r.checkOut > :checkIn
+                and (r.status = 'CONFIRMED' or (r.status = 'PENDING_PAYMENT' and r.expiresAt > :now)))
+            order by room.number asc, room.id asc
+            """)
+    List<RoomEntity> findAvailable(UUID hotelId, java.time.LocalDate checkIn,
+            java.time.LocalDate checkOut, int guests, java.time.Instant now);
+
     List<RoomEntity> findByHotelIdAndStatusOrderByNumberAscIdAsc(UUID hotelId, String status);
 
     List<RoomEntity> findByHotelIdOrderByNumberAscIdAsc(UUID hotelId);

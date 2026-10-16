@@ -22,13 +22,29 @@ public class HotelService {
     }
 
     public HotelPage listActive(int page, int size) {
-        Page<HotelEntity> result = hotels.findByStatus(ACTIVE_STATUS,
-                PageRequest.of(page, size, Sort.by("name").ascending().and(Sort.by("id"))));
+        return listActive(page, size, null, null);
+    }
+
+    public HotelPage listActive(int page, int size, String name, String city) {
+        if (page < 0 || size < 1 || size > 100 || (long) page * size > Integer.MAX_VALUE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "paginacion invalida");
+        }
+        name = searchText(name, 180);
+        city = searchText(city, 120);
+        var pageable = PageRequest.of(page, size, Sort.by("name").ascending().and(Sort.by("id")));
+        Page<HotelEntity> result = name.isEmpty() && city.isEmpty()
+                ? hotels.findByStatus(ACTIVE_STATUS, pageable) : hotels.searchActive(name, city, pageable);
         List<HotelView> content = result.getContent().stream()
                 .map(this::toView)
                 .toList();
         return new HotelPage(content, result.getNumber(), result.getSize(),
                 result.getTotalElements(), result.getTotalPages());
+    }
+
+    private String searchText(String value, int max) {
+        String normalized = value == null ? "" : value.strip();
+        if (normalized.length() > max) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "filtro demasiado largo");
+        return normalized;
     }
 
     public Optional<HotelView> findActive(UUID id) {

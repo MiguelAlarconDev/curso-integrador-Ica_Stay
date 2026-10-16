@@ -1,0 +1,12 @@
+<app-site-header /><main class="container section" id="contenido" tabindex="-1">
+  <a class="text-link back" routerLink="/hotels" [queryParams]="route.snapshot.queryParams">Volver al catálogo</a>
+  <section [attr.aria-busy]="loading()" aria-label="Detalle del hotel">
+    @if (loading()) { <h1>Tu próxima estancia</h1><p role="status">Cargando hotel…</p> }
+    @else if (error()) { <h1>Información del hotel</h1><p role="alert">{{ error() }}</p><button class="btn btn-outline retry" (click)="retry()">Reintentar</button> }
+    @else if (hotel(); as hotel) {
+      <span class="eyebrow">{{ hotel.city }}</span><h1>{{ hotel.name }}</h1>
+      <p class="description">{{ hotel.description || 'Sin descripción disponible.' }}</p>
+      <dl><dt>Dirección</dt><dd>{{ hotel.address }}</dd><dt>Ciudad</dt><dd>{{ hotel.city }}</dd></dl>
+    }
+  </section>
+</main><app-site-footer />

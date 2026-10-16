@@ -21,12 +21,14 @@ public class HotelController {
     @GetMapping
     public HotelPage list(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        if (page < 0 || size < 1 || size > 100) {
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String city) {
+        if (page < 0 || size < 1 || size > 100 || (long) page * size > Integer.MAX_VALUE) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "page debe ser >= 0 y size debe estar entre 1 y 100");
         }
-        return hotelService.listActive(page, size);
+        return hotelService.listActive(page, size, name, city);
     }
 
     @GetMapping("/{id}")

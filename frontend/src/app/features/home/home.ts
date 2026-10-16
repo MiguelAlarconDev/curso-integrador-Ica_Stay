@@ -2,13 +2,14 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HotelService } from '../../core/services/hotel.service';
 import { HotelView } from '../../core/models/hotel';
+import { RouterLink } from '@angular/router';
 import { SiteHeader } from '../../shared/site-header/site-header';
 import { SiteFooter } from '../../shared/site-footer/site-footer';
 import { SearchBar } from '../../shared/search-bar/search-bar';
 
 @Component({
   selector: 'app-home',
-  imports: [SiteHeader, SiteFooter, SearchBar],
+  imports: [SiteHeader, SiteFooter, SearchBar, RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

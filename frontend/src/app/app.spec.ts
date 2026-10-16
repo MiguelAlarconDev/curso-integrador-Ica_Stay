@@ -50,11 +50,11 @@ describe('App', () => {
     requestHotels().flush({ content: [], page: 0, size: 20, totalElements: 0, totalPages: 0 });
     const page = harness.routeNativeElement!;
     const controls = page.querySelectorAll('form input, form select');
-    expect(controls.length).toBe(4);
+    expect(controls.length).toBe(2);
     controls.forEach((control) => {
       expect(page.querySelector(`label[for="${control.id}"]`)?.textContent?.trim()).toBeTruthy();
     });
-    expect(page.querySelector<HTMLButtonElement>('form button')?.disabled).toBe(true);
+    expect(page.querySelector<HTMLButtonElement>('form button')?.disabled).toBe(false);
     expect(page.querySelectorAll('header button:disabled').length).toBe(1);
     expect(page.querySelector('header a[href="/login"]')).not.toBeNull();
   });

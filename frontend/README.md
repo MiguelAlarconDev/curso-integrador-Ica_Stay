@@ -1,5 +1,21 @@
 # Frontend
 
+## Catálogo público — incremento 5.1
+
+`/hotels` busca por nombre parcial y ciudad exacta, con 20 resultados por página.
+`name`, `city` y `page` se conservan en la URL al paginar, abrir `/hotels/:id`
+y volver. Aplicar/limpiar reinician la página; consultas obsoletas se cancelan.
+HotelService reutiliza GET `/api/v1/hotels` y GET `/api/v1/hotels/{id}`.
+Home mantiene su composición y fotografías referenciales; incluye enlaces al
+catálogo/detalle y buscador funcional solo de nombre/ciudad. No hay disponibilidad.
+Catálogo y detalle ofrecen carga, vacío/error, reintento y mensaje específico 404.
+No requieren sesión; autenticación y administración permanecen sin cambios.
+
+Para revisión: abrir `/hotels` sin sesión, combinar filtros, paginar, consultar un
+hotel y volver; recargar y usar Atrás. Probar búsqueda vacía, ID inexistente y
+servidor detenido/reintento. Revisar móvil y teclado. Contratos y límites en
+[la spec 5.1](../docs/specs/frontend/user-hotel-catalog.md).
+
 ## Autenticación
 
 `/login` es pública y envía únicamente `{ email, password }` a `POST /api/v1/auth/login` usando `API_BASE_URL`. La respuesta real es `{ token, tokenType: "Bearer" }`. No hay refresh token ni logout de servidor.

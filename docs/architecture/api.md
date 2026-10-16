@@ -1,5 +1,17 @@
 # Contrato mínimo de API — propuesta v0
 
+## Catálogo público implementado — 5.1
+
+GET `/api/v1/hotels` admite `name` parcial literal y `city` exacta, sin distinguir
+mayúsculas, combinados con AND. Se recortan espacios; vacíos se omiten. Máximos
+180/120 caracteres. Solo ACTIVE, orden name ASC/id ASC, page desde 0 y size 1–100
+(defectos 0/20). Desplazamiento máximo Integer.MAX_VALUE. Parámetros inválidos: 400.
+Respuesta: `{content,page,size,totalElements,totalPages}`, con totales filtrados.
+GET `/api/v1/hotels/{id}` devuelve `{id,name,description,address,city}`; description
+puede ser null. Hotel inexistente/inactivo: 404. Ambas consultas son públicas.
+No hay filtro por disponibilidad ni equivalencia garantizada de tildes.
+Ver [spec del catálogo](../specs/frontend/user-hotel-catalog.md).
+
 El contrato implementado de gestión del hotel propio se documenta en
 [Gestión hotelera — incrementos 1, 2 y 3](../features/hotel-management.md):
 `GET /api/v1/admin/hotel` y `PUT /api/v1/admin/hotel`, exclusivos de `HOTEL_ADMIN`.

@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
+  { path: 'hotels', title: 'Hoteles | Ica Stay', loadComponent: () => import('./features/hotels/catalog').then(m => m.HotelCatalog) },
+  { path: 'hotels/:id', title: 'Detalle del hotel | Ica Stay', loadComponent: () => import('./features/hotels/detail').then(m => m.HotelDetail) },
   {
     path: 'admin/hotel',
     canActivate: [authGuard],

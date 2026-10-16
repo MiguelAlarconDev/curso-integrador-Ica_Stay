@@ -54,10 +54,15 @@ public class ReservationEntity {
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
+    @Column(name = "updated_at", nullable = false, insertable = false)
     private Instant updatedAt;
 
     protected ReservationEntity() {
+    }
+
+    void confirm(Instant now) {
+        status = "CONFIRMED";
+        updatedAt = now;
     }
 
     static ReservationEntity pendingPayment(

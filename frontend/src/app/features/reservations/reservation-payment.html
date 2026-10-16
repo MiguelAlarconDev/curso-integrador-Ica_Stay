@@ -1,0 +1,24 @@
+<section class="payment" aria-label="Pago simulado de la reserva" [attr.aria-busy]="busy() || !!operation()?.pending">
+  <h3>Pago de prueba</h3>
+  <p>Esta es una simulación: no se cobra dinero ni se solicitan datos de tarjeta.</p>
+  <button type="button" class="btn btn-outline pay-toggle" [disabled]="!canPay()"
+    [attr.aria-expanded]="expanded()" aria-controls="payment-actions" (click)="expanded.set(true)">Pagar (simulación)</button>
+  @if (expanded()) {
+    <div id="payment-actions" class="actions">
+      <button type="button" class="btn btn-primary approve-payment" [disabled]="!canPay()" (click)="simulate('APPROVED')">Simular pago aprobado</button>
+      <button type="button" class="btn btn-outline reject-payment" [disabled]="!canPay()" (click)="simulate('REJECTED')">Simular pago rechazado</button>
+    </div>
+  }
+  @if (busy() || operation()?.pending) { <p role="status">Procesando solicitud… No vuelvas a enviarla.</p> }
+  @if (message()) { <p role="status">{{ message() }}</p> }
+  @if (error()) { <p role="alert">{{ error() }}</p> }
+  @if (reservation().status !== 'PENDING_PAYMENT') { <p>El estado actual de la reserva no permite pagos.</p> }
+  @else if (expired()) { <p>La retención ha expirado. No se puede simular el pago.</p> }
+  @if (operation()?.needsVerification && reservation().status === 'PENDING_PAYMENT') {
+    <p>No se enviará otro pago mientras su resultado requiera verificación. Actualizar consulta únicamente el estado de la reserva.</p>
+  }
+  @if (operation()?.needsVerification || error()) {
+    <button type="button" class="btn btn-outline verify-payment" [disabled]="busy() || !!operation()?.pending"
+      (click)="refresh()">Actualizar detalle para verificar estado</button>
+  }
+</section>

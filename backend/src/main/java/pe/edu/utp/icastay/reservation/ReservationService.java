@@ -110,6 +110,32 @@ public class ReservationService {
                 result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
     }
 
+    // The caller owns the transaction that also persists the payment attempt.
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public void processPayment(UUID guestUserId, UUID reservationId, boolean approved) {
+        UUID roomId = reservations.findOwnedRoomId(reservationId, guestUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        rooms.findForPayment(roomId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        ReservationEntity reservation = reservations.findOwnedForUpdate(reservationId, guestUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Instant now = clock.instant(); // Evaluate only after both locks have been acquired.
+        if (!PENDING_PAYMENT_STATUS.equals(reservation.getStatus())
+                || reservation.getExpiresAt() == null || !reservation.getExpiresAt().isAfter(now)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "reserva no admite pagos");
+        }
+        if (approved) {
+            boolean occupied = reservations.findOverlapping(roomId, reservation.getCheckIn(), reservation.getCheckOut())
+                    .stream().filter(other -> !other.getId().equals(reservationId))
+                    .anyMatch(other -> CONFIRMED_STATUS.equals(other.getStatus())
+                            || (PENDING_PAYMENT_STATUS.equals(other.getStatus()) && other.getExpiresAt() != null
+                            && other.getExpiresAt().isAfter(now)));
+            if (occupied) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "habitacion no disponible");
+            }
+            reservation.confirm(now);
+        }
+    }
+
     @Transactional(readOnly = true)
     public UserReservationView findOwn(UUID guestUserId, UUID id) {
         Instant now = clock.instant();

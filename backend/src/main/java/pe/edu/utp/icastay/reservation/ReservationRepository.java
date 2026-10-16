@@ -12,6 +12,13 @@ import org.springframework.data.repository.query.Param;
 
 interface ReservationRepository extends JpaRepository<ReservationEntity, UUID> {
 
+    @Query("select r.roomId from ReservationEntity r where r.id = :id and r.guestUserId = :guestId")
+    Optional<UUID> findOwnedRoomId(@Param("id") UUID id, @Param("guestId") UUID guestId);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select r from ReservationEntity r where r.id = :id and r.guestUserId = :guestId")
+    Optional<ReservationEntity> findOwnedForUpdate(@Param("id") UUID id, @Param("guestId") UUID guestId);
+
     String USER_SELECT = """
             select new pe.edu.utp.icastay.reservation.UserReservationView(
                 r.id, hotel.id, hotel.name, room.id, room.number, r.checkIn, r.checkOut,

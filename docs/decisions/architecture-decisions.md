@@ -9,7 +9,8 @@
 | Tres roles: `USER`, `HOTEL_ADMIN`, `SUPER_ADMIN` | Acordada | Permisos según actor; validación de pertenencia en backend |
 | Un `HOTEL_ADMIN` administra un hotel | Acordada 2026-09-28 | Relación uno a uno, `hotels.admin_user_id` único |
 | Reserva de habitación física concreta | Acordada 2026-09-28 | Disponibilidad por habitación y fechas, salida exclusiva |
-| Retención pendiente de pago por 10 minutos | Acordada 2026-09-28 | Vence por reloj del servidor y libera lógicamente la habitación |
+| Retención pendiente de pago por 15 minutos | Confirmada 2026-10-16 (6.2/6.3) | Alinea documentación con código y alcance autorizado; vence por reloj del servidor |
+| Pago simulado y confirmación atómicos | Acordada 2026-10-16 (6.2/6.3) | Endpoint exclusivo USER; bloquea habitación y luego reserva; aprobación e intento se guardan juntos. Ver [spec](../features/simulated-payments.md) |
 | Servicios de pago, comprobantes y notificaciones | Objetivo acordado | Distribuir responsabilidades especializadas entre el equipo; integración progresiva |
 | Redis para caché | Planeada | Acelerar consultas; invalidación y TTL por diseñar |
 | Ollama con modelo configurable | Planeada | Respuestas naturales locales sobre contexto autorizado |

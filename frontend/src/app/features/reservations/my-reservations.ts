@@ -9,8 +9,9 @@ import { UserReservationPage, UserReservationView } from '../../core/models/rese
 import { SiteHeader } from '../../shared/site-header/site-header';
 import { SiteFooter } from '../../shared/site-footer/site-footer';
 import { ReservationState } from './reservation-state';
+import { ReservationPayment } from './reservation-payment';
 
-@Component({ selector: 'app-my-reservations', imports: [RouterLink, DatePipe, DecimalPipe, SiteHeader, SiteFooter, ReservationState],
+@Component({ selector: 'app-my-reservations', imports: [RouterLink, DatePipe, DecimalPipe, SiteHeader, SiteFooter, ReservationState, ReservationPayment],
   templateUrl: './my-reservations.html', styleUrl: './my-reservations.css', changeDetection: ChangeDetectionStrategy.OnPush })
 export class MyReservations implements OnInit {
   private readonly service = inject(ReservationService);

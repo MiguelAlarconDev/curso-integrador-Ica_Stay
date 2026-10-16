@@ -1,12 +1,13 @@
 # Reservas de habitación
 
-**Estado:** acordado para diseño MVP; sin implementar.  
+**Estado:** implementación parcial; creación, consulta y pagos simulados implementados; cancelación pendiente.
+
 **Responsable:** por asignar.  
-**Actualizado:** 2026-09-28.
+**Actualizado:** 2026-10-16.
 
 ## Objetivo
 
-Un usuario autenticado reserva una habitación específica disponible para un intervalo de noches. El sistema la retiene durante **10 minutos** mientras espera el pago.
+Un usuario autenticado reserva una habitación específica disponible para un intervalo de noches. El sistema la retiene durante **15 minutos** mientras espera el pago.
 
 ## Actores y permisos
 
@@ -23,7 +24,7 @@ Los permisos se verifican en el backend al consultar cada ID; el cliente no sumi
 1. `USER` consulta habitaciones disponibles indicando ingreso, salida y huéspedes.
 2. Elige una habitación física y solicita reservarla.
 3. El core verifica identidad, fechas futuras, capacidad, estado de la habitación y disponibilidad bajo bloqueo transaccional.
-4. El core calcula y guarda precio total y crea `PENDING_PAYMENT` con vencimiento en 10 minutos.
+4. El core calcula y guarda precio total y crea `PENDING_PAYMENT` con vencimiento en 15 minutos.
 5. Se devuelve `reservationId`, `expiresAt`, importe y estado; en una etapa posterior se inicia el pago mediante `payment-service`.
 6. Cuando el servicio de pagos verifique la aprobación por un canal confiable, el core revalida la vigencia y confirma la reserva una sola vez.
 
@@ -63,7 +64,7 @@ Mostrar búsqueda/carga, habitaciones sin resultados, disponibilidad cambiada (`
 
 ## Criterios de aceptación
 
-- [ ] Una reserva válida retiene una habitación concreta por 10 minutos y devuelve fecha exacta de vencimiento.
+- [ ] Una reserva válida retiene una habitación concreta por 15 minutos y devuelve fecha exacta de vencimiento.
 - [ ] Una segunda reserva solapada no puede crearse mientras la primera esté activa, incluso con solicitudes concurrentes.
 - [ ] Un intervalo que comienza en `check_out` de otra reserva no se considera solapado.
 - [ ] Vencida la retención, vuelve a aparecer disponible aunque no se haya ejecutado limpieza.
@@ -73,6 +74,6 @@ Mostrar búsqueda/carga, habitaciones sin resultados, disponibilidad cambiada (`
 
 ## Primer incremento y pendientes
 
-Primer incremento implementable: disponibilidad, creación y consulta de reservas, retención, expiración y cancelación de pendientes. Integración real de MercadoPago, confirmación, políticas de reembolso y facturación se desarrollan en etapas posteriores; para probar la transición a `CONFIRMED` se empleará una prueba de integración del core, sin endpoint público que simule pago.
+La confirmación transaccional mediante endpoint autenticado de simulación se incorpora en [pagos simulados 6.2/6.3](simulated-payments.md). Integración real de MercadoPago, cancelación, políticas de reembolso y facturación siguen pendientes.
 
 [Notion](https://app.notion.com/p/3e82918d49f4817f94f1c329d2ff194f?pvs=204) · [Decisiones](../decisions/architecture-decisions.md)

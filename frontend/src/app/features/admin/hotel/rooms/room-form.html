@@ -1,0 +1,26 @@
+<form [formGroup]="form" (ngSubmit)="submit()" aria-labelledby="room-form-title" [attr.aria-busy]="saving()">
+  <h2 id="room-form-title">{{ room() ? 'Editar habitación ' + room()!.number : 'Nueva habitación' }}</h2>
+  <fieldset [disabled]="saving()">
+    <legend>Datos de la habitación</legend>
+    <label for="room-number">Número</label>
+    <input #firstField id="room-number" formControlName="number" maxlength="40" aria-describedby="number-help" [attr.aria-invalid]="invalid('number')">
+    <p id="number-help" [class.invalid]="invalid('number')">Obligatorio, máximo 40 caracteres y sin espacios exteriores.</p>
+    <label for="room-description">Descripción (opcional)</label>
+    <textarea id="room-description" formControlName="description" rows="3"></textarea>
+    <label for="room-capacity">Capacidad</label>
+    <input id="room-capacity" type="number" formControlName="capacity" min="1" max="2147483647" step="1" aria-describedby="capacity-help" [attr.aria-invalid]="invalid('capacity')">
+    <p id="capacity-help" [class.invalid]="invalid('capacity')">Ingresa un número entero entre 1 y 2147483647.</p>
+    <label for="room-price">Precio por noche</label>
+    <input id="room-price" inputmode="decimal" formControlName="pricePerNight" aria-describedby="price-help" [attr.aria-invalid]="invalid('pricePerNight')">
+    <p id="price-help" [class.invalid]="invalid('pricePerNight')">Mayor que cero, máximo 9999999999.99. Usa punto y hasta dos decimales.</p>
+    <label for="room-currency">Moneda</label>
+    <input id="room-currency" formControlName="currency" maxlength="3" aria-describedby="currency-help" [attr.aria-invalid]="invalid('currency')">
+    <p id="currency-help" [class.invalid]="invalid('currency')">Código ISO 4217 de tres letras mayúsculas, por ejemplo PEN. El servidor valida el código.</p>
+    <div class="actions">
+      <button class="btn btn-primary" type="submit" [disabled]="form.invalid || saving()">{{ saving() ? 'Guardando…' : 'Guardar habitación' }}</button>
+      <button class="btn btn-outline" type="button" (click)="cancel()">Cancelar</button>
+    </div>
+  </fieldset>
+  @if (saving()) { <p role="status">Guardando habitación…</p> }
+  @if (error()) { <p role="alert">{{ error() }}</p> }
+</form>

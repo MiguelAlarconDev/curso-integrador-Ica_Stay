@@ -18,6 +18,7 @@
       <div><span class="eyebrow">DÓNDE QUEDARTE</span><h2 id="stays-title">Hospedajes para<br>descubrir Ica</h2></div>
       <p>Distintas formas de habitar la región.<br><span class="preview-note">Fotografías referenciales; no representan los hoteles mostrados.</span></p>
     </div>
+    <a class="text-link" routerLink="/hotels">Ver todos los hoteles</a>
     <div role="status" aria-live="polite">
       @if (loading()) {
         <p class="text-muted">Cargando alojamientos…</p>
@@ -31,7 +32,9 @@
       @for (stay of stays(); track stay.id) {
         <article class="stay" [class.stay-main]="stay.type === 'principal'">
           <img class="stay-photo" [src]="stay.photo" [alt]="stay.alt" [attr.width]="stay.width" [attr.height]="stay.height" loading="lazy" decoding="async">
-          <div class="stay-copy"><span class="eyebrow">{{ stay.city }}</span><h3>{{ stay.name }}</h3><p>{{ stay.address }}</p>@if (stay.description) { <p>{{ stay.description }}</p> }</div>
+          <div class="stay-copy"><span class="eyebrow">{{ stay.city }}</span><h3>{{ stay.name }}</h3><p>{{ stay.address }}</p>@if (stay.description) { <p>{{ stay.description }}</p> }
+            <a class="text-link" [routerLink]="['/hotels', stay.id]">Ver detalles de {{ stay.name }}</a>
+          </div>
         </article>
       }
     </div>

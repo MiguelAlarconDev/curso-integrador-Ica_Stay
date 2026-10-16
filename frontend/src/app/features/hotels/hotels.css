@@ -1,0 +1,16 @@
+:host { display: block; }
+main { min-height: 60vh; overflow-wrap: anywhere; }
+h1 { font-size: clamp(2.5rem, 6vw, 5rem); margin: 1rem 0; }
+h2 { font-size: clamp(1.6rem, 3vw, 2.4rem); margin: .6rem 0; }
+p { line-height: 1.7; margin: 1rem 0; }
+form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; padding: 1.5rem 0; }
+.actions { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; grid-column: 1 / -1; }
+.field, input { min-width: 0; }
+.btn { min-height: 44px; white-space: normal; }
+article { border-top: 1px solid var(--ica-line); padding: 2rem 0; }
+.description { white-space: pre-wrap; max-width: 75ch; }
+dl { margin: 2rem 0; }
+dt { color: var(--ica-muted); margin-top: 1rem; }
+dd { margin: .5rem 0; }
+.back { display: inline-block; margin-bottom: 2rem; }
+@media (max-width: 600px) { form { grid-template-columns: minmax(0, 1fr); } }

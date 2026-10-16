@@ -4,11 +4,14 @@
   <nav aria-label="Navegación principal">
     <a routerLink="/" fragment="alojamientos">Alojamientos</a>
     <a routerLink="/" fragment="explorar">Explorar Ica</a>
-    <button type="button" disabled>Mis reservas <small>Próximamente</small></button>
+    @if (auth.role() === 'USER') { <a routerLink="/my-reservations">Mis reservas</a> }
   </nav>
   <div class="session">
     @if (auth.session(); as session) {
       <span class="session-email">{{ session.email }}</span>
+      @if (session.role === 'HOTEL_ADMIN') {
+        <a routerLink="/admin/hotel">Mi panel</a>
+      }
       <button type="button" (click)="auth.logout()">Cerrar sesión</button>
     } @else {
       <a routerLink="/login">Iniciar sesión</a>

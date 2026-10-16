@@ -1,0 +1,21 @@
+:host { display: block; }
+section { max-width: 900px; }
+.hotel-summary { border-bottom: 1px solid var(--ica-line); padding-bottom: 28px; margin-bottom: 32px; overflow-wrap: anywhere; }
+h2 { font-size: clamp(2rem, 3vw, 3rem); }
+.hotel-summary p { margin-top: 16px; }
+dl { margin: 20px 0 0; font-size: .8rem; color: var(--ica-muted); }
+dd { margin: 4px 0 0; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+legend { font-family: var(--font-display); font-size: 1.6rem; padding: 0; }
+.form-intro { margin: 8px 0 24px; color: var(--ica-muted); }
+.field { margin-bottom: 24px; min-width: 0; }
+small { font-size: .8rem; color: var(--ica-muted); }
+textarea { resize: vertical; min-height: 150px; }
+.location-fields { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 24px; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+.notice { padding: 16px 0; border-bottom: 1px solid var(--ica-line); overflow-wrap: anywhere; }
+.error { color: var(--ica-clay-dark); }
+.success { color: var(--ica-olive); }
+.retry { margin-top: 20px; }
+button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+@media (max-width: 900px) { .location-fields { grid-template-columns: minmax(0, 1fr); gap: 0; } }

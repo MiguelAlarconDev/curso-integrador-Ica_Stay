@@ -1,0 +1,14 @@
+:host { display: block; margin: 1.5rem 0; min-width: 0; }
+form { border-top: 2px solid var(--ica-clay); padding: 1.5rem; background: var(--ica-sand); overflow-wrap: anywhere; }
+h2 { font-family: var(--font-display); }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+legend { margin-bottom: 1rem; }
+label { display: block; margin-top: 1rem; font-weight: 700; }
+input, textarea { display: block; width: 100%; min-height: 44px; padding: .75rem; border: 1px solid var(--ica-line); background: var(--ica-paper); color: var(--ica-ink); font: inherit; }
+textarea { resize: vertical; }
+p { line-height: 1.5; }
+fieldset p { color: var(--ica-muted); font-size: .875rem; margin-top: .4rem; }
+fieldset p.invalid { color: var(--ica-clay-dark); font-weight: 700; }
+[aria-invalid="true"] { border-color: var(--ica-clay-dark); }
+.actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; }
+.btn { min-height: 44px; white-space: normal; }

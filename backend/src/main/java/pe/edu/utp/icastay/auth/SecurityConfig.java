@@ -44,7 +44,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/hotels", "/api/v1/hotels/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/api/v1/admin/hotel/reservations", "/api/v1/admin/hotel/reservations/**")
+                            .hasRole("HOTEL_ADMIN")
+                        .requestMatchers("/api/v1/admin/hotel", "/api/v1/admin/hotel/rooms", "/api/v1/admin/hotel/rooms/**").hasRole("HOTEL_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/reservations").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/reservations/me", "/api/v1/reservations/*").hasRole("USER")
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenService),
                         UsernamePasswordAuthenticationFilter.class)

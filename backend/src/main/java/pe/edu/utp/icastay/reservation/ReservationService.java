@@ -3,6 +3,9 @@ package pe.edu.utp.icastay.reservation;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Set;
+import org.springframework.data.domain.PageRequest;
 import java.util.List;
 import java.util.UUID;
 import java.time.temporal.ChronoUnit;
@@ -58,6 +61,9 @@ public class ReservationService {
         if (request.guests() <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "guests debe ser mayor que 0");
         }
+        if (request.checkIn().isBefore(LocalDate.ofInstant(clock.instant(), java.time.ZoneOffset.UTC))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "checkIn no puede ser anterior a hoy UTC");
+        }
         if (!users.existsByIdAndStatus(guestUserId, ACTIVE_STATUS)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
@@ -91,6 +97,45 @@ public class ReservationService {
                 room.getCurrency());
 
         return toView(reservations.save(reservation));
+    }
+
+    @Transactional(readOnly = true)
+    public UserReservationPage listOwn(UUID guestUserId, int page) {
+        if (page < 0 || (long) page * 20 > Integer.MAX_VALUE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pagina invalida");
+        }
+        Instant now = clock.instant();
+        var result = reservations.findUserPage(guestUserId, PageRequest.of(page, 20));
+        return new UserReservationPage(result.getContent().stream().map(item -> item.evaluatedAt(now)).toList(),
+                result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
+    }
+
+    @Transactional(readOnly = true)
+    public UserReservationView findOwn(UUID guestUserId, UUID id) {
+        Instant now = clock.instant();
+        return reservations.findUserDetail(guestUserId, id).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND)).evaluatedAt(now);
+    }
+
+    @Transactional(readOnly = true)
+    public AdminReservationPage listAssigned(UUID adminId, int page, int size, String status,
+            LocalDate from, LocalDate to) {
+        if (page < 0 || size < 1 || size > 100 || (long) page * size > Integer.MAX_VALUE
+                || (status != null && !Set.of("PENDING_PAYMENT", "CONFIRMED", "CANCELLED", "EXPIRED").contains(status))
+                || (from != null && to != null && from.isAfter(to))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "filtros de reservas invalidos");
+        }
+        UUID hotelId = hotels.findAssigned(adminId).id();
+        var result = reservations.findAdminPage(hotelId, status, from, to, PageRequest.of(page, size));
+        return new AdminReservationPage(result.getContent(), result.getNumber(), result.getSize(),
+                result.getTotalElements(), result.getTotalPages());
+    }
+
+    @Transactional(readOnly = true)
+    public AdminReservationView findAssigned(UUID adminId, UUID reservationId) {
+        UUID hotelId = hotels.findAssigned(adminId).id();
+        return reservations.findAdminDetail(hotelId, reservationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     private boolean hasBlockingOverlap(CreateReservationRequest request, Instant now) {

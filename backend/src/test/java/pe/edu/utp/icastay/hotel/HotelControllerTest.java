@@ -26,18 +26,18 @@ class HotelControllerTest {
     @Test
     void delegaElListadoCuandoLosParametrosSonValidos() {
         HotelPage expected = new HotelPage(List.of(), 0, 20, 0, 0);
-        when(hotelService.listActive(0, 20)).thenReturn(expected);
+        when(hotelService.listActive(0, 20, null, null)).thenReturn(expected);
 
-        HotelPage response = new HotelController(hotelService).list(0, 20);
+        HotelPage response = new HotelController(hotelService).list(0, 20, null, null);
 
         assertSame(expected, response);
-        verify(hotelService).listActive(0, 20);
+        verify(hotelService).listActive(0, 20, null, null);
     }
 
     @Test
     void rechazaParametrosInvalidosAntesDeDelegar() {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
-                () -> new HotelController(hotelService).list(-1, 20));
+                () -> new HotelController(hotelService).list(-1, 20, null, null));
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         verifyNoInteractions(hotelService);

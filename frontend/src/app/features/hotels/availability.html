@@ -1,0 +1,32 @@
+<section aria-labelledby="availability-title">
+  <h2 id="availability-title">Habitaciones disponibles</h2>
+  <form [formGroup]="form" (ngSubmit)="search()" aria-describedby="availability-help">
+    <fieldset [disabled]="bookingBusy() || bookingTerminal()" style="border:0; padding:0; margin:0; min-width:0; display:contents">
+    <div class="field"><label for="check-in">Entrada</label><input id="check-in" type="date" formControlName="checkIn"></div>
+    <div class="field"><label for="check-out">Salida</label><input id="check-out" type="date" formControlName="checkOut"></div>
+    <div class="field"><label for="guests">Huéspedes</label><input id="guests" type="number" min="1" max="2147483647" step="1" formControlName="guests"></div>
+    <div class="actions"><button class="btn btn-primary" [disabled]="loading()">Consultar disponibilidad</button></div>
+    </fieldset>
+  </form>
+  <p id="availability-help">Entrada desde hoy (UTC), salida posterior y huéspedes enteros positivos. Consultar no retiene una habitación.</p>
+  @if (form.invalid && form.touched) { <p role="alert">Revisa las fechas y el número de huéspedes.</p> }
+  <div [attr.aria-busy]="loading()">
+    @if (loading()) { <p role="status">Consultando habitaciones…</p> }
+    @else if (error()) { <p role="alert">{{ error() }}</p><button class="btn btn-outline retry-rooms" (click)="search()">Reintentar disponibilidad</button> }
+    @else if (rooms(); as rooms) {
+      <p role="status">{{ rooms.length }} habitaciones disponibles.</p>
+      @if (!rooms.length) { <p>No hay habitaciones disponibles para esta consulta.</p> }
+      @for (room of rooms; track room.id) {
+        <article><h3>Habitación {{ room.number }}</h3><p>{{ room.description || 'Sin descripción disponible.' }}</p>
+          <p>Capacidad: {{ room.capacity }} huéspedes</p><p>{{ room.pricePerNight | number:'1.2-2' }} {{ room.currency }} por noche</p>
+          <button class="btn btn-outline select-room" (click)="select(room)" [disabled]="bookingBusy() || bookingTerminal()">Seleccionar habitación {{ room.number }}</button></article>
+      }
+    }
+  </div>
+  @if (selected(); as room) {
+    @for (selectedRoom of [room]; track selectedRoom.id) {
+      <app-booking [room]="selectedRoom" [query]="applied()!" [hotelId]="hotelId()" [hotelName]="hotelName()"
+        (busy)="bookingBusy.set($event)" (terminal)="bookingTerminal.set(true)" (refresh)="search()" />
+    }
+  }
+</section>

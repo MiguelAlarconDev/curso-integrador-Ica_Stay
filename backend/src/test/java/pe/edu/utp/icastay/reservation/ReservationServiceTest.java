@@ -26,6 +26,14 @@ import pe.edu.utp.icastay.hotel.HotelView;
 import pe.edu.utp.icastay.room.RoomEntity;
 
 class ReservationServiceTest {
+    @Test
+    void rejectsPastCheckInBeforeAccessingRepositories() {
+        var error = org.junit.jupiter.api.Assertions.assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> service.create(GUEST_ID, new CreateReservationRequest(ROOM_ID,
+                        LocalDate.of(2026, 9, 29), LocalDate.of(2026, 10, 1), 1)));
+        assertEquals(400, error.getStatusCode().value());
+        verifyNoInteractions(users, rooms, hotels, reservations);
+    }
     private static final Instant NOW = Instant.parse("2026-09-30T15:00:00Z");
     private static final UUID GUEST_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
     private static final UUID ROOM_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");

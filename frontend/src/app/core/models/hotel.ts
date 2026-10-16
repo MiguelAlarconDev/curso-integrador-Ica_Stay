@@ -6,6 +6,13 @@ export interface HotelView {
   city: string;
 }
 
+export interface UpdateHotelRequest {
+  name: string;
+  description: string | null;
+  address: string;
+  city: string;
+}
+
 export interface HotelPage {
   content: HotelView[];
   page: number;

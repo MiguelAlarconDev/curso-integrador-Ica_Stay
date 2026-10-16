@@ -1,0 +1,28 @@
+<section aria-labelledby="booking-title" [attr.aria-busy]="sending()">
+  <h2 id="booking-title">Revisa tu reserva</h2>
+  @if (result(); as result) {
+    <p role="status">Reserva creada, pendiente de pago. No está confirmada.</p>
+    <dl><dt>Identificador</dt><dd>{{ result.id }}</dd><dt>Habitación (ID)</dt><dd>{{ result.roomId }}</dd>
+      <dt>Entrada / salida</dt><dd>{{ result.checkIn }} / {{ result.checkOut }}</dd><dt>Huéspedes</dt><dd>{{ result.guests }}</dd>
+      <dt>Importe real</dt><dd>{{ result.totalAmount | number:'1.2-2' }} {{ result.currency }}</dd>
+      <dt>Estado</dt><dd>{{ result.status }}</dd><dt>Retención hasta (UTC)</dt><dd>{{ result.expiresAt | date:'yyyy-MM-dd HH:mm:ss':'UTC' }}</dd></dl>
+    <p>La retención dura 15 minutos desde su creación. Esta pantalla no procesa pagos ni cambia el estado al vencer.</p>
+  } @else {
+    <p>{{ hotelName() }} · Habitación {{ room().number }}</p>
+    <p>{{ query().checkIn }} → {{ query().checkOut }} · {{ query().guests }} huéspedes · {{ nights() }} noches</p>
+    <p>Importe estimado: {{ nights() * room().pricePerNight | number:'1.2-2' }} {{ room().currency }}. El servidor determina el importe final.</p>
+    @if (!uncertain()) {
+      @if (!auth.isAuthenticated()) { <button class="btn btn-primary login-booking" (click)="login()">Iniciar sesión para reservar</button> }
+      @else if (!auth.hasRole('USER')) { <p role="alert">Solo los huéspedes con rol USER pueden reservar.</p> }
+      @else {
+        <form (submit)="$event.preventDefault(); submit()">
+          <label><input type="checkbox" [formControl]="confirmed" [attr.disabled]="sending() ? '' : null"> Confirmo las fechas, huéspedes e importe estimado. La reserva quedará pendiente de pago.</label>
+          <button class="btn btn-primary create-booking" [disabled]="sending() || !confirmed.value || conflict()">{{ sending() ? 'Enviando…' : 'Crear reserva pendiente de pago' }}</button>
+        </form>
+      }
+    }
+  }
+  @if (error()) { <p role="alert">{{ error() }}</p> }
+  @if (result() || uncertain()) { <a class="btn btn-outline history-link" routerLink="/my-reservations">Consultar mis reservas</a> }
+  @if (!sending() && !uncertain() && !result()) { <button class="btn btn-outline refresh-rooms" (click)="refresh.emit()">Consultar disponibilidad nuevamente</button> }
+</section>

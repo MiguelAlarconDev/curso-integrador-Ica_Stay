@@ -1,5 +1,63 @@
 # Frontend
 
+## Mis reservas — incremento 5.4
+
+`/my-reservations` y `/my-reservations/:id` exigen USER. GET `/api/v1/reservations/me?page=0`
+devuelve 20 registros por página; GET `/{id}` devuelve solo detalle propio. Navegación
+conserva página. Ambos usan el interceptor existente, con carga, vacío, error/404,
+reintento y cancelación de lecturas obsoletas. Pérdida/cambio de identidad retira los datos.
+
+Se muestran nombres actuales de hotel/habitación (también inactivos), importes
+históricos y estado persistido. `holdExpired` y `evaluatedAt` del servidor indican
+retención vencida sin convertir PENDING_PAYMENT en EXPIRED. Actualizar consulta
+revalida; no se usa el reloj del navegador para decidir estados.
+
+Enlaces desde navegación USER y éxito/resultado incierto de creación. Una ausencia
+inmediata en historial no prueba que un POST haya fallado; no se reenvía automáticamente.
+Validación manual: dos cuentas USER, paginación/detalle/retorno, ajena → 404,
+actualizar después del vencimiento, logout y revisión móvil/teclado. Sin pagos,
+cancelaciones ni escrituras. Contrato en la spec `user-reservation-history.md`.
+
+## Reserva pendiente — incremento 5.3
+
+Seleccionar una habitación abre un resumen con importe estimado y confirmación
+explícita. Solo USER puede enviar POST `/api/v1/reservations`, únicamente roomId,
+checkIn, checkOut y guests. La respuesta real muestra PENDING_PAYMENT, importe y
+expiresAt UTC; no confirma pago. Retención de 15 minutos sin cambios.
+Visitantes van a login con retorno limitado a detalle de hotel y criterios públicos;
+al volver se reconsulta y se exige seleccionar/confirmar de nuevo. No hay JWT en URL.
+Errores 400/401/403/404/409 tienen mensajes propios. Red/5xx se consideran resultado
+incierto, sin reenvío automático. Sin pagos, historial ni cancelación.
+Validación manual: USER de desarrollo, consulta/selección/confirmación, doble clic,
+retorno de login, conflicto y expiración de sesión. Confirmar sí crea una reserva.
+
+## Disponibilidad — incremento 5.2
+
+El detalle `/hotels/:id` incorpora consulta pública de habitaciones por entrada,
+salida y huéspedes. Valida entrada desde hoy UTC, salida posterior y entero positivo.
+RoomService envía los tres parámetros a GET `/api/v1/hotels/{id}/rooms` y presenta
+RoomView sin campos inventados. Editar cancela peticiones y retira resultados;
+carga, vacío, errores y reintento son independientes del hotel. Consultar no reserva.
+Se conserva el retorno al catálogo. Retención backend existente: 15 minutos.
+Revisión manual: hotel activo, fechas futuras y capacidad válida; probar vacío,
+edición durante carga, error/reintento y navegación de retorno. Sin pagos ni historial.
+
+## Catálogo público — incremento 5.1
+
+`/hotels` busca por nombre parcial y ciudad exacta, con 20 resultados por página.
+`name`, `city` y `page` se conservan en la URL al paginar, abrir `/hotels/:id`
+y volver. Aplicar/limpiar reinician la página; consultas obsoletas se cancelan.
+HotelService reutiliza GET `/api/v1/hotels` y GET `/api/v1/hotels/{id}`.
+Home mantiene su composición y fotografías referenciales; incluye enlaces al
+catálogo/detalle y buscador funcional solo de nombre/ciudad. No hay disponibilidad.
+Catálogo y detalle ofrecen carga, vacío/error, reintento y mensaje específico 404.
+No requieren sesión; autenticación y administración permanecen sin cambios.
+
+Para revisión: abrir `/hotels` sin sesión, combinar filtros, paginar, consultar un
+hotel y volver; recargar y usar Atrás. Probar búsqueda vacía, ID inexistente y
+servidor detenido/reintento. Revisar móvil y teclado. Contratos y límites en
+[la spec 5.1](../docs/specs/frontend/user-hotel-catalog.md).
+
 ## Autenticación
 
 `/login` es pública y envía únicamente `{ email, password }` a `POST /api/v1/auth/login` usando `API_BASE_URL`. La respuesta real es `{ token, tokenType: "Bearer" }`. No hay refresh token ni logout de servidor.
@@ -16,13 +74,120 @@ La utilidad JWT comprueba estructura, Base64URL, claims, rol y expiración; no v
 
 El interceptor funcional agrega Bearer solo al origen y prefijo `/api/` de la API configurada, excluyendo login, registro, archivos estáticos y otros dominios. No usa `withCredentials`. Un 401 de login o registro no elimina una sesión previa, un 401 de una petición antigua no elimina una sesión nueva y un 403 conserva la sesión.
 
-`authGuard` está disponible para futuras rutas con `canActivate: [authGuard]` y `data: { roles: ['USER'] }` opcional. Sin sesión devuelve `/login`; con rol insuficiente devuelve `/` sin cerrar sesión. Home y Login siguen siendo públicas y no se añaden pantallas protegidas ficticias.
+`authGuard` protege las rutas administrativas con `canActivate` y `canActivateChild`, y admite `data.roles`. Sin sesión devuelve `/login`; con rol insuficiente devuelve `/` sin cerrar sesión. Home, Login y Registro siguen siendo públicas.
 
-El Login utiliza la paleta global y una composición editorial con fotografía local. Tras autenticarse navega a `/`; el Header muestra el email y permite cerrar sesión. Los enlaces del Header vuelven a las secciones de Home desde Login.
+El Login utiliza la paleta global y una composición editorial con fotografía local. Tras autenticarse, HOTEL_ADMIN navega a `/admin/hotel`; USER y SUPER_ADMIN a `/`. El Header muestra el email, permite cerrar sesión y ofrece «Mi panel» a HOTEL_ADMIN. Los enlaces del Header vuelven a las secciones de Home desde Login.
 
 Se comprobó el Login en Chrome a 320, 375, 768, 1024 y 1440 px, sin desbordamiento horizontal, con imagen local cargada, validación de campos vacíos y movimiento reducido respetado. El mínimo global del body se ajustó para admitir el ancho útil cuando hay barra de desplazamiento vertical. `frontend/.gitignore` exceptúa los DTO TypeScript de la regla global `models/`, que los ocultaba junto con los modelos descargables.
 
 Validación: `npm run build` y `npm test -- --watch=false`. Los JWT de pruebas son fixtures sin firma criptográfica usados exclusivamente en unit tests con HTTP simulado. No crean reservas. Para la verificación manual real, iniciar sesión con un usuario existente, recargar, comprobar Header y logout. Con un usuario `USER`, una solicitud de diagnóstico a `POST /api/v1/reservations` con `{}` debe superar autenticación y devolver 400 sin crear reserva; hoteles es público y no demuestra por sí solo la aceptación del token. No se dispone de credenciales de prueba en esta implementación.
+
+## Panel HOTEL_ADMIN — incremento 4.1
+
+Layout padre lazy con router-outlet y cuatro rutas hijas:
+`/admin/hotel` (Resumen), `/admin/hotel/profile` (Mi hotel),
+`/admin/hotel/rooms` (Habitaciones), `/admin/hotel/reservations` (Reservas).
+Exclusivo de HOTEL_ADMIN mediante el guard existente en padre e hijas.
+
+`features/admin/hotel/` contiene layout, rutas, resumen y un componente informativo
+compartido para las secciones futuras. Navegación lateral en escritorio y
+compacta en móvil; título, correo, rol, foco visible y ruta activa accesible.
+No duplica el header público. Logout usa AuthService y redirige a `/login`;
+la pérdida de sesión por expiración también abandona el panel.
+
+El Resumen mantiene indicadores «Próximamente» sin estadísticas ficticias.
+El perfil se conecta en 4.2; habitaciones y reservas quedan pendientes para
+4.3 y 4.4. Contrato y criterios en [la spec del panel](../docs/specs/frontend/hotel-admin.md).
+
+Validación de este incremento: 85 pruebas exitosas con `npm test -- --watch=false`
+y build correcto con `npm run build`. Para revisión manual, iniciar sesión con
+un HOTEL_ADMIN existente, recorrer las cuatro rutas, regresar al catálogo y usar
+«Mi panel», luego cerrar sesión. Repetir el acceso directo sin sesión y con USER
+o SUPER_ADMIN para verificar las redirecciones. Este incremento no crea cuentas.
+Chrome headless comprobó las cuatro secciones a 320, 375, 768 y 1440 px, sin
+desbordamiento horizontal y con movimiento reducido; sesión sintética local,
+sin llamadas al backend. Se revisaron capturas móvil y escritorio.
+
+## Mi hotel — incremento 4.2
+
+`/admin/hotel/profile` consulta y actualiza el hotel de la identidad autenticada.
+`AdminHotelService` usa GET/PUT `/api/v1/admin/hotel` sobre `API_BASE_URL`, con el
+interceptor JWT existente. Se reutiliza HotelView; PUT recibe únicamente name,
+description, address y city, y devuelve el recurso actualizado sin un GET adicional.
+
+Formulario reactivo: nombre/dirección/ciudad obligatorios, máximos 180/255/120;
+descripción opcional máximo 5000. Normalización equivalente a String.strip del
+backend; descripción vacía se envía null. ID solo lectura; estado y propietario
+no se muestran porque no están en el DTO. Guardar requiere cambios válidos y evita
+duplicados. Cancelar restaura los últimos datos guardados; fallos conservan ediciones.
+
+Carga y guardado visibles, reintento de GET, mensaje de hotel no asignado para
+404, validación 400, permisos 403, conexión 0 y errores generales. Un 401 deja
+actuar al interceptor/layout y vuelve a login. 409 tiene manejo defensivo aunque
+el contrato actual no define conflictos. No se cambió backend ni PostgreSQL.
+
+Validación: 107 pruebas exitosas, build correcto y revisión Chrome a 320, 375,
+768 y 1440 px sin overflow. HTTP simulado en tests y en revisión visual; no se
+verificó guardado real contra Spring Boot. Para probar manualmente, iniciar sesión
+con HOTEL_ADMIN, abrir Mi hotel, editar y Cancelar; luego editar y Guardar,
+comprobar PUT 200 y recargar. Este último paso modifica datos reales. Probar
+campos inválidos, backend detenido/reintento y administrador sin hotel.
+
+## Habitaciones — incremento 4.3
+
+`/admin/hotel/rooms` permite listar, consultar, crear, editar y activar/desactivar
+habitaciones del hotel autenticado. Reutiliza guards HOTEL_ADMIN, interceptor JWT
+y API_BASE_URL. No recibe hotelId ni adminUserId del cliente.
+
+`AdminRoomService` utiliza GET/POST `/api/v1/admin/hotel/rooms`, GET/PUT `/{id}`
+y PATCH `/{id}/status`. El DTO real contiene id, number, description nullable,
+capacity, pricePerNight, currency y status (ACTIVE/INACTIVE). El listado es un array.
+
+El formulario separado valida número (1–40, sin espacios exteriores), capacidad
+entera positiva hasta 2147483647, precio positivo hasta 9999999999.99 con dos
+decimales y formato de moneda ISO 4217 (PEN inicial; código validado por backend).
+Descripción opcional. POST/PUT envían solo los cinco campos editables.
+Cancelar no envía solicitudes. Guardado y confirmación de estado bloquean
+duplicados y el cambio de habitación; los errores conservan datos. Un 401 utiliza
+el cierre de sesión existente; 403 no cierra sesión. 404, 409, red y errores de
+servidor tienen mensajes propios sin exponer detalles internos.
+
+Las respuestas actualizan listado y detalle; el estado exige confirmación antes
+del PATCH. Desactivar no cancela reservas existentes. No hay eliminación ni
+gestión de reservas. El backend sigue comprobando pertenencia.
+
+Prueba manual: iniciar sesión como HOTEL_ADMIN, abrir Habitaciones, crear una
+habitación, consultar detalle, editar y cancelar; luego editar y guardar.
+Probar número duplicado y datos inválidos. Desactivar primero cancelando la
+confirmación y luego confirmando; reactivar y recargar para verificar persistencia.
+Estas acciones sí modifican datos reales. Las pruebas automatizadas usan HTTP
+simulado: `npx ng test --watch=false`; compilación: `npm run build`.
+
+## Reservas del hotel — incremento 4.4
+
+`/admin/hotel/reservations` consulta reservas con paginación de 20 elementos,
+filtros aplicables/limpiables y detalle independiente dentro de la pantalla.
+Reutiliza guards HOTEL_ADMIN, API_BASE_URL e interceptor JWT.
+
+GET `/api/v1/admin/hotel/reservations?page=0&size=20` devuelve
+`{content,page,size,totalElements,totalPages}`; GET `/{id}` devuelve el detalle.
+Filtros opcionales reales: status (PENDING_PAYMENT, CONFIRMED, CANCELLED, EXPIRED),
+from y to. Las fechas buscan estancias coincidentes: checkOut > from y checkIn <= to.
+No son filtros de entrada/salida exactas. Cambiar filtros reinicia página y cancela
+consultas obsoletas; paginar conserva filtros aplicados. No hay filtrado local.
+
+Se muestran habitación, titular, fechas, estado e importes reales. El detalle
+incluye huéspedes, IDs, precio histórico por noche, creación y expiración nullable.
+Instantes en UTC; fechas de estancia sin desplazamiento horario. El estado procede
+del servidor. Hay carga, vacío, errores HTTP/red y reintento. No hay pagos,
+cancelaciones ni cambios de estado; habitaciones permanece intacto.
+
+Validación manual: iniciar sesión como HOTEL_ADMIN y abrir Reservas; aplicar estado
+y rango de estancias, paginar, limpiar y consultar detalles. Volver al listado
+conserva página y filtros. Probar servidor detenido/reintento y acceso sin sesión
+o con USER/SUPER_ADMIN. La paginación requiere más de 20 reservas coincidentes.
+Pruebas automatizadas con HTTP simulado: `npx ng test --watch=false`;
+compilación: `npm run build`. La integración real queda para revisión manual.
 
 ## Integración inicial con API
 

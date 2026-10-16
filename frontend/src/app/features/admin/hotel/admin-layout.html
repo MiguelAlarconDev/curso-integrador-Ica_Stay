@@ -1,0 +1,24 @@
+<a class="skip-link" href="#admin-content">Saltar al contenido</a>
+<div class="admin-shell">
+  <aside class="sidebar" aria-label="Panel del hotel">
+    <a class="wordmark" routerLink="/" aria-label="Ica Stay, catálogo público">ICA STAY<span>ESPACIO DEL HOTEL</span></a>
+    <nav aria-label="Administración del hotel">
+      @for (link of links; track link.path) {
+        <a [routerLink]="link.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+          ariaCurrentWhenActive="page">{{ link.label }}</a>
+      }
+    </nav>
+    <div class="sidebar-actions">
+      <a routerLink="/">Volver al catálogo</a>
+      <button type="button" (click)="logout()">Cerrar sesión</button>
+    </div>
+  </aside>
+  <div class="workspace">
+    <header class="admin-header">
+      <div><span class="eyebrow">Administración · Ica Stay</span><h1>{{ section() }}</h1></div>
+      <div class="identity"><span class="role">HOTEL_ADMIN</span><span class="email">{{ auth.email() }}</span></div>
+    </header>
+    <main id="admin-content" tabindex="-1"><router-outlet /></main>
+    <footer>Hospitalidad con identidad local.</footer>
+  </div>
+</div>

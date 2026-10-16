@@ -1,0 +1,69 @@
+<p class="intro">Consulta las habitaciones de tu hotel y sus datos actuales.</p>
+<button class="btn btn-primary" type="button" (click)="openForm(null)" [disabled]="loading() || !!error() || editing() || !!statusRoom() || saving()">Nueva habitación</button>
+@if (success()) { <p role="status">{{ success() }}</p> }
+@if (editing()) {
+  <app-room-form [room]="editRoom()" (saved)="saved($event)" (cancelled)="closeForm()" (busy)="saving.set($event)" />
+}
+@if (statusRoom(); as room) {
+  <section class="detail" aria-labelledby="status-title" [attr.aria-busy]="saving()">
+    <h2 id="status-title">{{ room.status === 'ACTIVE' ? 'Desactivar' : 'Activar' }} habitación {{ room.number }}</h2>
+    <p>Estado actual: {{ room.status === 'ACTIVE' ? 'Activa' : 'Inactiva' }}.</p>
+    <p>¿Confirmas el cambio? Desactivar impide nuevas reservas y no cancela las existentes.</p>
+    <div class="actions">
+      <button class="btn btn-primary" type="button" (click)="changeStatus()" [disabled]="saving()">Confirmar cambio de estado</button>
+      <button class="btn btn-outline" type="button" (click)="cancelStatus()" [disabled]="saving()">Cancelar cambio de estado</button>
+    </div>
+    @if (saving()) { <p role="status">Actualizando estado…</p> }
+    @if (statusError()) { <p role="alert">{{ statusError() }}</p> }
+  </section>
+}
+<section aria-label="Listado de habitaciones" [attr.aria-busy]="loading()">
+  @if (loading()) {
+    <p role="status">Cargando habitaciones…</p>
+  } @else if (error()) {
+    <p role="alert">{{ error() }}</p>
+    <button class="btn btn-outline" type="button" (click)="load()">Reintentar</button>
+  } @else if (rooms().length === 0) {
+    <p role="status">Tu hotel todavía no tiene habitaciones registradas.</p>
+  } @else {
+    <ul class="rooms">
+      @for (room of rooms(); track room.id) {
+        <li>
+          <div><h2>Habitación {{ room.number }}</h2>
+            <p>{{ room.capacity }} personas · {{ room.pricePerNight | number:'1.2-2' }} {{ room.currency }} / noche</p>
+          </div>
+          <span class="status" [class.inactive]="room.status === 'INACTIVE'">{{ room.status === 'ACTIVE' ? 'Activa' : 'Inactiva' }}</span>
+          <div class="actions">
+          <button type="button" class="btn btn-outline" (click)="showDetail(room.id)" [disabled]="editing() || !!statusRoom() || saving()"
+            [attr.aria-label]="'Ver detalles de la habitación ' + room.number"
+            [attr.aria-expanded]="selectedId() === room.id" aria-controls="room-detail">Ver detalles</button>
+          <button type="button" class="btn btn-outline edit" (click)="openForm(room)" [disabled]="editing() || !!statusRoom() || saving()" [attr.aria-label]="'Editar habitación ' + room.number">Editar</button>
+          <button type="button" class="btn btn-outline status-action" (click)="confirmStatus(room)" [disabled]="editing() || !!statusRoom() || saving()" [attr.aria-label]="(room.status === 'ACTIVE' ? 'Desactivar' : 'Activar') + ' habitación ' + room.number">{{ room.status === 'ACTIVE' ? 'Desactivar' : 'Activar' }}</button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>
+<section id="room-detail" aria-label="Detalle de habitación" [attr.aria-busy]="detailLoading()" aria-live="polite">
+  @if (selectedId(); as id) {
+    <div class="detail">
+      @if (detailLoading()) {
+        <p role="status">Cargando detalle…</p>
+      } @else if (detailError()) {
+        <p role="alert">{{ detailError() }}</p>
+        <button class="btn btn-outline" type="button" (click)="showDetail(id)">Reintentar detalle</button>
+      } @else if (detail(); as room) {
+        <p class="eyebrow">Detalle de habitación</p>
+        <h2>Habitación {{ room.number }}</h2>
+        <p class="description">{{ room.description || 'Sin descripción.' }}</p>
+        <dl>
+          <div><dt>Capacidad</dt><dd>{{ room.capacity }} personas</dd></div>
+          <div><dt>Precio por noche</dt><dd>{{ room.pricePerNight | number:'1.2-2' }} {{ room.currency }}</dd></div>
+          <div><dt>Estado</dt><dd>{{ room.status === 'ACTIVE' ? 'Activa' : 'Inactiva' }}</dd></div>
+          <div><dt>Identificador</dt><dd>{{ room.id }}</dd></div>
+        </dl>
+      }
+    </div>
+  }
+</section>

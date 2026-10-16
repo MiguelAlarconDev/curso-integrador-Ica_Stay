@@ -1,0 +1,50 @@
+<app-site-header />
+<main class="container section" id="contenido" tabindex="-1">
+  <span class="eyebrow">TUS ESTANCIAS</span>
+  <h1>{{ query().id ? 'Detalle de reserva' : 'Mis reservas' }}</h1>
+  @if (query().id) { <a class="text-link back" routerLink="/my-reservations" [queryParams]="{ page: query().page }">Volver a mis reservas</a> }
+  @else { <a class="text-link" routerLink="/hotels">Explorar hoteles</a> }
+  <p>Los estados y vencimientos corresponden a la última consulta al servidor. Actualiza para comprobar cambios.</p>
+  @if (!query().id) { <p>Si una creación tuvo un error de conexión, revisa las reservas recientes. Una ausencia inmediata no demuestra que la creación haya fallado; no la reenvíes automáticamente.</p> }
+  <section aria-label="Consulta de reservas propias" [attr.aria-busy]="loading()">
+    @if (loading()) { <p role="status">Cargando reservas…</p> }
+    @else if (error()) { <p role="alert">{{ error() }}</p><button class="btn btn-outline retry" (click)="refresh()">Reintentar</button> }
+    @else {
+      <button class="btn btn-outline refresh" (click)="refresh()">Actualizar consulta</button>
+      @if (result(); as result) {
+        <p role="status">{{ result.totalElements }} reservas.</p>
+        @if (!result.content.length) { <p>Todavía no hay reservas en esta página.</p> }
+        @for (reservation of result.content; track reservation.id) {
+          <article>
+            <h2>{{ reservation.hotelName }}</h2><p>Habitación {{ reservation.roomNumber }}</p>
+            <p>Entrada: {{ reservation.checkIn }} · Salida: {{ reservation.checkOut }}</p>
+            <p>{{ reservation.totalAmount | number:'1.2-2' }} {{ reservation.currency }}</p>
+            <app-reservation-state [reservation]="reservation" />
+            <a class="text-link detail-link" [routerLink]="['/my-reservations', reservation.id]" [queryParams]="{ page: result.page }" [attr.aria-label]="'Ver reserva ' + reservation.id">Ver detalles</a>
+          </article>
+        }
+        <nav class="actions" aria-label="Paginación de mis reservas">
+          <button class="btn btn-outline previous" [disabled]="result.page === 0" (click)="page(result.page - 1)">Anterior</button>
+          <span>{{ result.totalPages ? 'Página ' + (result.page + 1) + ' de ' + result.totalPages : 'Sin resultados' }}</span>
+          <button class="btn btn-outline next" [disabled]="result.page + 1 >= result.totalPages" (click)="page(result.page + 1)">Siguiente</button>
+        </nav>
+      }
+      @if (detail(); as reservation) {
+        <article>
+          <h2>{{ reservation.hotelName }}</h2><app-reservation-state [reservation]="reservation" />
+          <dl>
+            <div><dt>Identificador</dt><dd>{{ reservation.id }}</dd></div>
+            <div><dt>Habitación</dt><dd>{{ reservation.roomNumber }}</dd></div>
+            <div><dt>Entrada</dt><dd>{{ reservation.checkIn }}</dd></div><div><dt>Salida</dt><dd>{{ reservation.checkOut }}</dd></div>
+            <div><dt>Huéspedes</dt><dd>{{ reservation.guests }}</dd></div>
+            <div><dt>Precio por noche al reservar</dt><dd>{{ reservation.nightlyPriceSnapshot | number:'1.2-2' }} {{ reservation.currency }}</dd></div>
+            <div><dt>Total histórico</dt><dd>{{ reservation.totalAmount | number:'1.2-2' }} {{ reservation.currency }}</dd></div>
+            <div><dt>Creada (UTC)</dt><dd>{{ reservation.createdAt | date:'yyyy-MM-dd HH:mm:ss':'UTC' }}</dd></div>
+            <div><dt>Vencimiento de retención (UTC)</dt><dd>{{ reservation.expiresAt ? (reservation.expiresAt | date:'yyyy-MM-dd HH:mm:ss':'UTC') : 'Sin vencimiento informado' }}</dd></div>
+          </dl>
+        </article>
+      }
+    }
+  </section>
+</main>
+<app-site-footer />

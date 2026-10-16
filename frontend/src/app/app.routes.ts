@@ -2,6 +2,10 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
+  { path: 'my-reservations', title: 'Mis reservas | Ica Stay', canActivate: [authGuard], data: { roles: ['USER'] },
+    loadComponent: () => import('./features/reservations/my-reservations').then(m => m.MyReservations) },
+  { path: 'my-reservations/:id', title: 'Mi reserva | Ica Stay', canActivate: [authGuard], data: { roles: ['USER'] },
+    loadComponent: () => import('./features/reservations/my-reservations').then(m => m.MyReservations) },
   { path: 'hotels', title: 'Hoteles | Ica Stay', loadComponent: () => import('./features/hotels/catalog').then(m => m.HotelCatalog) },
   { path: 'hotels/:id', title: 'Detalle del hotel | Ica Stay', loadComponent: () => import('./features/hotels/detail').then(m => m.HotelDetail) },
   {

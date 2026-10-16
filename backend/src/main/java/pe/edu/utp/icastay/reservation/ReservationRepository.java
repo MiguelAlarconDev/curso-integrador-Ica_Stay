@@ -12,6 +12,25 @@ import org.springframework.data.repository.query.Param;
 
 interface ReservationRepository extends JpaRepository<ReservationEntity, UUID> {
 
+    String USER_SELECT = """
+            select new pe.edu.utp.icastay.reservation.UserReservationView(
+                r.id, hotel.id, hotel.name, room.id, room.number, r.checkIn, r.checkOut,
+                r.guests, r.status, r.expiresAt, r.nightlyPriceSnapshot, r.totalAmount, r.currency, r.createdAt)
+            """;
+    String USER_FROM = """
+            from ReservationEntity r
+            join RoomEntity room on room.id = r.roomId
+            join HotelEntity hotel on hotel.id = room.hotelId
+            where r.guestUserId = :guestUserId
+            """;
+
+    @Query(value = USER_SELECT + USER_FROM + " order by r.createdAt desc, r.id desc",
+            countQuery = "select count(r.id) from ReservationEntity r where r.guestUserId = :guestUserId")
+    Page<UserReservationView> findUserPage(@Param("guestUserId") UUID guestUserId, Pageable pageable);
+
+    @Query(USER_SELECT + USER_FROM + " and r.id = :id")
+    Optional<UserReservationView> findUserDetail(@Param("guestUserId") UUID guestUserId, @Param("id") UUID id);
+
     String ADMIN_SELECT = """
             select new pe.edu.utp.icastay.reservation.AdminReservationView(
                 r.id, r.checkIn, r.checkOut, r.guests, r.status, r.expiresAt,

@@ -4,7 +4,7 @@
   <nav aria-label="Navegación principal">
     <a routerLink="/" fragment="alojamientos">Alojamientos</a>
     <a routerLink="/" fragment="explorar">Explorar Ica</a>
-    <button type="button" disabled>Mis reservas <small>Próximamente</small></button>
+    @if (auth.role() === 'USER') { <a routerLink="/my-reservations">Mis reservas</a> }
   </nav>
   <div class="session">
     @if (auth.session(); as session) {

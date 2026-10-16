@@ -43,6 +43,7 @@ describe('Booking confirmation', () => {
       totalAmount: 240, nightlyPriceSnapshot: 120, currency: 'USD', status: 'PENDING_PAYMENT', expiresAt: '2030-01-01T12:15:00Z' }, { status: 201, statusText: 'Created' }); fixture.detectChanges();
     for (const value of ['reservation-real', '240.00 USD', 'PENDING_PAYMENT', '12:15:00', 'No está confirmada']) expect(page.textContent).toContain(value);
     expect(page.querySelector('.create-booking')).toBeNull();
+    expect(page.querySelector('.history-link')?.getAttribute('href')).toBe('/my-reservations');
   });
   it.each(['HOTEL_ADMIN', 'SUPER_ADMIN'])('does not offer booking to %s', role => {
     const { page, http } = setup(role); expect(page.querySelector('.create-booking')).toBeNull(); http.expectNone(api);
@@ -58,7 +59,10 @@ describe('Booking confirmation', () => {
     const { fixture, page, confirm, submit, http } = setup(); confirm(); submit(); const request = http.expectOne(api);
     if (status === 0) request.error(new ProgressEvent('error')); else request.flush({}, { status, statusText: 'Rejected' });
     fixture.detectChanges(); expect(page.querySelector('[role="alert"]')).not.toBeNull(); http.expectNone(api);
-    if (status === 0 || status === 500) { expect(page.textContent).toContain('Resultado incierto'); expect(page.querySelector('.create-booking')).toBeNull(); }
+    if (status === 0 || status === 500) {
+      expect(page.textContent).toContain('Resultado incierto'); expect(page.querySelector('.create-booking')).toBeNull();
+      expect(page.querySelector('.history-link')?.getAttribute('href')).toBe('/my-reservations');
+    }
     if (status === 401) expect(page.querySelector('.login-booking')).not.toBeNull();
     if (status === 409) expect(page.querySelector<HTMLButtonElement>('.create-booking')!.disabled).toBe(true);
   });

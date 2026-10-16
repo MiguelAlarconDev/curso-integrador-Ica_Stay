@@ -23,5 +23,6 @@
     }
   }
   @if (error()) { <p role="alert">{{ error() }}</p> }
+  @if (result() || uncertain()) { <a class="btn btn-outline history-link" routerLink="/my-reservations">Consultar mis reservas</a> }
   @if (!sending() && !uncertain() && !result()) { <button class="btn btn-outline refresh-rooms" (click)="refresh.emit()">Consultar disponibilidad nuevamente</button> }
 </section>

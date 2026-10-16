@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, input, output, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
@@ -10,7 +10,7 @@ import { AvailabilityQuery, RoomView } from '../../core/models/room';
 import { ReservationView } from '../../core/models/reservation';
 import { bookingReturn } from '../../core/auth/booking-return';
 
-@Component({ selector: 'app-booking', imports: [ReactiveFormsModule, DecimalPipe, DatePipe],
+@Component({ selector: 'app-booking', imports: [ReactiveFormsModule, DecimalPipe, DatePipe, RouterLink],
   templateUrl: './booking.html', styleUrl: './hotels.css', changeDetection: ChangeDetectionStrategy.OnPush })
 export class Booking {
   readonly room = input.required<RoomView>();

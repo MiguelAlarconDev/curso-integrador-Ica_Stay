@@ -2,6 +2,17 @@
 
 ## Catálogo público implementado — 5.1
 
+Historial 5.4: GET `/api/v1/reservations/me?page=0` y GET `/api/v1/reservations/{id}`,
+exclusivos USER, propiedad obtenida del JWT y restringida en SQL. Listado de 20
+registros fijos, createdAt DESC/id DESC; respuesta paginada habitual. Detalle ajeno
+o inexistente: 404. 401/403 por seguridad; 400 por página/UUID inválidos.
+UserReservationView: id, hotelId, hotelName, roomId, roomNumber, checkIn, checkOut,
+guests, status, expiresAt nullable, nightlyPriceSnapshot, totalAmount, currency,
+createdAt, evaluatedAt, holdExpired. Incluye establecimientos inactivos. Nombres
+actuales e importes históricos. holdExpired usa expiresAt <= evaluatedAt solo para
+PENDING_PAYMENT, sin persistir cambios. POST y API administrativa intactos.
+Ver [spec de historial](../specs/frontend/user-reservation-history.md).
+
 Creación 5.3: POST `/api/v1/reservations`, solo USER. Payload inalterado
 `{roomId,checkIn,checkOut,guests}`; identidad del JWT y cálculo/snapshot del servidor.
 Se rechaza checkIn anterior a hoy UTC (400). Conserva bloqueo pesimista y retención

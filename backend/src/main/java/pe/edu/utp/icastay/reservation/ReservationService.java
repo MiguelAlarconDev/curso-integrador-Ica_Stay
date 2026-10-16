@@ -100,6 +100,24 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
+    public UserReservationPage listOwn(UUID guestUserId, int page) {
+        if (page < 0 || (long) page * 20 > Integer.MAX_VALUE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pagina invalida");
+        }
+        Instant now = clock.instant();
+        var result = reservations.findUserPage(guestUserId, PageRequest.of(page, 20));
+        return new UserReservationPage(result.getContent().stream().map(item -> item.evaluatedAt(now)).toList(),
+                result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
+    }
+
+    @Transactional(readOnly = true)
+    public UserReservationView findOwn(UUID guestUserId, UUID id) {
+        Instant now = clock.instant();
+        return reservations.findUserDetail(guestUserId, id).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND)).evaluatedAt(now);
+    }
+
+    @Transactional(readOnly = true)
     public AdminReservationPage listAssigned(UUID adminId, int page, int size, String status,
             LocalDate from, LocalDate to) {
         if (page < 0 || size < 1 || size > 100 || (long) page * size > Integer.MAX_VALUE

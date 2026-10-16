@@ -1,5 +1,23 @@
 # Frontend
 
+## Mis reservas — incremento 5.4
+
+`/my-reservations` y `/my-reservations/:id` exigen USER. GET `/api/v1/reservations/me?page=0`
+devuelve 20 registros por página; GET `/{id}` devuelve solo detalle propio. Navegación
+conserva página. Ambos usan el interceptor existente, con carga, vacío, error/404,
+reintento y cancelación de lecturas obsoletas. Pérdida/cambio de identidad retira los datos.
+
+Se muestran nombres actuales de hotel/habitación (también inactivos), importes
+históricos y estado persistido. `holdExpired` y `evaluatedAt` del servidor indican
+retención vencida sin convertir PENDING_PAYMENT en EXPIRED. Actualizar consulta
+revalida; no se usa el reloj del navegador para decidir estados.
+
+Enlaces desde navegación USER y éxito/resultado incierto de creación. Una ausencia
+inmediata en historial no prueba que un POST haya fallado; no se reenvía automáticamente.
+Validación manual: dos cuentas USER, paginación/detalle/retorno, ajena → 404,
+actualizar después del vencimiento, logout y revisión móvil/teclado. Sin pagos,
+cancelaciones ni escrituras. Contrato en la spec `user-reservation-history.md`.
+
 ## Reserva pendiente — incremento 5.3
 
 Seleccionar una habitación abre un resumen con importe estimado y confirmación

@@ -28,12 +28,25 @@ public class PaymentAttemptEntity {
     @Column(nullable = false, length = 30)
     private String status;
 
-    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
+    @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
     protected PaymentAttemptEntity() {
     }
+
+    static PaymentAttemptEntity simulated(UUID reservationId, PaymentResult result, Instant now) {
+        PaymentAttemptEntity attempt = new PaymentAttemptEntity();
+        attempt.reservationId = reservationId;
+        attempt.status = result.name();
+        attempt.externalReference = "sim-" + UUID.randomUUID();
+        attempt.createdAt = now;
+        attempt.updatedAt = now;
+        return attempt;
+    }
+
+    public UUID getId() { return id; }
+    public String getExternalReference() { return externalReference; }
 }

@@ -42,6 +42,7 @@
             <div><dt>Creada (UTC)</dt><dd>{{ reservation.createdAt | date:'yyyy-MM-dd HH:mm:ss':'UTC' }}</dd></div>
             <div><dt>Vencimiento de retención (UTC)</dt><dd>{{ reservation.expiresAt ? (reservation.expiresAt | date:'yyyy-MM-dd HH:mm:ss':'UTC') : 'Sin vencimiento informado' }}</dd></div>
           </dl>
+          <app-reservation-payment [reservation]="reservation" (updated)="detail.set($event)" />
         </article>
       }
     }

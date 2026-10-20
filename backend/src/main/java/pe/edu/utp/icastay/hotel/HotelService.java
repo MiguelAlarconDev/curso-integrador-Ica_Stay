@@ -21,6 +21,50 @@ public class HotelService {
         this.hotels = hotels;
     }
 
+    @Transactional(readOnly = true)
+    public SuperadminHotelDetail findGlobal(UUID id) {
+        return hotels.findGlobalDetail(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    @Transactional
+    public SuperadminHotelDetail updateGlobal(UUID id, UpdateHotelRequest request) {
+        HotelEntity hotel = hotels.findForUpdate(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        var details = validateDetails(request);
+        hotel.updateDetails(details.name(), details.description(), details.address(), details.city());
+        hotels.flush();
+        return findGlobal(id);
+    }
+
+    @Transactional
+    public SuperadminHotelDetail changeGlobalStatus(UUID id, HotelStatusRequest request) {
+        HotelEntity hotel = hotels.findForUpdate(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (request == null || !("ACTIVE".equals(request.status()) || "INACTIVE".equals(request.status()))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "estado invalido");
+        }
+        hotel.changeStatus(request.status());
+        hotels.flush();
+        return findGlobal(id);
+    }
+
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public Optional<HotelView> findActiveForBooking(UUID id) {
+        return hotels.findActiveForBooking(id).map(this::toView);
+    }
+
+    @Transactional(readOnly = true)
+    public SuperadminHotelPage listGlobal(int page, String name, String status) {
+        final int size = 20;
+        if (page < 0 || (long) page * size > Integer.MAX_VALUE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "paginacion invalida");
+        }
+        if (status != null && !status.equals("ACTIVE") && !status.equals("INACTIVE")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "estado invalido");
+        }
+        var result = hotels.searchGlobal(searchText(name, 180), status, PageRequest.of(page, size));
+        return new SuperadminHotelPage(result.getContent(), result.getNumber(), result.getSize(),
+                result.getTotalElements(), result.getTotalPages());
+    }
+
     public HotelPage listActive(int page, int size) {
         return listActive(page, size, null, null);
     }
@@ -59,7 +103,14 @@ public class HotelService {
 
     @Transactional
     public HotelView updateAssigned(UUID adminUserId, UpdateHotelRequest request) {
-        HotelEntity hotel = assignedHotel(adminUserId);
+        HotelEntity hotel = hotels.findAssignedForUpdate(adminUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        UpdateHotelRequest details = validateDetails(request);
+        hotel.updateDetails(details.name(), details.description(), details.address(), details.city());
+        return toView(hotel);
+    }
+
+    static UpdateHotelRequest validateDetails(UpdateHotelRequest request) {
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "datos de hotel invalidos");
         }
@@ -71,9 +122,7 @@ public class HotelService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "descripcion demasiado larga");
         }
         if (description != null && description.isBlank()) description = null;
-        // All validation completes before mutating the managed entity.
-        hotel.updateDetails(name, description, address, city);
-        return toView(hotel);
+        return new UpdateHotelRequest(name, description, address, city);
     }
 
     private HotelEntity assignedHotel(UUID adminUserId) {
@@ -81,7 +130,7 @@ public class HotelService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
-    private String requiredText(String value, int maxLength) {
+    private static String requiredText(String value, int maxLength) {
         if (value == null || value.isBlank() || value.strip().length() > maxLength) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "datos de hotel invalidos");
         }

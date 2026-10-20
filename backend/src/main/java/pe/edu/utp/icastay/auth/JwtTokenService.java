@@ -40,6 +40,7 @@ public class JwtTokenService {
         claims.put("sub", user.getEmail());
         claims.put("userId", user.getId().toString());
         claims.put("role", user.getRole());
+        claims.put("ver", user.getTokenVersion());
         claims.put("iat", now.getEpochSecond());
         claims.put("exp", now.plusSeconds(TOKEN_TTL_SECONDS).getEpochSecond());
 

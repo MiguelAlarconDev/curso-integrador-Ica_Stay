@@ -128,7 +128,7 @@ class UserReservationIntegrationTest {
             mvc.perform(get(path)).andExpect(status().isUnauthorized());
             mvc.perform(get(path).header("Authorization", "Bearer invalid.jwt")).andExpect(status().isUnauthorized());
             for (String role : List.of("HOTEL_ADMIN", "SUPER_ADMIN")) {
-                mvc.perform(get(path).header("Authorization", "Bearer " + token(a, role))).andExpect(status().isForbidden());
+                mvc.perform(get(path).header("Authorization", "Bearer " + token(user(role), role))).andExpect(status().isForbidden());
             }
         }
         for (String page : List.of("-1", "2147483647", "bad")) {

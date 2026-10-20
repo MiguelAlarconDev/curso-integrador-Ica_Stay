@@ -212,6 +212,7 @@ class AdminRoomHttpIntegrationTest {
     @ParameterizedTest
     @ValueSource(strings = {"USER", "SUPER_ADMIN"})
     void otherRolesGetForbiddenOnEveryEndpoint(String role) throws Exception {
+        jdbc.update("UPDATE users SET role=? WHERE id=?", role, adminA);
         assertAllEndpoints(token(adminA, role), 403);
     }
 

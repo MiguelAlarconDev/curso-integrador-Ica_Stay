@@ -74,6 +74,11 @@ Mostrar búsqueda/carga, habitaciones sin resultados, disponibilidad cambiada (`
 
 ## Primer incremento y pendientes
 
+2026-10-19 (7.3.3): crear reserva mantiene la comprobación de hotel ACTIVE (404
+si está inactivo), ahora bajo bloqueo compartido del hotel después de bloquear la
+habitación. Se coordina con la desactivación global sin cambiar reservas previas.
+Ver [detalle y estado administrativo](superadmin-edit-hotel.md).
+
 La confirmación transaccional mediante endpoint autenticado de simulación se incorpora en [pagos simulados 6.2/6.3](simulated-payments.md). Integración real de MercadoPago, cancelación, políticas de reembolso y facturación siguen pendientes.
 
 [Notion](https://app.notion.com/p/3e82918d49f4817f94f1c329d2ff194f?pvs=204) · [Decisiones](../decisions/architecture-decisions.md)

@@ -48,3 +48,6 @@ data/
 *.sqlite3
 models/
 ollama/
+
+# Resumen temporal de trabajo local
+/codex-resultado.txt

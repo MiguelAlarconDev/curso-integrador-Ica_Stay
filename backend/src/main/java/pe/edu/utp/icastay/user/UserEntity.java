@@ -49,6 +49,15 @@ public class UserEntity {
         return new UserEntity(name, email, passwordHash, "USER", "ACTIVE");
     }
 
+    public static UserEntity hotelAdministrator(String name, String email, String passwordHash) {
+        return new UserEntity(name, email, passwordHash, "HOTEL_ADMIN", "ACTIVE");
+    }
+
+    @Column(name = "token_version", nullable = false)
+    private long tokenVersion;
+
+    public long getTokenVersion() { return tokenVersion; }
+
     public UUID getId() { return id; }
     public String getName() { return name; }
     public String getEmail() { return email; }

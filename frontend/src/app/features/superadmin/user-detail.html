@@ -1,0 +1,39 @@
+<app-site-header />
+<main class="container" id="contenido" tabindex="-1">
+  <a class="back" routerLink="/superadmin/users" [queryParams]="filters">Volver a usuarios</a>
+  <h1>Detalle de usuario</h1>
+  <section aria-label="Datos del usuario" [attr.aria-busy]="loading()">
+    @if (loading()) { <p role="status">Cargando usuario...</p> }
+    @else if (error()) {
+      <p role="alert">{{ error() }}</p><button class="btn btn-outline retry" type="button" (click)="retry()">Reintentar</button>
+    } @else if (user(); as user) {
+      @if (message()) { <p role="status">{{ message() }}</p> }
+      @if (mutationError()) { <p role="alert">{{ mutationError() }}</p> }
+      <div class="actions" [attr.aria-busy]="busy()">
+        <button class="btn btn-outline status-action" type="button" (click)="askStatus()"
+          [disabled]="busy() || !!pendingStatus() || (user.id === auth.userId() && user.status === 'ACTIVE')">
+          {{ user.status === 'ACTIVE' ? 'Desactivar usuario' : 'Activar usuario' }}</button>
+      </div>
+      @if (user.id === auth.userId()) { <p>No puedes desactivar tu propia cuenta.</p> }
+      @if (pendingStatus()) {
+        <section aria-label="Confirmar cambio de estado" aria-live="polite">
+          <p>Confirma {{ pendingStatus() === 'ACTIVE' ? 'activar' : 'desactivar' }} la cuenta de {{ user.name }} ({{ user.email }}).</p>
+          <p>El cambio cierra sus sesiones actuales. Sus reservas y hotel se conservan.</p>
+          <div class="actions"><button class="btn btn-primary confirm-status" type="button" [disabled]="busy()" (click)="confirmStatus()">Confirmar</button>
+            <button class="btn btn-outline cancel-status" type="button" [disabled]="busy()" (click)="cancelStatus()">Cancelar</button></div>
+        </section>
+      }
+      @if (busy()) { <p role="status">Guardando estado...</p> }
+      <dl><dt>Nombre</dt><dd>{{ user.name }}</dd><dt>Correo</dt><dd>{{ user.email }}</dd>
+        <dt>Rol</dt><dd>{{ user.role }}</dd><dt>Estado</dt><dd>{{ user.status === 'ACTIVE' ? 'Activo' : 'Inactivo' }}</dd>
+        <dt>Identificador</dt><dd>{{ user.id }}</dd></dl>
+      @if (user.role === 'HOTEL_ADMIN') {
+        <h2>Hotel asignado</h2>
+        @if (user.hotel; as hotel) {
+          <a class="hotel" [routerLink]="['/superadmin/hotels', hotel.id]">{{ hotel.name }}</a>
+          <dl><dt>Identificador del hotel</dt><dd>{{ hotel.id }}</dd><dt>Estado del hotel</dt><dd>{{ hotel.status === 'ACTIVE' ? 'Activo' : 'Inactivo' }}</dd></dl>
+        } @else { <p>Sin hotel asignado.</p> }
+      }
+    }
+  </section>
+</main>

@@ -25,7 +25,9 @@ import pe.edu.utp.icastay.user.UserEntity;
         "icastay.security.jwt.secret=12345678901234567890123456789012",
         "icastay.cors.allowed-origin=http://localhost:4200"
 })
+@org.springframework.transaction.annotation.Transactional
 class SecurityAuthorizationIntegrationTest {
+    @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     private MockMvc mvc;
 
@@ -136,8 +138,10 @@ class SecurityAuthorizationIntegrationTest {
 
     private String tokenFor(String role) {
         UserEntity user = mock(UserEntity.class);
-        when(user.getId()).thenReturn(UUID.fromString("11111111-1111-1111-1111-111111111111"));
-        when(user.getEmail()).thenReturn("user@example.com");
+        var id = UUID.randomUUID();
+        jdbc.update("insert into users(id,name,email,password_hash,role) values(?, 'Actor', ?, 'unused', ?)", id, id + "@example.test", role);
+        when(user.getId()).thenReturn(id);
+        when(user.getEmail()).thenReturn(id + "@example.test");
         when(user.getRole()).thenReturn(role);
         return jwtTokenService.createToken(user);
     }

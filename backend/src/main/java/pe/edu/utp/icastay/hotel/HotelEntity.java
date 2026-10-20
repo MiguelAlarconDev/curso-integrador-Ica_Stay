@@ -36,11 +36,21 @@ public class HotelEntity {
     protected HotelEntity() {
     }
 
+    static HotelEntity create(UUID adminUserId, UpdateHotelRequest details) {
+        HotelEntity hotel = new HotelEntity();
+        hotel.adminUserId = adminUserId;
+        hotel.status = "ACTIVE";
+        hotel.updateDetails(details.name(), details.description(), details.address(), details.city());
+        return hotel;
+    }
+
     public UUID getId() { return id; }
     public String getName() { return name; }
     public String getDescription() { return description; }
     public String getAddress() { return address; }
     public String getCity() { return city; }
+
+    void changeStatus(String status) { this.status = status; }
 
     void updateDetails(String name, String description, String address, String city) {
         this.name = name;

@@ -1,0 +1,32 @@
+<app-site-header />
+<main class="container" id="contenido" tabindex="-1">
+  <a routerLink="/superadmin/hotels">Volver a hoteles</a>
+  <span class="eyebrow">Administración de Ica Stay</span>
+  <h1>Registrar hotel</h1>
+  <p>El hotel y su nueva cuenta de administrador se crearán activos.</p>
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate [attr.aria-busy]="sending()">
+    @for (group of groups; track group.label) {
+      <fieldset [disabled]="sending()"><legend>{{ group.label }}</legend>
+        @for (field of group.fields; track field.key) {
+          <div class="field"><label [for]="field.key">{{ field.label }}</label>
+            @if (field.type === 'textarea') {
+              <textarea [id]="field.key" [formControlName]="field.key" [maxlength]="field.max" rows="4"
+                [attr.aria-invalid]="invalid(field.key)" [attr.aria-describedby]="field.key + '-help'"></textarea>
+            } @else {
+              <input [id]="field.key" [type]="field.type" [formControlName]="field.key" [maxlength]="field.max" required
+                [attr.autocomplete]="field.type === 'password' ? 'new-password' : 'off'"
+                [attr.aria-invalid]="invalid(field.key)" [attr.aria-describedby]="field.key + '-help'">
+            }
+            <span [id]="field.key + '-help'" [class.field-error]="invalid(field.key)">
+              @if (invalid(field.key)) { Revisa este campo. } {{ field.help }}
+            </span>
+          </div>
+        }
+      </fieldset>
+    }
+    @if (error()) { <p role="alert">{{ error() }}</p> }
+    <div class="actions"><button class="btn btn-primary" type="submit" [disabled]="sending()">{{ sending() ? 'Creando hotel…' : 'Crear hotel y administrador' }}</button>
+      <a routerLink="/superadmin/hotels">Volver al listado</a></div>
+    <p role="status">{{ sending() ? 'Creación en curso…' : '' }}</p>
+  </form>
+</main>

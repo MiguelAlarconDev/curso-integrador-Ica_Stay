@@ -62,7 +62,7 @@ class ReservationServiceTest {
         RoomEntity room = activeRoom(2, new BigDecimal("150.00"));
         when(users.existsByIdAndStatus(GUEST_ID, "ACTIVE")).thenReturn(true);
         when(rooms.findByIdAndStatus(ROOM_ID, "ACTIVE")).thenReturn(Optional.of(room));
-        when(hotels.findActive(HOTEL_ID)).thenReturn(Optional.of(
+        when(hotels.findActiveForBooking(HOTEL_ID)).thenReturn(Optional.of(
                 new HotelView(HOTEL_ID, "Hotel Ica", "Centro", "Av. Principal", "Ica")));
         when(reservations.findOverlapping(ROOM_ID, CHECK_IN, CHECK_OUT)).thenReturn(List.of());
         when(reservations.save(any(ReservationEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -115,7 +115,7 @@ class ReservationServiceTest {
         RoomEntity room = activeRoom(2, BigDecimal.TEN);
         when(users.existsByIdAndStatus(GUEST_ID, "ACTIVE")).thenReturn(true);
         when(rooms.findByIdAndStatus(ROOM_ID, "ACTIVE")).thenReturn(Optional.of(room));
-        when(hotels.findActive(HOTEL_ID)).thenReturn(Optional.empty());
+        when(hotels.findActiveForBooking(HOTEL_ID)).thenReturn(Optional.empty());
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> service.create(GUEST_ID, validRequest()));
@@ -153,7 +153,7 @@ class ReservationServiceTest {
         RoomEntity room = activeRoom(1, BigDecimal.TEN);
         when(users.existsByIdAndStatus(GUEST_ID, "ACTIVE")).thenReturn(true);
         when(rooms.findByIdAndStatus(ROOM_ID, "ACTIVE")).thenReturn(Optional.of(room));
-        when(hotels.findActive(HOTEL_ID)).thenReturn(Optional.of(
+        when(hotels.findActiveForBooking(HOTEL_ID)).thenReturn(Optional.of(
                 new HotelView(HOTEL_ID, "Hotel Ica", "Centro", "Av. Principal", "Ica")));
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
@@ -185,7 +185,7 @@ class ReservationServiceTest {
         ReservationEntity expiredPendingPayment = overlappingReservation("PENDING_PAYMENT", NOW.minusSeconds(1));
         when(users.existsByIdAndStatus(GUEST_ID, "ACTIVE")).thenReturn(true);
         when(rooms.findByIdAndStatus(ROOM_ID, "ACTIVE")).thenReturn(Optional.of(room));
-        when(hotels.findActive(HOTEL_ID)).thenReturn(Optional.of(
+        when(hotels.findActiveForBooking(HOTEL_ID)).thenReturn(Optional.of(
                 new HotelView(HOTEL_ID, "Hotel Ica", "Centro", "Av. Principal", "Ica")));
         when(reservations.findOverlapping(ROOM_ID, CHECK_IN, CHECK_OUT))
                 .thenReturn(List.of(cancelled, expired, expiredPendingPayment));
@@ -201,7 +201,7 @@ class ReservationServiceTest {
         RoomEntity room = activeRoom(2, BigDecimal.TEN);
         when(users.existsByIdAndStatus(GUEST_ID, "ACTIVE")).thenReturn(true);
         when(rooms.findByIdAndStatus(ROOM_ID, "ACTIVE")).thenReturn(Optional.of(room));
-        when(hotels.findActive(HOTEL_ID)).thenReturn(Optional.of(
+        when(hotels.findActiveForBooking(HOTEL_ID)).thenReturn(Optional.of(
                 new HotelView(HOTEL_ID, "Hotel Ica", "Centro", "Av. Principal", "Ica")));
         when(reservations.findOverlapping(ROOM_ID, CHECK_IN, CHECK_OUT))
                 .thenReturn(List.of(blockingReservation));

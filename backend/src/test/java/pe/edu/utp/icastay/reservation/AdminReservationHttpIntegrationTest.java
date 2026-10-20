@@ -225,6 +225,7 @@ class AdminReservationHttpIntegrationTest {
     @ParameterizedTest
     @ValueSource(strings = {"USER", "SUPER_ADMIN"})
     void onlyHotelAdminMayRead(String role) throws Exception {
+        jdbc.update("UPDATE users SET role=? WHERE id=?", role, adminA);
         String token = token(adminA, role);
         assertEquals(403, get(PATH, token).statusCode());
         assertEquals(403, get(PATH + "/" + own.get(0), token).statusCode());

@@ -19,6 +19,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 class JwtAuthenticationFilterTest {
 
+    private final pe.edu.utp.icastay.user.UserService users = mock(pe.edu.utp.icastay.user.UserService.class);
+    @org.junit.jupiter.api.BeforeEach void account() {
+        var id = UUID.fromString("11111111-1111-1111-1111-111111111111");
+        when(users.access(id)).thenReturn(java.util.Optional.of(new pe.edu.utp.icastay.user.UserAccess(id,"user@example.com","USER","ACTIVE",0)));
+    }
     @AfterEach
     void tearDown() {
         SecurityContextHolder.clearContext();
@@ -35,7 +40,7 @@ class JwtAuthenticationFilterTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer valid-token");
 
-        new JwtAuthenticationFilter(jwtTokenService)
+        new JwtAuthenticationFilter(jwtTokenService, users)
                 .doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
 
         assertNotNull(SecurityContextHolder.getContext().getAuthentication());
@@ -55,7 +60,7 @@ class JwtAuthenticationFilterTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer bad-token");
 
-        new JwtAuthenticationFilter(jwtTokenService)
+        new JwtAuthenticationFilter(jwtTokenService, users)
                 .doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
 
         assertNull(SecurityContextHolder.getContext().getAuthentication());

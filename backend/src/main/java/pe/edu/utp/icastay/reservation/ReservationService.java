@@ -70,7 +70,7 @@ public class ReservationService {
 
         RoomEntity room = rooms.findByIdAndStatus(request.roomId(), ACTIVE_STATUS)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if (hotels.findActive(room.getHotelId()).isEmpty()) {
+        if (hotels.findActiveForBooking(room.getHotelId()).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
         if (request.guests() > room.getCapacity()) {

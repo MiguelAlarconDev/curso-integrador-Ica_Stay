@@ -137,6 +137,7 @@ class PaymentIntegrationTest {
         mvc.perform(post(url).header("Authorization", "Bearer invalid.jwt").contentType("application/json")
                 .content(body(reservation, "APPROVED"))).andExpect(status().isUnauthorized());
         for (String role : List.of("HOTEL_ADMIN", "SUPER_ADMIN")) {
+            jdbc.update("UPDATE users SET role=? WHERE id=?", role, admin);
             mvc.perform(post(url).header("Authorization", bearer(admin, role)).contentType("application/json")
                     .content(body(reservation, "APPROVED"))).andExpect(status().isForbidden());
         }

@@ -37,6 +37,7 @@ export class Login {
       next: () => {
         this.form.controls.password.reset();
         void this.router.navigateByUrl(this.auth.hasRole('HOTEL_ADMIN') ? '/admin/hotel'
+          : this.auth.hasRole('SUPER_ADMIN') ? '/superadmin/dashboard'
           : this.auth.hasRole('USER') && this.returnUrl ? this.returnUrl : '/');
       },
       error: (error: unknown) => {

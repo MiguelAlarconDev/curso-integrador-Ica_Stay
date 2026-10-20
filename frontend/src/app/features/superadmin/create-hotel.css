@@ -1,0 +1,16 @@
+main { padding-block: 36px 80px; max-width: 960px; }
+.eyebrow { display: block; margin-top: 28px; }
+h1 { font-size: clamp(2rem, 5vw, 3.5rem); margin-block: 12px 20px; }
+form { margin-top: 32px; }
+fieldset { border: 1px solid var(--ica-line); border-radius: 12px; padding: 24px; margin-bottom: 28px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; min-width: 0; }
+legend { padding-inline: 8px; font-size: 1.4rem; }
+.field { min-width: 0; }
+label { display: block; margin-bottom: 8px; }
+input, textarea { width: 100%; min-width: 0; padding: 12px; min-height: 44px; border: 1px solid var(--ica-line); background: var(--ica-paper); color: inherit; font: inherit; }
+textarea { resize: vertical; }
+.field span { display: block; margin-top: 8px; font-size: .85rem; color: var(--ica-muted); }
+.field span.field-error, [role="alert"] { color: #9b2929; }
+[aria-invalid="true"] { border-color: #9b2929; }
+.actions { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; margin-top: 24px; }
+.btn { min-height: 44px; white-space: normal; }
+@media (max-width: 640px) { fieldset { grid-template-columns: minmax(0, 1fr); padding: 16px; } }

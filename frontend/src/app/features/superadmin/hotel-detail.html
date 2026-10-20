@@ -1,0 +1,46 @@
+<app-site-header />
+<main class="container" id="contenido" tabindex="-1" [attr.aria-busy]="loading() || busy()">
+  <a class="back" routerLink="/superadmin/hotels" [queryParams]="backQuery()">Volver a hoteles</a>
+  <span class="eyebrow">Administración de Ica Stay</span><h1>Detalle del hotel</h1>
+  @if (loading()) { <p role="status">Cargando hotel…</p> }
+  @if (error()) { <p role="alert">{{ error() }}</p> }
+  @if (!loading() && !data() && !missing()) { <button class="btn btn-outline retry" (click)="retry()">Reintentar</button> }
+  @if (message()) { <p role="status">{{ message() }}</p> }
+  @if (data(); as hotel) {
+    <section aria-label="Datos administrativos"><h2>{{ hotel.name }}</h2>
+      <p>Estado: <strong>{{ hotel.status === 'ACTIVE' ? 'Activo' : 'Inactivo' }}</strong></p>
+      <p>ID: {{ hotel.id }}</p><p>Administrador: {{ hotel.adminName }} · {{ hotel.adminEmail }}</p>
+      <p>ID del administrador: {{ hotel.adminUserId }}</p>
+    </section>
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <fieldset [disabled]="busy() || !!pendingStatus()"><legend>Datos del hotel</legend>
+        @for (field of fields; track field.key) {
+          <div class="field"><label [for]="field.key">{{ field.label }}</label>
+            @if (field.key === 'description') {
+              <textarea [id]="field.key" [formControlName]="field.key" [maxlength]="field.max" rows="4"
+                [attr.aria-invalid]="form.controls[field.key].touched && form.controls[field.key].invalid" [attr.aria-describedby]="field.key + '-help'"></textarea>
+            } @else {
+              <input [id]="field.key" [formControlName]="field.key" [maxlength]="field.max" required
+                [attr.aria-invalid]="form.controls[field.key].touched && form.controls[field.key].invalid" [attr.aria-describedby]="field.key + '-help'">
+            }
+            <span [id]="field.key + '-help'">@if (form.controls[field.key].touched && form.controls[field.key].invalid) { Revisa este campo. } Máximo {{ field.max }} caracteres.</span>
+          </div>
+        }
+      </fieldset>
+      <button type="submit" class="btn btn-primary" [disabled]="busy() || !!pendingStatus()">Guardar datos</button>
+    </form>
+    <section class="state" aria-labelledby="state-title"><h2 id="state-title">Estado del hotel</h2>
+      <p>Un hotel inactivo no recibe nuevas reservas. Sus habitaciones y reservas existentes se conservan.</p>
+      @if (pendingStatus(); as next) {
+        <section class="confirmation" aria-labelledby="confirmation-title">
+          <h3 id="confirmation-title">¿Confirmas {{ next === 'ACTIVE' ? 'activar' : 'desactivar' }} {{ hotel.name }}?</h3>
+          <div class="actions"><button type="button" class="btn btn-primary confirm-status" [disabled]="busy()" (click)="confirmStatus()">Confirmar {{ next === 'ACTIVE' ? 'activación' : 'desactivación' }}</button>
+            <button type="button" class="btn btn-outline cancel-status" [disabled]="busy()" (click)="cancelStatus()">Cancelar</button></div>
+        </section>
+      } @else {
+        <button type="button" class="btn btn-outline change-status" [disabled]="busy()" (click)="askStatus()">{{ hotel.status === 'ACTIVE' ? 'Desactivar hotel' : 'Activar hotel' }}</button>
+      }
+    </section>
+    <p role="status">{{ busy() ? 'Guardando cambios…' : '' }}</p>
+  }
+</main>

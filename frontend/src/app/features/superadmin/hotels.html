@@ -1,0 +1,51 @@
+<app-site-header />
+<main class="container" id="contenido" tabindex="-1">
+  <a class="back" routerLink="/superadmin/dashboard">Volver al resumen</a>
+  <span class="eyebrow">Administración de Ica Stay</span>
+  <h1>Hoteles de la plataforma</h1>
+  @if (created) { <p role="status">Hotel y administrador creados correctamente.</p> }
+  <a class="btn btn-primary" routerLink="/superadmin/hotels/new">Registrar hotel</a>
+  <p>Consulta hoteles activos e inactivos y sus administradores asignados.</p>
+  <form [formGroup]="form" (ngSubmit)="apply()" aria-label="Filtrar hoteles">
+    <div class="field"><label for="hotel-name">Nombre del hotel</label>
+      <input id="hotel-name" formControlName="name" maxlength="180" aria-describedby="filter-help"></div>
+    <div class="field"><label for="hotel-status">Estado</label>
+      <select id="hotel-status" formControlName="status"><option value="">Todos</option>
+        <option value="ACTIVE">Activo</option><option value="INACTIVE">Inactivo</option></select></div>
+    <div class="actions"><button class="btn btn-primary" type="submit" [disabled]="form.invalid">Aplicar filtros</button>
+      <button class="btn btn-outline clear" type="button" (click)="clear()">Limpiar filtros</button></div>
+  </form>
+  <p id="filter-help" class="note">Nombre parcial, sin distinguir mayúsculas. Hasta 20 hoteles por página.</p>
+  <section aria-label="Resultados" [attr.aria-busy]="loading()">
+    @if (loading()) { <p role="status">Cargando hoteles…</p> }
+    @else if (error()) {
+      <p role="alert">{{ error() }}</p><button class="btn btn-outline retry" type="button" (click)="retry()">Reintentar</button>
+    } @else if (result(); as result) {
+      <p role="status">{{ result.totalElements }} hoteles encontrados.</p>
+      @if (!result.content.length) {
+        <p>No hay hoteles en esta página para los filtros seleccionados.</p>
+        @if (result.page > 0) { <button class="btn btn-outline first" type="button" (click)="page(0)">Volver a la primera página</button> }
+      }
+      <div class="hotels">
+        @for (hotel of result.content; track hotel.id) {
+          <article>
+            <span class="status" [class.inactive]="hotel.status === 'INACTIVE'">{{ hotel.status === 'ACTIVE' ? 'Activo' : 'Inactivo' }}</span>
+            <h2>{{ hotel.name }}</h2><p>{{ hotel.address }} · {{ hotel.city }}</p>
+            <a [routerLink]="['/superadmin/hotels', hotel.id]" [queryParams]="query()">Ver y editar hotel</a>
+            <dl><dt>ID del hotel</dt><dd>{{ hotel.id }}</dd>
+              <dt>Administrador asignado</dt><dd>{{ hotel.adminName }}</dd>
+              <dt>Correo</dt><dd>{{ hotel.adminEmail }}</dd>
+              <dt>ID del administrador</dt><dd>{{ hotel.adminUserId }}</dd></dl>
+          </article>
+        }
+      </div>
+      @if (result.totalPages > 0 && result.page < result.totalPages) {
+        <nav class="actions pagination" aria-label="Paginación de hoteles">
+          <button class="btn btn-outline previous" type="button" [disabled]="result.page === 0" (click)="page(result.page - 1)">Anterior</button>
+          <span>Página {{ result.page + 1 }} de {{ result.totalPages }}</span>
+          <button class="btn btn-outline next" type="button" [disabled]="result.page + 1 >= result.totalPages" (click)="page(result.page + 1)">Siguiente</button>
+        </nav>
+      }
+    }
+  </section>
+</main>

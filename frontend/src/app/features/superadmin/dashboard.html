@@ -1,0 +1,42 @@
+<app-site-header />
+<main id="contenido" class="container" tabindex="-1" [attr.aria-busy]="loading()">
+  <span class="eyebrow">Administración de Ica Stay</span>
+  <h1>Resumen de la plataforma</h1>
+  <nav aria-label="Administración"><a class="btn btn-outline" routerLink="/superadmin/hotels">Ver todos los hoteles</a><a class="btn btn-outline" routerLink="/superadmin/users">Ver usuarios</a></nav>
+  <p class="intro">Hoteles, huéspedes y reservas en un solo lugar. Los totales incluyen registros activos e inactivos.</p>
+  @if (loading()) {
+    <p role="status">Cargando estadísticas…</p>
+  } @else if (error()) {
+    <div role="alert"><p>{{ error() }}</p><button type="button" (click)="load()">Reintentar</button></div>
+  } @else if (data(); as d) {
+    <p class="updated">Actualizado: {{ d.generatedAt | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+    @if (empty()) { <p role="status">Todavía no hay datos registrados en la plataforma.</p> }
+    <section aria-label="Totales de la plataforma" class="metrics">
+      <article><h2>Hoteles</h2><strong>{{ d.hotels | number }}</strong></article>
+      <article><h2>Habitaciones</h2><strong>{{ d.rooms | number }}</strong></article>
+      <article><h2>Usuarios</h2><strong>{{ d.users | number }}</strong><p>Todos los roles</p></article>
+      <article><h2>Reservas</h2><strong>{{ d.reservations.total | number }}</strong></article>
+    </section>
+    <section aria-labelledby="reservations-title">
+      <h2 id="reservations-title">Estado de las reservas</h2>
+      <div class="metrics">
+        <article><h3>Pendientes de pago</h3><strong>{{ d.reservations.pendingPayment | number }}</strong>
+          <p>Vigentes: {{ d.reservations.pendingCurrent | number }}</p>
+          <p>Vencidas: {{ d.reservations.pendingExpired | number }}</p></article>
+        <article><h3>Confirmadas</h3><strong>{{ d.reservations.confirmed | number }}</strong></article>
+        <article><h3>Canceladas</h3><strong>{{ d.reservations.cancelled | number }}</strong></article>
+        <article><h3>Expiradas</h3><strong>{{ d.reservations.expired | number }}</strong><p>Estado guardado como EXPIRED</p></article>
+      </div>
+      <p class="note">Las pendientes vencidas conservan su estado original; esta consulta no modifica reservas.</p>
+    </section>
+    <section aria-labelledby="payments-title">
+      <h2 id="payments-title">Intentos de pago simulados</h2>
+      <p class="note">Son intentos registrados, no ingresos ni cobros reales. Una reserva puede tener varios intentos.</p>
+      <div class="metrics">
+        @for (result of d.paymentAttempts | keyvalue; track result.key) {
+          <article><h3>{{ results[result.key] || result.key }}</h3><strong>{{ result.value | number }}</strong></article>
+        }
+      </div>
+    </section>
+  }
+</main>

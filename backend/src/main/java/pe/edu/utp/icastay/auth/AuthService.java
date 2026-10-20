@@ -72,6 +72,27 @@ public class AuthService {
         return email.trim().toLowerCase(Locale.ROOT);
     }
 
+    // Only called by hotel creation inside its transaction; public registration is unchanged.
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public UserEntity createHotelAdmin(String name, String email, String password) {
+        name = normalizeName(name);
+        email = normalizeRegisterEmail(email);
+        password = validatePassword(password);
+        if (password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+            throw invalidRegistration();
+        }
+        if (users.existsByEmail(email)) throw emailAlreadyRegistered();
+        try {
+            return users.saveAndFlush(UserEntity.hotelAdministrator(name, email, passwordEncoder.encode(password)));
+        } catch (DataIntegrityViolationException exception) {
+            for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
+                if (cause instanceof org.hibernate.exception.ConstraintViolationException constraint
+                        && "uq_users_email".equals(constraint.getConstraintName())) throw emailAlreadyRegistered();
+            }
+            throw exception;
+        }
+    }
+
     private String normalizeName(String name) {
         if (name == null || name.isBlank()) {
             throw invalidRegistration();

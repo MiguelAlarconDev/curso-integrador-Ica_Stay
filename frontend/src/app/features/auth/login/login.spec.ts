@@ -26,7 +26,7 @@ describe('Login', () => {
     ['USER', '/hotels/id?checkIn=2030-01-01&checkOut=2030-01-03&guests=2', '/hotels/id?checkIn=2030-01-01&checkOut=2030-01-03&guests=2'],
     ['USER', 'https://evil.test', '/'],
     ['HOTEL_ADMIN', '/hotels/id', '/admin/hotel'],
-    ['SUPER_ADMIN', '/hotels/id', '/'],
+    ['SUPER_ADMIN', '/hotels/id', '/superadmin/dashboard'],
   ])('uses only safe USER return (%s, %s)', (role, returnUrl, expected) => {
     TestBed.overrideProvider(ActivatedRoute, { useValue: { snapshot: { queryParamMap: convertToParamMap({ returnUrl }) } } });
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
@@ -65,7 +65,7 @@ describe('Login', () => {
     const token = `${encode({ alg: 'HS256' })}.${encode({ sub: 'user@example.com', userId: 'test-user', role, iat: now, exp: now + 3600 })}.c2ln`;
     TestBed.inject(HttpTestingController).expectOne(`${TestBed.inject(API_BASE_URL)}/api/v1/auth/login`).flush({ token, tokenType: 'Bearer' });
     fixture.detectChanges();
-    expect(navigate).toHaveBeenCalledWith(role === 'HOTEL_ADMIN' ? '/admin/hotel' : '/');
+    expect(navigate).toHaveBeenCalledWith(role === 'HOTEL_ADMIN' ? '/admin/hotel' : role === 'SUPER_ADMIN' ? '/superadmin/dashboard' : '/');
     expect(page.querySelector('header')!.textContent).toContain('user@example.com');
     page.querySelector<HTMLButtonElement>('.session button')!.click(); fixture.detectChanges();
     expect(page.querySelector('header')!.textContent).not.toContain('user@example.com');

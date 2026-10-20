@@ -1,0 +1,6 @@
+.table-scroll { overflow-x: auto; margin-block: 1rem; }
+table { width: 100%; border-collapse: collapse; text-align: left; }
+caption { text-align: left; font-weight: 600; padding-block: .75rem; }
+th, td { padding: .8rem; border-bottom: 1px solid var(--ica-line); overflow-wrap: anywhere; }
+th { color: var(--ica-clay-dark); }
+@media (max-width: 600px) { table { min-width: 520px; } }

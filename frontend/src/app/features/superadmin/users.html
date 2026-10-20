@@ -1,0 +1,44 @@
+<app-site-header />
+<main class="container" id="contenido" tabindex="-1">
+  <a class="back" routerLink="/superadmin/dashboard">Volver al resumen</a>
+  <span class="eyebrow">Administración de Ica Stay</span>
+  <h1>Usuarios de la plataforma</h1>
+  <p>Consulta las cuentas registradas en Ica Stay.</p>
+  <form [formGroup]="form" (ngSubmit)="apply()" aria-label="Filtrar usuarios">
+    <div class="field"><label for="user-q">Nombre o correo</label>
+      <input id="user-q" formControlName="q" maxlength="254" aria-describedby="filter-help"></div>
+    <div class="field"><label for="user-status">Estado</label>
+      <select id="user-status" formControlName="status"><option value="">Todos</option>
+        <option value="ACTIVE">Activo</option><option value="INACTIVE">Inactivo</option></select></div>
+    <div class="field"><label for="user-role">Rol</label><select id="user-role" formControlName="role"><option value="">Todos</option><option value="USER">USER</option><option value="HOTEL_ADMIN">HOTEL_ADMIN</option><option value="SUPER_ADMIN">SUPER_ADMIN</option></select></div>
+    <div class="actions"><button class="btn btn-primary" type="submit" [disabled]="form.invalid">Aplicar filtros</button>
+      <button class="btn btn-outline clear" type="button" (click)="clear()">Limpiar filtros</button></div>
+  </form>
+  <p id="filter-help" class="note">Nombre o correo parcial, sin distinguir mayúsculas. Hasta 20 usuarios por página.</p>
+  <section aria-label="Resultados" [attr.aria-busy]="loading()">
+    @if (loading()) { <p role="status">Cargando usuarios…</p> }
+    @else if (error()) {
+      <p role="alert">{{ error() }}</p><button class="btn btn-outline retry" type="button" (click)="retry()">Reintentar</button>
+    } @else if (result(); as result) {
+      <p role="status">{{ result.totalElements }} usuarios encontrados.</p>
+      @if (!result.content.length) {
+        <p>No hay usuarios en esta página para los filtros seleccionados.</p>
+        @if (result.page > 0) { <button class="btn btn-outline first" type="button" (click)="page(0)">Volver a la primera página</button> }
+      }
+      @if (result.content.length) {
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Cuentas registradas">
+          <table><caption>Usuarios de la plataforma</caption><thead><tr><th scope="col">Nombre</th><th scope="col">Correo</th><th scope="col">Rol</th><th scope="col">Estado</th></tr></thead>
+            <tbody>@for (user of result.content; track user.id) {<tr><td><a [routerLink]="['/superadmin/users', user.id]" [queryParams]="query()">{{ user.name }}</a></td><td>{{ user.email }}</td><td>{{ user.role }}</td><td>{{ user.status === 'ACTIVE' ? 'Activo' : 'Inactivo' }}</td></tr>}</tbody>
+          </table>
+        </div>
+      }
+      @if (result.totalPages > 0 && result.page < result.totalPages) {
+        <nav class="actions pagination" aria-label="Paginación de usuarios">
+          <button class="btn btn-outline previous" type="button" [disabled]="result.page === 0" (click)="page(result.page - 1)">Anterior</button>
+          <span>Página {{ result.page + 1 }} de {{ result.totalPages }}</span>
+          <button class="btn btn-outline next" type="button" [disabled]="result.page + 1 >= result.totalPages" (click)="page(result.page + 1)">Siguiente</button>
+        </nav>
+      }
+    }
+  </section>
+</main>

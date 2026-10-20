@@ -24,7 +24,8 @@ Ica Stay ya cuenta con una base funcional de frontend y backend:
 - Persistencia del JWT en `sessionStorage` y restauración de sesión en el frontend.
 - Interceptor HTTP y guard preparados para endpoints protegidos y control por roles.
 - CORS configurado para la integración local Angular ↔ Spring Boot.
-- Pruebas automatizadas del backend: 47 tests actualmente validados.
+- SUPER_ADMIN: dashboard global, hoteles y administradores, listado/detalle y estado de usuarios.
+- Validación automatizada y contratos: [SUPER_ADMIN](docs/features/superadmin-users.md).
 
 ## Arquitectura
 
@@ -134,7 +135,7 @@ El backend expone autenticación JWT mediante:
 POST /api/v1/auth/login
 ```
 
-El JWT contiene la identidad y el rol del usuario. Actualmente se manejan los siguientes roles:
+El JWT contiene identidad, rol y versión de sesión (`ver`). Cada solicitud autenticada comprueba la cuenta activa y su `token_version` en PostgreSQL. Desactivar/reactivar incrementa la versión: los tokens anteriores no recuperan validez. Los JWT anteriores sin `ver` solo siguen vigentes con versión cero. La migración V2 se aplica con Flyway; reiniciar todas las instancias con el código actualizado antes de utilizar cambios de estado. Actualmente se manejan los siguientes roles:
 
 - `USER`: huésped/usuario de la plataforma.
 - `HOTEL_ADMIN`: administración de un hotel.
@@ -150,9 +151,22 @@ Entre las operaciones disponibles actualmente se encuentran:
 GET  /api/v1/hotels
 POST /api/v1/auth/login
 POST /api/v1/reservations
+GET  /api/v1/superadmin/dashboard
+GET  /api/v1/superadmin/hotels
+POST /api/v1/superadmin/hotels
+GET  /api/v1/superadmin/hotels/{id}
+PUT  /api/v1/superadmin/hotels/{id}
+PATCH /api/v1/superadmin/hotels/{id}/status
+GET  /api/v1/superadmin/users
+GET  /api/v1/superadmin/users/{id}
+PATCH /api/v1/superadmin/users/{id}/status
 ```
 
 El catálogo de hoteles es público. La creación de reservas está protegida y requiere un usuario con rol `USER`.
+
+Las rutas `/superadmin/dashboard`, `/superadmin/hotels` y `/superadmin/users` y sus APIs exigen SUPER_ADMIN. HOTEL_ADMIN conserva acceso exclusivo a su hotel; USER a sus reservas. Los intentos de pago del dashboard no representan ingresos.
+
+Contratos: [dashboard](docs/features/superadmin-dashboard.md), [listado de hoteles](docs/features/superadmin-hotels.md), [creación](docs/features/superadmin-create-hotel.md), [edición/estado](docs/features/superadmin-edit-hotel.md) y [usuarios](docs/features/superadmin-users.md).
 
 ## Documentación y specs
 
@@ -180,4 +194,4 @@ Los cambios validados se integran posteriormente en `main`.
 
 ## Próximos incrementos
 
-El desarrollo continuará con las vistas y flujos funcionales de alojamientos, habitaciones y reservas, seguido por los paneles correspondientes a `HOTEL_ADMIN` y `SUPER_ADMIN`. Posteriormente se incorporarán los servicios especializados y las integraciones de IA definidas en la arquitectura.
+Los paneles HOTEL_ADMIN y SUPER_ADMIN están implementados. Las siguientes etapas de servicios especializados e IA siguen el alcance definido en la arquitectura.

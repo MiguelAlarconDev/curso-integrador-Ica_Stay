@@ -12,6 +12,9 @@
       @if (session.role === 'HOTEL_ADMIN') {
         <a routerLink="/admin/hotel">Mi panel</a>
       }
+      @if (session.role === 'SUPER_ADMIN') {
+        <a routerLink="/superadmin/dashboard">Mi panel</a>
+      }
       <button type="button" (click)="auth.logout()">Cerrar sesión</button>
     } @else {
       <a routerLink="/login">Iniciar sesión</a>

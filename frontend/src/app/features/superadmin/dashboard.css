@@ -1,0 +1,15 @@
+main { padding-block: 48px 80px; }
+h1 { font-size: clamp(2rem, 5vw, 3.5rem); margin-block: 12px 20px; }
+.intro { max-width: 68ch; }
+.intro, .note, .updated, article p { color: var(--ica-muted); }
+.updated { margin-block: 24px; font-size: .85rem; }
+section { margin-top: 36px; }
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+section > .metrics { margin-top: 20px; }
+article { padding: 24px; border: 1px solid var(--ica-line); border-radius: 12px; }
+article h2, article h3 { font-size: 1.1rem; overflow-wrap: anywhere; }
+strong { display: block; font-size: 2.4rem; margin-block: 18px; color: var(--ica-clay-dark); overflow-wrap: anywhere; }
+.note { margin-top: 16px; }
+button { margin-top: 16px; padding: 12px 24px; cursor: pointer; }
+@media (max-width: 900px) { .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .metrics { grid-template-columns: minmax(0, 1fr); } main { padding-top: 28px; } }

@@ -51,6 +51,10 @@ El DTO no incluye `id`, `adminUserId` ni `status`; los campos ajenos al DTO se i
 - Se permite editar el hotel asignado aunque esté inactivo, sin poder activarlo. Su visibilidad pública permanece restringida a ACTIVE.
 - Límite de descripción de 5000 caracteres como decisión de aplicación; no requiere cambiar la columna TEXT. Revisable por producto.
 - No se crean hoteles ni asignaciones. Concurrencia entre ediciones conserva la política actual (última escritura); versionado queda fuera de este incremento.
+- 2026-10-19 (7.3.3): PUT del hotel propio adquiere bloqueo de escritura del hotel
+  antes de cargar sus datos. Evita restaurar un estado antiguo ante una activación
+  o desactivación concurrente de SUPER_ADMIN; permisos, campos y relación no cambian.
+  Ver [edición global](superadmin-edit-hotel.md).
 
 ## Fuera de alcance del incremento 1
 

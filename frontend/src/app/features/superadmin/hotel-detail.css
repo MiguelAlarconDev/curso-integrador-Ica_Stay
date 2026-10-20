@@ -1,0 +1,5 @@
+main { overflow-wrap: anywhere; }
+.state { margin-top: 40px; border-top: 1px solid var(--ica-line); padding-top: 24px; }
+.confirmation { margin-top: 20px; padding: 20px; border: 1px solid var(--ica-line); border-radius: 12px; }
+h2, h3 { margin-block: 12px; }
+p { margin-block: 12px; }

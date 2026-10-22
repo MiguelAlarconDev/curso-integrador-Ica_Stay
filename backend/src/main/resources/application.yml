@@ -1,6 +1,13 @@
 spring:
   application:
     name: ica-stay-backend
+  mongodb:
+    uri: ${MONGODB_URI:mongodb://127.0.0.1:27017/icastay_ai}
+  data:
+    mongodb:
+      auto-index-creation: false
+      repositories:
+        type: none
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5433/ica_stay}
     username: ${DB_USER:ica_stay}
@@ -27,6 +34,9 @@ icastay:
       secret: ${JWT_SECRET}
 
 management:
+  health:
+    mongodb:
+      enabled: false
   endpoints:
     web:
       exposure:

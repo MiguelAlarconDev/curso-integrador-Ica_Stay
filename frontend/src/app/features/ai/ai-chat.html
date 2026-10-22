@@ -4,6 +4,15 @@
     <button type="button" class="close-chat" aria-label="Cerrar IcaStay AI" (click)="close()">×</button>
   </header>
   <div class="chat-history" #history tabindex="0" aria-label="Historial de conversación" aria-live="off">
+    @if (historyLoading()) { <p class="chat-loading history-loading">Recuperando conversación…</p> }
+    @if (historyError()) {
+      <div class="history-error"><p>{{ historyError() }}</p>
+        @if (!started()) {
+          <button type="button" class="retry-chat retry-history" [disabled]="historyLoading()" (click)="loadHistory()">Reintentar historial</button>
+        } @else { <p>Podrás intentar recuperar el historial al volver a cargar la página.</p> }
+      </div>
+    }
+    @if (historyTruncated()) { <p class="chat-help">Se muestran los últimos 50 intercambios.</p> }
     @for (item of messages(); track item.id) {
       <div class="message" [class.user-message]="item.role === 'user'" [class.assistant-message]="item.role === 'assistant'">
         <span class="message-author">{{ item.role === 'user' ? 'Tú' : 'IcaStay AI' }}</span>
@@ -20,7 +29,7 @@
   <form (submit)="$event.preventDefault(); send()" class="chat-form">
     <div class="field">
       <label for="icastay-ai-message">Tu pregunta</label>
-      <textarea #field id="icastay-ai-message" rows="2" [formControl]="message" [readOnly]="loading()"
+      <textarea #field id="icastay-ai-message" rows="2" [formControl]="message" [readOnly]="loading() || historyLoading()"
         (keydown)="onKeydown($event)" aria-describedby="icastay-ai-help icastay-ai-validation"
         [attr.aria-invalid]="message.touched && message.invalid" placeholder="¿Cómo buscar alojamiento en Ica?"></textarea>
     </div>
@@ -28,7 +37,8 @@
     <p class="validation" id="icastay-ai-validation">
       @if (message.touched && message.invalid) { Escribe una pregunta de entre 1 y 1000 caracteres, sin dejarla en blanco. }
     </p>
-    <button type="submit" class="btn btn-primary send-chat" [disabled]="loading()">{{ loading() ? 'Esperando respuesta…' : 'Enviar pregunta' }}</button>
+    <p class="chat-help">No compartas contraseñas ni datos personales. Los intercambios guardados vencen tras 30 días sin actividad.</p>
+    <button type="submit" class="btn btn-primary send-chat" [disabled]="loading() || historyLoading()">{{ loading() ? 'Esperando respuesta…' : 'Enviar pregunta' }}</button>
   </form>
   <span class="sr-only" aria-live="polite" aria-atomic="true">{{ announcement() }}</span>
 </section>

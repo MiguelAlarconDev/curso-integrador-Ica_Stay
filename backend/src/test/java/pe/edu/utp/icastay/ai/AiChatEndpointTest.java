@@ -31,11 +31,14 @@ class AiChatEndpointTest {
     @Configuration
     @EnableWebMvc
     @EnableWebSecurity
-    @Import({SecurityConfig.class, AiChatController.class, AiChatService.class})
+    @Import({SecurityConfig.class, AiChatController.class, AiChatService.class, AiSessionService.class})
     static class Config {
         @Bean OllamaClient ollamaClient() { return mock(OllamaClient.class); }
         @Bean JwtTokenService jwtTokenService() { return mock(JwtTokenService.class); }
         @Bean UserService userService() { return mock(UserService.class); }
+        @Bean pe.edu.utp.icastay.ai.history.AiHistoryService history() { return mock(pe.edu.utp.icastay.ai.history.AiHistoryService.class); }
+        @Bean AiProperties properties() { return OllamaClientTest.properties(); }
+        @Bean tools.jackson.databind.ObjectMapper mapper() { return tools.jackson.databind.json.JsonMapper.builder().build(); }
     }
 
     @Autowired WebApplicationContext context;
@@ -43,11 +46,14 @@ class AiChatEndpointTest {
     @Autowired OllamaClient ollama;
     @Autowired JwtTokenService tokens;
     @Autowired UserService users;
+    @Autowired pe.edu.utp.icastay.ai.history.AiHistoryService history;
     private MockMvc mvc;
 
     @BeforeEach
     void setUp() {
-        reset(ollama, tokens, users);
+        reset(ollama, tokens, users, history);
+        when(history.findActive(anyString(), anyString(), anyInt(), anyInt())).thenReturn(
+                new pe.edu.utp.icastay.ai.history.AiHistoryService.HistoryPage(true, java.util.List.of(), 0, 5, false));
         mvc = MockMvcBuilders.webAppContextSetup(context).addFilters(security).build();
     }
 
@@ -151,7 +157,7 @@ class AiChatEndpointTest {
                 .header("Access-Control-Request-Headers", "Content-Type"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:4200"))
-                .andExpect(header().doesNotExist("Access-Control-Allow-Credentials"));
+                .andExpect(header().string("Access-Control-Allow-Credentials", "true"));
         mvc.perform(post("/api/v1/ai/chat").header("Origin", "https://example.com")
                 .contentType(MediaType.APPLICATION_JSON).content("{\"message\":\"consulta\"}"))
                 .andExpect(status().isForbidden());

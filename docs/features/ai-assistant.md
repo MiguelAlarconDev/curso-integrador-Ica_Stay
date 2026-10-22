@@ -206,3 +206,115 @@ despliegue ese índice ni se conecte el servicio al flujo del chat.
 
 Referencias de compatibilidad: [propiedades de Spring Boot 4.1](https://docs.spring.io/spring-boot/appendix/application-properties/index.html)
 y [índices TTL de MongoDB](https://www.mongodb.com/docs/manual/core/index-ttl/).
+
+## IA-05.2 — Sesión anónima e historial (implementado, 2026-10-22)
+
+Sustituye el estado de integración pendiente de IA-05.1. Se reutilizan documento,
+índices, derivación de propietario y servicio. No hay nueva colección ni cambio
+JPA/Flyway. Los índices reales se consideran desplegados según el contexto del
+proyecto; las pruebas los crean únicamente en Mongo aislado.
+
+### Contrato HTTP
+
+- POST /api/v1/ai/chat: conserva {message} → {answer}, solo application/json.
+  Tras generación correcta emite/renueva cookie icastay_ai_session, HttpOnly,
+  SameSite=Lax, Path=/api/v1/ai, host-only, Max-Age=2592000. Token ausente, inválido
+  o vencido: nueva identidad aleatoria, nunca adopta identidad proporcionada por
+  el cliente. El cuerpo no admite seleccionar conversación ni roles de contexto.
+- GET /api/v1/ai/conversations/current?page=0&size=20: devuelve
+  {conversationId,content:[{question,answer,createdAt,expiresAt}],page,size,hasNext}.
+  Orden createdAt DESC/id DESC. Límites page 0–1000, size 1–50. Sin cookie válida:
+  conversationId=null y content=[]; cookie inválida se elimina. No crea ni renueva
+  sesión al leer. Mongo indisponible con sesión válida: 503, no falso historial vacío.
+- Ambas rutas devuelven Cache-Control:no-store. Solo se abren esos métodos/rutas.
+
+### Sesión y despliegue
+
+Cookie firmada HMAC-SHA256: versión, secreto SecureRandom de 32 bytes, UUIDv4 de
+conversación, expiración y firma. La firma vincula los campos y se compara en tiempo
+constante. Se rechazan cookies duplicadas, formato inválido, firma manipulada y
+expiración <= reloj servidor. Mongo recibe solo AnonymousOwnerReference(secret),
+nunca cookie, firma, JWT ni secreto. El ID de conversación no autoriza consultas.
+
+AI_SESSION_SIGNING_KEY: clave independiente del JWT, Base64URL de al menos 32 bytes
+aleatorios, compartida entre instancias y estable entre reinicios. Sin clave solo
+se permite desarrollo con origen HTTP localhost/127.0.0.1: se genera una clave
+efímera en memoria; reiniciar invalida cookies anteriores. No se imprime la clave.
+AI_SESSION_COOKIE_SECURE=true por defecto; false solo se acepta con origen local
+HTTP. Para localhost:4200→localhost:8080 configurar false. En HTTPS producción,
+true y clave obligatoria. Cookie firmada no cifrada: HttpOnly impide leerla desde
+JavaScript pero quien la robe puede actuar como ese visitante hasta su expiración.
+
+### CORS y CSRF
+
+Credenciales habilitadas solo en las dos rutas exactas de IA, con el origen exacto
+icastay.cors.allowed-origin (sin comodines). Otras APIs mantienen CORS sin cookies
+y autorización JWT. Se mantiene desactivado CSRF de sesión Spring en los módulos
+JWT; un filtro específico protege las rutas IA: POST JSON, rechazo de Origin no
+permitido/null/múltiple y de Sec-Fetch-Site:cross-site. Con cookies, POST exige
+Origin explícito correcto. Sin Origin solo admite POST sin cookies ni Fetch
+Metadata (compatibilidad de clientes no navegador). Navegadores no pueden forjar
+Origin; JSON obliga preflight cross-origin. No se confía únicamente en SameSite:
+otro puerto del mismo sitio tampoco pasa la comparación de origen.
+
+El despliegue frontend/backend debe ser same-site (localhost con puertos distintos
+o HTTPS del mismo sitio). No se admite un frontend cross-site con SameSite=Lax.
+No se añade endpoint CSRF ni token legible por JavaScript. Referencia:
+[OWASP: defensa CSRF mediante Origin, Fetch Metadata y rechazo de solicitudes simples](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html).
+
+### Contexto, retención y fallos
+
+Últimos cinco intercambios no vencidos de propietario/conversación, ordenados del
+más antiguo al más reciente para Ollama. Presupuesto total 12000 caracteres Java
+para contenidos (incluye sistema y pregunta actual); se descartan pares completos
+que no caben. Sigue num_predict configurado para salida. No equivale a un contador
+exacto de tokens del modelo. Sistema siempre primero; roles user/assistant se
+construyen en servidor, nunca provienen del texto almacenado. Historial tratado
+como datos no confiables; esto no elimina todo riesgo de prompt injection.
+
+Actividad = intercambio completado; GET no renueva. Se renueva cookie 30 días y
+se reutiliza renovación $max de registros vigentes. expiresAt se filtra en cada
+lectura aunque TTL aún no haya borrado. La cookie vencida genera otra identidad.
+Si Mongo falla en lectura, se responde usando solo sistema/pregunta. Si falla la
+escritura, la respuesta ya entregada se conserva; no se reintenta ni se promete
+guardado. La API GET reporta 503 mientras el historial no esté disponible.
+
+El servidor no consulta datos privados de reservas ni añade credenciales al
+prompt. Antes de persistir y usar contexto se excluyen conservadoramente pares
+con marcadores de contraseñas, tokens, JWT, contacto, documentos, tarjetas o
+reservas, y respuestas mayores a 16000 caracteres. Esto también puede excluir
+consultas legítimas. No es un detector infalible de información privada arbitraria
+escrita por el usuario: queda prohibido solicitar secretos, y no se registran
+textos en logs. Se requiere revisión de privacidad antes de ampliar datos admitidos.
+
+Se escribe y hace flush del JSON antes de persistir: IOException por desconexión
+detectada o hilo interrumpido evita guardado. Flush TCP no prueba recepción del
+navegador; cancelaciones no detectables o posteriores pueden dejar un intercambio
+persistido. Sin transacciones JPA durante Mongo/HTTP. Se mantienen timeouts y
+semáforo de Ollama; timeout frontend deberá cubrir también la lectura de historial.
+
+### Integración Angular IA-05.3
+
+Implementado `withCredentials:true` únicamente en POST chat y GET current; ambos
+métodos/rutas exactos excluidos del interceptor JWT. El navegador gestiona Origin
+y cookie, sin token CSRF adicional. El widget recupera los últimos 50 intercambios
+al montarse, los ordena cronológicamente y conserva una sola bienvenida.
+Fallo de recuperación permite reintento o chat básico; no mezcla snapshots después
+de empezar mensajes locales. Alcance, límites y validación: [spec frontend](../specs/frontend/ai-chat.md#ia-053--recuperación-anónima-2026-10-22).
+
+### Validación IA-05.2
+
+- 89 pruebas sin fallos, errores ni omisiones: `mvn -Dtest=Ai*Test,Ollama*Test,JwtAuthenticationFilterTest test`.
+  Incluyen firma, expiración y manipulación de cookie, aislamiento de visitantes,
+  paginación, persistencia, contexto, cancelación detectable, CORS/CSRF y regresión JWT.
+- MongoDB de pruebas separado en 127.0.0.1:27028 con base aleatoria `icastay_ai_test_*`,
+  eliminada al finalizar. PostgreSQL 17 efímero en 127.0.0.1:55439 para verificar
+  arranque completo, JPA/Flyway y catálogo operativo con Mongo indisponible en 27029.
+- `mvn -DskipTests compile` y `git diff --check`: correctos.
+- La consulta de solo metadatos a Mongo local 127.0.0.1:27017 agotó el timeout;
+  no fue posible confirmar los índices/validadores existentes en esta ejecución.
+  No se consultaron conversaciones ni se escribieron fixtures en `icastay_ai`.
+  El mapeo e índices previstos se verificaron en la base aislada; se conserva
+  `spring.mongodb.uri`, sin habilitar creación automática de índices.
+- Ollama se verificó mediante pruebas del cliente y servidor HTTP controlado;
+  no se afirma validación extremo a extremo con el modelo local ni con navegador.

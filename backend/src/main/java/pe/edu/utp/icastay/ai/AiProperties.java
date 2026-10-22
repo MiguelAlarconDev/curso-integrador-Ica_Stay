@@ -12,7 +12,7 @@ public record AiProperties(URI baseUrl, String model, Duration connectTimeout,
                 || "https".equalsIgnoreCase(baseUrl.getScheme())) || baseUrl.getHost() == null
                 || baseUrl.getUserInfo() != null || baseUrl.getQuery() != null || baseUrl.getFragment() != null
                 || !(baseUrl.getPath().isEmpty() || "/".equals(baseUrl.getPath()))
-                || model == null || model.isBlank()
+                || model == null || model.isBlank() || model.length() > 128
                 || connectTimeout == null || connectTimeout.isNegative() || connectTimeout.isZero()
                 || responseTimeout == null || responseTimeout.isNegative() || responseTimeout.isZero()
                 || maxTokens < 1 || maxConcurrentRequests < 1) {

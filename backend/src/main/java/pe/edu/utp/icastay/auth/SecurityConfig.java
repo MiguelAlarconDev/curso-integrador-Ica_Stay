@@ -24,7 +24,8 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenService jwtTokenService,
-            CorsConfigurationSource corsConfigurationSource, pe.edu.utp.icastay.user.UserService users) throws Exception {
+            CorsConfigurationSource corsConfigurationSource, pe.edu.utp.icastay.user.UserService users,
+            @Value("${icastay.cors.allowed-origin}") String allowedOrigin) throws Exception {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
@@ -43,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/ai/chat").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/ai/conversations/current").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/hotels", "/api/v1/hotels/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/api/v1/superadmin/**").hasRole("SUPER_ADMIN")
@@ -54,6 +56,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/reservations/me", "/api/v1/reservations/*").hasRole("USER")
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenService, users),
+                        UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new pe.edu.utp.icastay.ai.AiCookieCsrfFilter(allowedOrigin),
                         UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
@@ -67,6 +71,17 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(List.of("Content-Type", "Authorization", "Accept"));
         configuration.setAllowCredentials(false);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Credentials only for the exact AI routes. Preserve all other API CORS rules.
+        if (allowedOrigin.contains("*") || !allowedOrigin.matches("https?://[^/]+")) {
+            throw new IllegalArgumentException("CORS requiere un origen exacto");
+        }
+        CorsConfiguration chat = new CorsConfiguration(configuration);
+        chat.setAllowedMethods(List.of("POST", "OPTIONS"));
+        chat.setAllowCredentials(true);
+        CorsConfiguration history = new CorsConfiguration(chat);
+        history.setAllowedMethods(List.of("GET", "OPTIONS"));
+        source.registerCorsConfiguration("/api/v1/ai/chat", chat);
+        source.registerCorsConfiguration("/api/v1/ai/conversations/current", history);
         source.registerCorsConfiguration("/api/**", configuration);
         return source;
     }

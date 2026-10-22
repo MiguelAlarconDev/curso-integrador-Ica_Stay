@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { AfterViewChecked, OnInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
@@ -10,7 +10,7 @@ interface ChatMessage { id: number; role: 'user' | 'assistant'; text: string; er
   selector: 'app-ai-chat', imports: [ReactiveFormsModule],
   templateUrl: './ai-chat.html', styleUrl: './ai-chat.css', changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AiChat implements AfterViewChecked {
+export class AiChat implements AfterViewChecked, OnInit {
   private readonly service = inject(AiChatService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly field = viewChild<ElementRef<HTMLTextAreaElement>>('field');
@@ -21,6 +21,10 @@ export class AiChat implements AfterViewChecked {
   private nextId = 1;
   protected readonly open = signal(false);
   protected readonly loading = signal(false);
+  protected readonly historyLoading = signal(false);
+  protected readonly historyError = signal('');
+  protected readonly historyTruncated = signal(false);
+  protected readonly started = signal(false);
   protected readonly announcement = signal('');
   protected readonly messages = signal<ChatMessage[]>([{
     id: 0, role: 'assistant', text: '¡Hola! Soy IcaStay AI. Puedo orientarte sobre consultas hoteleras en Ica. No tengo tarifas ni disponibilidad verificadas. ¿En qué puedo ayudarte?',
@@ -28,6 +32,32 @@ export class AiChat implements AfterViewChecked {
   protected readonly message = new FormControl('', { nonNullable: true, validators: [
     Validators.maxLength(1000), control => typeof control.value === 'string' && control.value.trim() ? null : { blank: true },
   ] });
+
+  ngOnInit(): void { this.loadHistory(); }
+
+  protected loadHistory(): void {
+    if (this.historyLoading() || this.started()) return;
+    this.historyLoading.set(true);
+    this.historyError.set('');
+    if (this.open()) this.announcement.set('Recuperando conversación.');
+    this.service.currentConversation().pipe(takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.historyLoading.set(false))).subscribe({
+      next: page => {
+        this.messages.update(messages => [messages[0], ...page.content.flatMap(item => [
+          { id: this.nextId++, role: 'user' as const, text: item.question },
+          { id: this.nextId++, role: 'assistant' as const, text: item.answer },
+        ])]);
+        this.historyTruncated.set(page.hasNext);
+        if (this.open()) this.focusTarget = 'field';
+        if (this.open()) this.announcement.set(page.content.length ? 'Conversación recuperada.' : 'Puedes iniciar una conversación.');
+        this.scrollPending = true;
+      },
+      error: (error: Error) => {
+        this.historyError.set(error.message);
+        if (this.open()) this.announcement.set(error.message);
+      },
+    });
+  }
 
   ngAfterViewChecked(): void {
     if (this.focusTarget) {
@@ -43,7 +73,7 @@ export class AiChat implements AfterViewChecked {
 
   protected toggle(): void {
     this.open.update(value => !value);
-    this.announcement.set('');
+    this.announcement.set(this.open() && this.historyLoading() ? 'Recuperando conversación.' : '');
     this.focusTarget = this.open() ? 'field' : 'launcher';
     this.scrollPending = true;
   }
@@ -61,9 +91,10 @@ export class AiChat implements AfterViewChecked {
   }
 
   protected send(): void {
-    if (this.loading()) return;
+    if (this.loading() || this.historyLoading()) return;
     this.message.markAsTouched();
     if (this.message.invalid) return;
+    this.started.set(true);
     const message: ChatMessage = { id: this.nextId++, role: 'user', text: this.message.value.trim() };
     this.messages.update(messages => [...messages, message]);
     this.message.reset();
@@ -71,7 +102,7 @@ export class AiChat implements AfterViewChecked {
   }
 
   protected retry(message: ChatMessage): void {
-    if (!this.loading() && message.error) this.request(message);
+    if (!this.loading() && !this.historyLoading() && message.error) this.request(message);
   }
 
   private request(message: ChatMessage): void {

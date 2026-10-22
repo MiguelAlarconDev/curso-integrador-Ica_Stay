@@ -21,6 +21,9 @@ spring:
 
 icastay:
   ai:
+    session:
+      signing-key: ${AI_SESSION_SIGNING_KEY:}
+      secure: ${AI_SESSION_COOKIE_SECURE:true}
     base-url: ${AI_BASE_URL:http://localhost:11434}
     model: ${AI_MODEL:qwen2.5:1.5b}
     connect-timeout: ${AI_CONNECT_TIMEOUT:3s}

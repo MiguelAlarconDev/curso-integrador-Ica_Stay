@@ -2,7 +2,8 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { API_BASE_URL } from '../../core/api.config';
 import { App } from '../../app';
 import { routes } from '../../app.routes';
 
@@ -24,9 +25,14 @@ describe('Public chatbot routing', () => {
     const router = TestBed.inject(Router);
     await router.navigateByUrl('/'); fixture.detectChanges();
     const chat = fixture.nativeElement.querySelector('app-ai-chat'); expect(chat).not.toBeNull();
+    const http = TestBed.inject(HttpTestingController);
+    const historyUrl = `${TestBed.inject(API_BASE_URL)}/api/v1/ai/conversations/current?page=0&size=50`;
+    http.expectOne(historyUrl).flush({ conversationId: null, content: [], page: 0, size: 50, hasNext: false });
     await router.navigateByUrl('/hotels'); fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-ai-chat')).toBe(chat);
+    http.expectNone(historyUrl);
     await router.navigateByUrl('/private'); fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-ai-chat')).toBeNull();
+    http.verify();
   });
 });

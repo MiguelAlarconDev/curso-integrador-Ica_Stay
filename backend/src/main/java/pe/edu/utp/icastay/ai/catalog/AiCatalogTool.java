@@ -6,6 +6,7 @@ import java.util.concurrent.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import pe.edu.utp.icastay.ai.AiChatResponse;
 
 @Service
 public class AiCatalogTool {
@@ -15,12 +16,16 @@ public class AiCatalogTool {
     public AiCatalogTool(AiCatalogReader reader) { this.reader = reader; }
 
     public Optional<String> answer(String message) {
+        return response(message).map(AiChatResponse::answer);
+    }
+
+    public Optional<AiChatResponse> response(String message) {
         var parsed = AiCatalogQuery.parse(message);
         if (parsed.isEmpty()) return Optional.empty();
         var plan = parsed.get();
-        if (plan.query().isEmpty()) return Optional.of(plan.clarification());
-        Future<String> pending;
-        try { pending = workers.submit(() -> reader.read(plan.query().orElseThrow())); }
+        if (plan.query().isEmpty()) return Optional.of(new AiChatResponse(plan.clarification(), "icastay-public-catalog-v1"));
+        Future<AiChatResponse> pending;
+        try { pending = workers.submit(() -> reader.readResponse(plan.query().orElseThrow())); }
         catch (RejectedExecutionException busy) { throw unavailable(); }
         try { return Optional.of(pending.get(5, TimeUnit.SECONDS)); }
         catch (InterruptedException interrupted) {
@@ -28,7 +33,7 @@ public class AiCatalogTool {
         } catch (TimeoutException timeout) { pending.cancel(true); throw unavailable(); }
         catch (ExecutionException failure) {
             if (failure.getCause() instanceof ResponseStatusException invalid && invalid.getStatusCode().value() == 400)
-                return Optional.of("No pude validar las fechas. Usa entrada y salida futuras AAAA-MM-DD, con salida posterior a entrada. " + AiCatalogQuery.HELP);
+                return Optional.of(new AiChatResponse("No pude validar las fechas. Usa entrada y salida futuras AAAA-MM-DD, con salida posterior a entrada. " + AiCatalogQuery.HELP, "icastay-public-catalog-v1"));
             throw unavailable();
         }
     }

@@ -1,0 +1,15 @@
+:host { display: block; }
+.catalog-cards { display: grid; gap: 10px; overflow-wrap: anywhere; }
+.snapshot, .criteria, .missing { font-size: .75rem; color: var(--ica-ink); }
+.hotel-card { background: var(--ica-paper); border: 1px solid var(--ica-line); border-radius: var(--radius-md); padding: 12px; min-width: 0; }
+h3 { font-size: 1.15rem; line-height: 1.3; margin: 0; }
+.city { font-size: .8rem; margin: 4px 0 8px; }
+.availability { font-size: .78rem; border-left: 3px solid var(--ica-clay-dark); padding-left: 8px; }
+.verified { font-weight: 600; }
+.room-card { border-top: 1px solid var(--ica-line); padding: 8px 0; margin-top: 8px; }
+h4 { font-size: .85rem; margin: 0 0 4px; }
+.room-card p { font-size: .8rem; margin: 3px 0; }
+.price { font-weight: 700; }
+.price span { font-weight: 400; }
+a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--ica-clay-dark); font-weight: 600; text-decoration: underline; }
+a:focus-visible { outline: 2px solid var(--ica-clay-dark); outline-offset: 3px; border-radius: 3px; }

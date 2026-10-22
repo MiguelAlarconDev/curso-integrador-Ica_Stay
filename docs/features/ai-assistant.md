@@ -318,3 +318,12 @@ de empezar mensajes locales. Alcance, límites y validación: [spec frontend](..
   `spring.mongodb.uri`, sin habilitar creación automática de índices.
 - Ollama se verificó mediante pruebas del cliente y servidor HTTP controlado;
   no se afirma validación extremo a extremo con el modelo local ni con navegador.
+
+## IA-06.1 — Catálogo público real
+
+El backend incorpora consultas de solo lectura a hoteles/habitaciones ACTIVE,
+precios por noche, capacidad y disponibilidad por fechas y huéspedes. Reutiliza
+HotelService y las reglas de RoomService, con límites en base de datos. Los hechos
+se presentan mediante plantillas verificadas, sin generación libre de Ollama ni
+acceso del modelo a SQL. El contrato, sesión, historial y Angular se mantienen.
+Gramática admitida, seguridad, límites y pruebas: [IA-06.1](ai-public-catalog.md).

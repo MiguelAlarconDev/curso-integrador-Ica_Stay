@@ -3,11 +3,13 @@ import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { AiChatService } from '../../core/services/ai-chat.service';
+import { AiCatalog } from '../../core/models/ai-chat';
+import { AiCatalogCards } from './ai-catalog-cards';
 
-interface ChatMessage { id: number; role: 'user' | 'assistant'; text: string; error?: string; }
+interface ChatMessage { id: number; role: 'user' | 'assistant'; text: string; error?: string; catalog?: AiCatalog; historical?: boolean; }
 
 @Component({
-  selector: 'app-ai-chat', imports: [ReactiveFormsModule],
+  selector: 'app-ai-chat', imports: [ReactiveFormsModule, AiCatalogCards],
   templateUrl: './ai-chat.html', styleUrl: './ai-chat.css', changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AiChat implements AfterViewChecked, OnInit {
@@ -27,7 +29,7 @@ export class AiChat implements AfterViewChecked, OnInit {
   protected readonly started = signal(false);
   protected readonly announcement = signal('');
   protected readonly messages = signal<ChatMessage[]>([{
-    id: 0, role: 'assistant', text: '¡Hola! Soy IcaStay AI. Puedo orientarte sobre consultas hoteleras en Ica. No tengo tarifas ni disponibilidad verificadas. ¿En qué puedo ayudarte?',
+    id: 0, role: 'assistant', text: '¡Hola! Soy IcaStay AI. Puedo consultar hoteles, habitaciones y precios del catálogo. Para comprobar disponibilidad necesito fechas y huéspedes. ¿En qué puedo ayudarte?',
   }]);
   protected readonly message = new FormControl('', { nonNullable: true, validators: [
     Validators.maxLength(1000), control => typeof control.value === 'string' && control.value.trim() ? null : { blank: true },
@@ -45,7 +47,7 @@ export class AiChat implements AfterViewChecked, OnInit {
       next: page => {
         this.messages.update(messages => [messages[0], ...page.content.flatMap(item => [
           { id: this.nextId++, role: 'user' as const, text: item.question },
-          { id: this.nextId++, role: 'assistant' as const, text: item.answer },
+          { id: this.nextId++, role: 'assistant' as const, text: item.answer, historical: true },
         ])]);
         this.historyTruncated.set(page.hasNext);
         if (this.open()) this.focusTarget = 'field';
@@ -105,6 +107,17 @@ export class AiChat implements AfterViewChecked, OnInit {
     if (!this.loading() && !this.historyLoading() && message.error) this.request(message);
   }
 
+  protected suggest(kind: 'hotels' | 'prices' | 'availability'): void {
+    if (this.loading() || this.historyLoading()) return;
+    const arrival = new Date(); arrival.setUTCDate(arrival.getUTCDate() + 7);
+    const departure = new Date(arrival); departure.setUTCDate(departure.getUTCDate() + 2);
+    this.message.setValue(kind === 'hotels' ? '¿Qué hoteles hay disponibles en Ica?'
+      : kind === 'prices' ? 'Muéstrame habitaciones y precios en Ica'
+      : `Habitaciones en Ica del ${arrival.toISOString().slice(0, 10)} al ${departure.toISOString().slice(0, 10)} para 2 huéspedes`);
+    this.focusTarget = 'field';
+    this.announcement.set('Pregunta sugerida en el campo. Revisa la ciudad, fechas y huéspedes antes de enviarla.');
+  }
+
   private request(message: ChatMessage): void {
     this.loading.set(true);
     this.focusTarget = 'field';
@@ -113,10 +126,10 @@ export class AiChat implements AfterViewChecked, OnInit {
     this.scrollPending = true;
     this.service.chat(message.text).pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.loading.set(false)))
       .subscribe({
-        next: answer => {
+        next: response => {
           this.messages.update(messages => messages.flatMap(item => item.id === message.id
-            ? [item, { id: this.nextId++, role: 'assistant' as const, text: answer }] : [item]));
-          this.announcement.set(`IcaStay AI: ${answer}`);
+            ? [item, { id: this.nextId++, role: 'assistant' as const, text: response.answer, catalog: response.catalog }] : [item]));
+          this.announcement.set(`IcaStay AI: ${response.answer}`);
           this.scrollPending = true;
         },
         error: (error: Error) => {

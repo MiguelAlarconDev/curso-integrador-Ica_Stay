@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, map, throwError, timeout, TimeoutError } from 'rxjs';
 import { API_BASE_URL } from '../api.config';
 import { AiChatResponse, AiConversationPage } from '../models/ai-chat';
+import { readAiCatalog } from '../models/ai-catalog-validation';
 
 @Injectable({ providedIn: 'root' })
 export class AiChatService {
@@ -39,7 +40,7 @@ export class AiChatService {
       timeout(70_000),
       map(response => {
         if (typeof response?.answer !== 'string' || !response.answer.trim()) throw new Error('Invalid response');
-        return response.answer.trim();
+        return { answer: response.answer.trim(), catalog: readAiCatalog(response.catalog) };
       }),
       catchError((error: unknown) => {
         const status = error instanceof HttpErrorResponse ? error.status : null;

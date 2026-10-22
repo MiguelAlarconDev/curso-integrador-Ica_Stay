@@ -11,7 +11,7 @@ import tools.jackson.databind.json.JsonMapper;
 class AiCatalogChatTest {
     @Test void verifiedFactsBypassModelAndKeepAnswerContract() {
         var catalog = mock(AiCatalogTool.class); var ollama = mock(OllamaClient.class); var history = mock(AiHistoryService.class);
-        when(catalog.answer(anyString())).thenReturn(Optional.of("Precio por noche: 100.00 PEN"));
+        when(catalog.response(anyString())).thenReturn(Optional.of(new AiChatResponse("Precio por noche: 100.00 PEN", "icastay-public-catalog-v1")));
         var service = new AiChatService(ollama, history, OllamaClientTest.properties(), catalog);
         var result = service.chat(new AiChatRequest("Precios en Ica"), null);
         assertEquals("{\"answer\":\"Precio por noche: 100.00 PEN\"}", JsonMapper.builder().build().writeValueAsString(result));

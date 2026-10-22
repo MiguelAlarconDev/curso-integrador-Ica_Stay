@@ -16,7 +16,11 @@
     @for (item of messages(); track item.id) {
       <div class="message" [class.user-message]="item.role === 'user'" [class.assistant-message]="item.role === 'assistant'">
         <span class="message-author">{{ item.role === 'user' ? 'Tú' : 'IcaStay AI' }}</span>
-        <p>{{ item.text }}</p>
+        @if (item.historical) { <span class="chat-help saved-answer">Respuesta guardada: sus datos no se han vuelto a comprobar.</span> }
+        @if (item.catalog; as catalog) {
+          <app-ai-catalog-cards [catalog]="catalog" />
+          <details><summary>Ver respuesta completa</summary><p>{{ item.text }}</p></details>
+        } @else { <p>{{ item.text }}</p> }
         @if (item.error) {
           <div class="message-error"><p>{{ item.error }}</p>
             <button type="button" class="retry-chat" [disabled]="loading()" (click)="retry(item)" aria-label="Reintentar esta pregunta">Reintentar</button>
@@ -25,6 +29,12 @@
       </div>
     }
     @if (loading()) { <p class="chat-loading">Preparando una respuesta…</p> }
+    <div class="suggestions" aria-label="Preguntas sugeridas">
+      <span class="chat-help">Prepara una pregunta y revísala antes de enviar:</span>
+      <button type="button" class="retry-chat" [disabled]="loading() || historyLoading()" (click)="suggest('hotels')">Hoteles en Ica</button>
+      <button type="button" class="retry-chat" [disabled]="loading() || historyLoading()" (click)="suggest('prices')">Habitaciones y precios</button>
+      <button type="button" class="retry-chat" [disabled]="loading() || historyLoading()" (click)="suggest('availability')">Consultar fechas</button>
+    </div>
   </div>
   <form (submit)="$event.preventDefault(); send()" class="chat-form">
     <div class="field">

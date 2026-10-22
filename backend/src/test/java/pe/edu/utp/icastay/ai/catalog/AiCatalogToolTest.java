@@ -27,7 +27,7 @@ class AiCatalogToolTest {
     }
 
     @Test void returnsSafeErrorWithoutExceptionDetailsAndNoFallback() {
-        var reader = mock(AiCatalogReader.class); when(reader.read(any())).thenThrow(new org.springframework.dao.DataAccessResourceFailureException("private database detail"));
+        var reader = mock(AiCatalogReader.class); when(reader.readResponse(any())).thenThrow(new org.springframework.dao.DataAccessResourceFailureException("private database detail"));
         var tool = new AiCatalogTool(reader);
         try {
             var failure = assertThrows(ResponseStatusException.class, () -> tool.answer("Hoteles en Ica"));
@@ -37,7 +37,7 @@ class AiCatalogToolTest {
 
     @Test void boundsConcurrentWorkWithoutQueueAndTimesOut() throws Exception {
         var reader = mock(AiCatalogReader.class); var entered = new CountDownLatch(2); var release = new CountDownLatch(1);
-        when(reader.read(any())).thenAnswer(call -> { entered.countDown(); release.await(); return "Verified"; });
+        when(reader.readResponse(any())).thenAnswer(call -> { entered.countDown(); release.await(); return new pe.edu.utp.icastay.ai.AiChatResponse("Verified"); });
         var tool = new AiCatalogTool(reader);
         try (var callers = Executors.newVirtualThreadPerTaskExecutor()) {
             var one = callers.submit(() -> assertThrows(ResponseStatusException.class, () -> tool.answer("Hoteles en Ica")));

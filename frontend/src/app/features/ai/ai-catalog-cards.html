@@ -1,0 +1,30 @@
+<div class="catalog-cards" aria-label="Resultados del catálogo público">
+  <p class="snapshot">Consultado el {{ catalog().checkedAt | date:'dd/MM/yyyy HH:mm' }}. Puede cambiar.</p>
+  @if (catalog().checkIn) {
+    <p class="criteria">Entrada {{ catalog().checkIn }} · Salida {{ catalog().checkOut }} · {{ catalog().guests }} huéspedes por habitación</p>
+  }
+  @for (hotel of catalog().hotels; track hotel.id) {
+    <article class="hotel-card">
+      <h3>{{ hotel.name }}</h3>
+      <p class="city">{{ hotel.city }}</p>
+      <p class="availability" [class.verified]="hotel.availability === 'AVAILABLE'">
+        @switch (hotel.availability) {
+          @case ('AVAILABLE') { Disponible al consultar, para las fechas y huéspedes indicados. }
+          @case ('UNAVAILABLE') { Sin habitaciones disponibles para las fechas y huéspedes indicados. }
+          @default { Disponibilidad sin comprobar. Indica fechas y huéspedes. }
+        }
+      </p>
+      @for (room of hotel.rooms; track $index) {
+        <div class="room-card">
+          <h4>Habitación {{ room.number }}</h4>
+          <p>Capacidad: {{ room.capacity }} personas</p>
+          <p class="price">{{ room.pricePerNight }} {{ room.currency }} <span>/ noche</span></p>
+        </div>
+      } @empty {
+        <p class="missing">{{ catalog().roomsRequested ? 'No se devolvieron habitaciones para esta consulta.' : 'Precio y capacidad no consultados.' }}</p>
+      }
+      <a [routerLink]="['/hotels', hotel.id]" [attr.aria-label]="'Ver detalle de ' + hotel.name">Ver hotel <span aria-hidden="true">→</span></a>
+    </article>
+  }
+  <p class="snapshot">Hasta 3 hoteles y 3 habitaciones por hotel. Precios por noche; no son un total final ni una reserva.</p>
+</div>

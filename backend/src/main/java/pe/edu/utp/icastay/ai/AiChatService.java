@@ -26,9 +26,9 @@ public class AiChatService {
                     "message debe contener entre 1 y 1000 caracteres y no estar en blanco");
         }
         checkInterrupted();
-        var verified = catalog.answer(request.message());
+        var verified = catalog.response(request.message());
         checkInterrupted();
-        if (verified.isPresent()) return new AiChatResponse(verified.get(), "icastay-public-catalog-v1");
+        if (verified.isPresent()) return verified.get();
         var previous = history.findActive(session.conversationId(), session.secret(), 0, 5);
         var turns = previous.available() ? previous.content().stream()
                 .filter(item -> !"icastay-public-catalog-v1".equals(item.model()))

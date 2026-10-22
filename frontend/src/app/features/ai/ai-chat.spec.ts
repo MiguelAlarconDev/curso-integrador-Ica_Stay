@@ -4,11 +4,13 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { AiChat } from './ai-chat';
 import { API_BASE_URL } from '../../core/api.config';
 import { authInterceptor } from '../../core/interceptors/auth.interceptor';
+import { provideRouter } from '@angular/router';
 
 describe('AiChat', () => {
   const api = 'https://api.example.test/api/v1/ai/chat';
   beforeEach(() => TestBed.configureTestingModule({ imports: [AiChat], providers: [
     provideHttpClient(withInterceptors([authInterceptor])), provideHttpClientTesting(),
+    provideRouter([]),
     { provide: API_BASE_URL, useValue: 'https://api.example.test' },
   ] }));
   afterEach(() => TestBed.inject(HttpTestingController).verify());
@@ -31,6 +33,43 @@ describe('AiChat', () => {
     const submit = () => { page.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); fixture.detectChanges(); };
     return { fixture, page, http, toggle, fill, submit };
   }
+
+  it('renders verified catalog cards and safe hotel links without interpreting answer text', () => {
+    const { toggle, fill, submit, http, fixture, page } = setup(); toggle(); fill('Precios en Ica'); submit();
+    http.expectOne(api).flush({ answer: 'Texto de respaldo', catalog: {
+      checkedAt: '2026-10-22T12:00:00Z', checkIn: '2026-12-15', checkOut: '2026-12-17', guests: 2, roomsRequested: true,
+      hotels: [{ id: '00000000-0000-4000-8000-000000000001', name: 'Hotel <b>Oasis</b>', city: 'Ica', availability: 'AVAILABLE',
+        rooms: [{ number: '101', capacity: 2, pricePerNight: '123.45', currency: 'PEN' }] }],
+    } }); fixture.detectChanges();
+    expect(page.querySelector('.hotel-card h3')!.textContent).toBe('Hotel <b>Oasis</b>');
+    expect(page.querySelector('.hotel-card b')).toBeNull();
+    expect(page.querySelector('.hotel-card')!.textContent).toContain('123.45 PEN');
+    expect(page.querySelector('.availability')!.textContent).toContain('Disponible al consultar');
+    expect(page.querySelector('.hotel-card a')!.getAttribute('href')).toBe('/hotels/00000000-0000-4000-8000-000000000001');
+    expect(page.querySelector('details')!.textContent).toContain('Texto de respaldo');
+    expect(page.querySelectorAll('[aria-live="polite"]').length).toBe(1);
+    http.expectNone(request => request.url.includes('/hotels'));
+  });
+
+  it('keeps restored answers as labelled historical text without guessed cards or extra requests', () => {
+    const { http, fixture, page } = setup(false);
+    http.expectOne(historyApi).flush({ ...empty, conversationId: 'opaque', content: [exchange('Precios', 'Hotel Oasis: 100 PEN disponible', 22)] });
+    fixture.detectChanges();
+    expect(page.querySelector('.saved-answer')!.textContent).toContain('no se han vuelto a comprobar');
+    expect(page.querySelector('app-ai-catalog-cards')).toBeNull();
+    http.expectNone(api); http.expectNone(request => request.url.includes('/hotels'));
+  });
+
+  it('suggests editable questions without sending automatically and disables them while pending', () => {
+    const { toggle, page, fixture, submit, http } = setup(); toggle();
+    const buttons = page.querySelectorAll<HTMLButtonElement>('.suggestions button');
+    buttons[0].click(); fixture.detectChanges(); expect(page.querySelector('textarea')!.value).toContain('hoteles');
+    buttons[1].click(); fixture.detectChanges(); expect(page.querySelector('textarea')!.value).toContain('precios');
+    buttons[2].click(); fixture.detectChanges(); expect(page.querySelector('textarea')!.value).toMatch(/del \d{4}-\d{2}-\d{2} al \d{4}-\d{2}-\d{2} para 2 huéspedes/);
+    expect(document.activeElement).toBe(page.querySelector('textarea')); http.expectNone(api);
+    submit(); expect([...buttons].every(button => button.disabled)).toBe(true);
+    http.expectOne(api).flush({ answer: 'Respuesta' }); fixture.detectChanges();
+  });
 
   it('restores history on each mount chronologically with a single welcome and no refresh after sends', () => {
     const state = setup(false); state.toggle(); state.fill('Nueva'); state.submit();

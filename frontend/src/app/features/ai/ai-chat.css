@@ -22,6 +22,12 @@ textarea { resize: none; max-height: 100px; }
 .send-chat { width: 100%; margin-top: 8px; }
 button:disabled { opacity: .65; cursor: wait; transform: none; }
 .user-message :focus-visible { outline-color: var(--ica-white); }
+.suggestions { display: flex; flex-wrap: wrap; gap: 6px; }
+.suggestions > span { flex-basis: 100%; }
+.suggestions button { margin-top: 0; font-size: .75rem; border: 1px solid var(--ica-line); }
+.saved-answer { display: block; margin-bottom: 8px; }
+summary { cursor: pointer; padding: 10px 0; font-size: .8rem; }
+summary:focus-visible { outline: 2px solid var(--ica-clay-dark); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (max-width: 480px) {
   :host { right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); }

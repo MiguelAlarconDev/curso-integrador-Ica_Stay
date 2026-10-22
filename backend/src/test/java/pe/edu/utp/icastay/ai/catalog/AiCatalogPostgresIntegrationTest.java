@@ -115,8 +115,29 @@ class AiCatalogPostgresIntegrationTest {
                 Map.of("message", "Precios del hotel \"" + prefix + " Activo\""));
         mvc.perform(post("/api/v1/ai/chat").header("Origin", "http://localhost:4200").contentType("application/json").content(payload))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.answer").value(org.hamcrest.Matchers.containsString("123.45 PEN")))
+                .andExpect(jsonPath("$.catalog.hotels[0].id").value(hotel.toString()))
+                .andExpect(jsonPath("$.catalog.hotels[0].availability").value("UNKNOWN"))
+                .andExpect(jsonPath("$.catalog.hotels[0].rooms[0].pricePerNight").value("123.45"))
+                .andExpect(jsonPath("$.catalog.hotels[0].rooms[0].capacity").value(2))
+                .andExpect(jsonPath("$.catalog.hotels[0].description").doesNotExist())
                 .andExpect(jsonPath("$.source").doesNotExist()).andExpect(header().exists("Set-Cookie"));
         assertEquals(before, jdbc.queryForObject("SELECT count(*) FROM reservations", Long.class));
+    }
+
+    @Test void structuredSnapshotsDistinguishUnknownAvailableAndUnavailableWithoutPrivateFields() {
+        var listing = reader.readResponse(new AiCatalogQuery("Ica", prefix + " Activo", false, null, null, null)).catalog();
+        assertFalse(listing.roomsRequested()); assertTrue(listing.hotels().getFirst().rooms().isEmpty());
+        assertEquals(AiCatalogData.Availability.UNKNOWN, listing.hotels().getFirst().availability());
+        var available = reader.readResponse(new AiCatalogQuery("Ica", prefix + " Activo", true, "2030-01-02", "2030-01-04", 2)).catalog();
+        assertEquals(AiCatalogData.Availability.AVAILABLE, available.hotels().getFirst().availability());
+        assertEquals("2030-01-02", available.checkIn()); assertEquals(2, available.guests()); assertNotNull(available.checkedAt());
+        assertEquals("123.45", available.hotels().getFirst().rooms().getFirst().pricePerNight());
+        var unavailable = reader.readResponse(new AiCatalogQuery("Ica", prefix + " Activo", true, "2030-01-02", "2030-01-04", 3)).catalog();
+        assertEquals(AiCatalogData.Availability.UNAVAILABLE, unavailable.hotels().getFirst().availability());
+        assertTrue(unavailable.hotels().getFirst().rooms().isEmpty());
+        assertNull(reader.readResponse(new AiCatalogQuery("Ica", "Missing", true, null, null, null)).catalog());
+        var serialized = tools.jackson.databind.json.JsonMapper.builder().build().writeValueAsString(available);
+        for (String forbidden : List.of("PrivateOwner", "private", "password", "admin", "description", "Ignore system")) assertFalse(serialized.contains(forbidden));
     }
 
     @Test void invalidDatesAndSqlLikeNamesCannotBroadenAccess() {

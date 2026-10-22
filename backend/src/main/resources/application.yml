@@ -13,6 +13,13 @@ spring:
     enabled: true
 
 icastay:
+  ai:
+    base-url: ${AI_BASE_URL:http://localhost:11434}
+    model: ${AI_MODEL:qwen2.5:1.5b}
+    connect-timeout: ${AI_CONNECT_TIMEOUT:3s}
+    response-timeout: ${AI_RESPONSE_TIMEOUT:60s}
+    max-tokens: ${AI_MAX_TOKENS:256}
+    max-concurrent-requests: ${AI_MAX_CONCURRENT_REQUESTS:1}
   cors:
     allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:4200}
   security:

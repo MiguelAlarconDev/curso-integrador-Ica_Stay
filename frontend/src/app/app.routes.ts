@@ -18,8 +18,8 @@ export const routes: Routes = [
     loadComponent: () => import('./features/reservations/my-reservations').then(m => m.MyReservations) },
   { path: 'my-reservations/:id', title: 'Mi reserva | Ica Stay', canActivate: [authGuard], data: { roles: ['USER'] },
     loadComponent: () => import('./features/reservations/my-reservations').then(m => m.MyReservations) },
-  { path: 'hotels', title: 'Hoteles | Ica Stay', loadComponent: () => import('./features/hotels/catalog').then(m => m.HotelCatalog) },
-  { path: 'hotels/:id', title: 'Detalle del hotel | Ica Stay', loadComponent: () => import('./features/hotels/detail').then(m => m.HotelDetail) },
+  { path: 'hotels', title: 'Hoteles | Ica Stay', data: { aiChat: true }, loadComponent: () => import('./features/hotels/catalog').then(m => m.HotelCatalog) },
+  { path: 'hotels/:id', title: 'Detalle del hotel | Ica Stay', data: { aiChat: true }, loadComponent: () => import('./features/hotels/detail').then(m => m.HotelDetail) },
   {
     path: 'admin/hotel',
     canActivate: [authGuard],
@@ -30,16 +30,19 @@ export const routes: Routes = [
   },
   {
     path: 'register',
+    data: { aiChat: true },
     title: 'Crear cuenta | Ica Stay',
     loadComponent: () => import('./features/auth/register/register').then(m => m.Register),
   },
   {
     path: 'login',
+    data: { aiChat: true },
     title: 'Iniciar sesión | Ica Stay',
     loadComponent: () => import('./features/auth/login/login').then(m => m.Login),
   },
   {
     path: '',
+    data: { aiChat: true },
     pathMatch: 'full',
     title: 'Ica Stay | Encuentra dónde quedarte en Ica',
     loadComponent: () => import('./features/home/home').then((m) => m.Home),

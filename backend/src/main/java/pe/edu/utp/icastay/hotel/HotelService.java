@@ -91,6 +91,17 @@ public class HotelService {
         return normalized;
     }
 
+    /** Bounded exact public name resolution; no fuzzy matching or inactive candidates. */
+    @Transactional(readOnly = true)
+    public HotelPage matchActiveName(String name, String city) {
+        String filter = searchText(name, 180);
+        if (filter.isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "nombre requerido");
+        var result = hotels.matchActiveName(filter, searchText(city, 120),
+                PageRequest.of(0, 3, Sort.by("name").ascending().and(Sort.by("id"))));
+        return new HotelPage(result.getContent().stream().map(this::toView).toList(), 0, 3,
+                result.getTotalElements(), result.getTotalPages());
+    }
+
     public Optional<HotelView> findActive(UUID id) {
         return hotels.findByIdAndStatus(id, ACTIVE_STATUS)
                 .map(this::toView);

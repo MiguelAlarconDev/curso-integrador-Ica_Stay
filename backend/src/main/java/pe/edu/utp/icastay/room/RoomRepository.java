@@ -18,9 +18,9 @@ interface RoomRepository extends JpaRepository<RoomEntity, UUID> {
             order by room.number asc, room.id asc
             """)
     List<RoomEntity> findAvailable(UUID hotelId, java.time.LocalDate checkIn,
-            java.time.LocalDate checkOut, int guests, java.time.Instant now);
+            java.time.LocalDate checkOut, int guests, java.time.Instant now, org.springframework.data.domain.Pageable pageable);
 
-    List<RoomEntity> findByHotelIdAndStatusOrderByNumberAscIdAsc(UUID hotelId, String status);
+    List<RoomEntity> findByHotelIdAndStatusOrderByNumberAscIdAsc(UUID hotelId, String status, org.springframework.data.domain.Pageable pageable);
 
     List<RoomEntity> findByHotelIdOrderByNumberAscIdAsc(UUID hotelId);
 

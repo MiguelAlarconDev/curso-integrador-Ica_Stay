@@ -1,6 +1,13 @@
 spring:
   application:
     name: ica-stay-backend
+  mongodb:
+    uri: ${MONGODB_URI:mongodb://127.0.0.1:27017/icastay_ai}
+  data:
+    mongodb:
+      auto-index-creation: false
+      repositories:
+        type: none
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5433/ica_stay}
     username: ${DB_USER:ica_stay}
@@ -13,6 +20,16 @@ spring:
     enabled: true
 
 icastay:
+  ai:
+    session:
+      signing-key: ${AI_SESSION_SIGNING_KEY:}
+      secure: ${AI_SESSION_COOKIE_SECURE:true}
+    base-url: ${AI_BASE_URL:http://localhost:11434}
+    model: ${AI_MODEL:qwen2.5:1.5b}
+    connect-timeout: ${AI_CONNECT_TIMEOUT:3s}
+    response-timeout: ${AI_RESPONSE_TIMEOUT:60s}
+    max-tokens: ${AI_MAX_TOKENS:256}
+    max-concurrent-requests: ${AI_MAX_CONCURRENT_REQUESTS:1}
   cors:
     allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:4200}
   security:
@@ -20,6 +37,9 @@ icastay:
       secret: ${JWT_SECRET}
 
 management:
+  health:
+    mongodb:
+      enabled: false
   endpoints:
     web:
       exposure:

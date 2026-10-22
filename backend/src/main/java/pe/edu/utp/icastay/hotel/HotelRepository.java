@@ -48,5 +48,12 @@ interface HotelRepository extends JpaRepository<HotelEntity, UUID> {
 
     Optional<HotelEntity> findByIdAndStatus(UUID id, String status);
 
+    @Query("""
+            select h from HotelEntity h where h.status = 'ACTIVE'
+            and (lower(h.name) = lower(:name) or lower(h.name) = lower(concat('Hotel ', :name)))
+            and (:city = '' or lower(h.city) = lower(:city))
+            """)
+    Page<HotelEntity> matchActiveName(@Param("name") String name, @Param("city") String city, Pageable pageable);
+
     Optional<HotelEntity> findByAdminUserId(UUID adminUserId);
 }

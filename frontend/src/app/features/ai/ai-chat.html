@@ -1,0 +1,58 @@
+<section id="icastay-ai-panel" class="chat-panel" [hidden]="!open()" aria-labelledby="icastay-ai-title" (keydown.escape)="close($event)">
+  <header class="chat-header">
+    <div><span class="chat-eyebrow">Tu guía en Ica</span><h2 id="icastay-ai-title">IcaStay AI</h2></div>
+    <button type="button" class="close-chat" aria-label="Cerrar IcaStay AI" (click)="close()">×</button>
+  </header>
+  <div class="chat-history" #history tabindex="0" aria-label="Historial de conversación" aria-live="off">
+    @if (historyLoading()) { <p class="chat-loading history-loading">Recuperando conversación…</p> }
+    @if (historyError()) {
+      <div class="history-error"><p>{{ historyError() }}</p>
+        @if (!started()) {
+          <button type="button" class="retry-chat retry-history" [disabled]="historyLoading()" (click)="loadHistory()">Reintentar historial</button>
+        } @else { <p>Podrás intentar recuperar el historial al volver a cargar la página.</p> }
+      </div>
+    }
+    @if (historyTruncated()) { <p class="chat-help">Se muestran los últimos 50 intercambios.</p> }
+    @for (item of messages(); track item.id) {
+      <div class="message" [class.user-message]="item.role === 'user'" [class.assistant-message]="item.role === 'assistant'">
+        <span class="message-author">{{ item.role === 'user' ? 'Tú' : 'IcaStay AI' }}</span>
+        @if (item.historical) { <span class="chat-help saved-answer">Respuesta guardada: sus datos no se han vuelto a comprobar.</span> }
+        @if (item.catalog; as catalog) {
+          <app-ai-catalog-cards [catalog]="catalog" />
+          <details><summary>Ver respuesta completa</summary><p>{{ item.text }}</p></details>
+        } @else { <p>{{ item.text }}</p> }
+        @if (item.error) {
+          <div class="message-error"><p>{{ item.error }}</p>
+            <button type="button" class="retry-chat" [disabled]="loading()" (click)="retry(item)" aria-label="Reintentar esta pregunta">Reintentar</button>
+          </div>
+        }
+      </div>
+    }
+    @if (loading()) { <p class="chat-loading">Preparando una respuesta…</p> }
+    <div class="suggestions" aria-label="Preguntas sugeridas">
+      <span class="chat-help">Prepara una pregunta y revísala antes de enviar:</span>
+      <button type="button" class="retry-chat" [disabled]="loading() || historyLoading()" (click)="suggest('hotels')">Hoteles en Ica</button>
+      <button type="button" class="retry-chat" [disabled]="loading() || historyLoading()" (click)="suggest('prices')">Habitaciones y precios</button>
+      <button type="button" class="retry-chat" [disabled]="loading() || historyLoading()" (click)="suggest('availability')">Consultar fechas</button>
+    </div>
+  </div>
+  <form (submit)="$event.preventDefault(); send()" class="chat-form">
+    <div class="field">
+      <label for="icastay-ai-message">Tu pregunta</label>
+      <textarea #field id="icastay-ai-message" rows="2" [formControl]="message" [readOnly]="loading() || historyLoading()"
+        (keydown)="onKeydown($event)" aria-describedby="icastay-ai-help icastay-ai-validation"
+        [attr.aria-invalid]="message.touched && message.invalid" placeholder="¿Cómo buscar alojamiento en Ica?"></textarea>
+    </div>
+    <div class="chat-help" id="icastay-ai-help">{{ message.value.length }}/1000 · Enter envía · Shift+Enter añade una línea</div>
+    <p class="validation" id="icastay-ai-validation">
+      @if (message.touched && message.invalid) { Escribe una pregunta de entre 1 y 1000 caracteres, sin dejarla en blanco. }
+    </p>
+    <p class="chat-help">No compartas contraseñas ni datos personales. Los intercambios guardados vencen tras 30 días sin actividad.</p>
+    <button type="submit" class="btn btn-primary send-chat" [disabled]="loading() || historyLoading()">{{ loading() ? 'Esperando respuesta…' : 'Enviar pregunta' }}</button>
+  </form>
+  <span class="sr-only" aria-live="polite" aria-atomic="true">{{ announcement() }}</span>
+</section>
+<button #launcher type="button" class="btn btn-primary chat-launcher" aria-controls="icastay-ai-panel"
+  [attr.aria-expanded]="open()" [attr.aria-label]="open() ? 'Cerrar IcaStay AI' : 'Abrir IcaStay AI'" (click)="toggle()">
+  <span aria-hidden="true">✦</span> IcaStay AI
+</button>

@@ -44,6 +44,14 @@ class OllamaClientTest {
     }
 
     @Test
+    void rejectsOversizedAnswerAndReleasesCapacity() {
+        when(response.body()).thenReturn("{\"message\":{\"content\":\"" + "x".repeat(16001) + "\"}}");
+        assertFailure(502);
+        when(response.body()).thenReturn("{\"message\":{\"content\":\"" + "x".repeat(16000) + "\"}}");
+        assertEquals(16000, client.chat("consulta").length());
+    }
+
+    @Test
     void extractsContentAndReleasesCapacity() {
         assertEquals("Orientación hotelera", client.chat("consulta"));
         assertEquals("Orientación hotelera", client.chat("otra"));

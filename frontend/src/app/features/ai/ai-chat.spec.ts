@@ -51,6 +51,16 @@ describe('AiChat', () => {
     http.expectNone(request => request.url.includes('/hotels'));
   });
 
+  it('does not steal focus when pending history arrives', () => {
+    const { toggle, page, http, fixture } = setup(false);
+    toggle();
+    const close = page.querySelector<HTMLButtonElement>('.close-chat')!;
+    close.focus();
+    http.expectOne(historyApi).flush(empty);
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(close);
+  });
+
   it('keeps restored answers as labelled historical text without guessed cards or extra requests', () => {
     const { http, fixture, page } = setup(false);
     http.expectOne(historyApi).flush({ ...empty, conversationId: 'opaque', content: [exchange('Precios', 'Hotel Oasis: 100 PEN disponible', 22)] });

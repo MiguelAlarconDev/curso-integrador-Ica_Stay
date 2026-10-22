@@ -65,7 +65,8 @@ public class OllamaClient {
             if (response.statusCode() < 200 || response.statusCode() >= 300) throw invalidResponse();
             var body = mapper.readTree(response.body());
             var content = body == null ? null : body.path("message").path("content");
-            if (content == null || !content.isTextual() || content.stringValue().isBlank()) throw invalidResponse();
+            if (content == null || !content.isTextual() || content.stringValue().isBlank()
+                    || content.stringValue().length() > 16000) throw invalidResponse();
             return content.stringValue().strip();
         } catch (HttpTimeoutException exception) {
             throw new ResponseStatusException(HttpStatus.GATEWAY_TIMEOUT,
@@ -73,6 +74,8 @@ public class OllamaClient {
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw unavailable();
+        } catch (ResponseTooLargeException exception) {
+            throw invalidResponse();
         } catch (IOException exception) {
             throw unavailable();
         } catch (JacksonException exception) {
@@ -102,7 +105,7 @@ public class OllamaClient {
     }
 
     private HttpResponse<String> exchange(HttpRequest request) throws IOException, InterruptedException {
-        CompletableFuture<HttpResponse<String>> pending = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+        CompletableFuture<HttpResponse<String>> pending = client.sendAsync(request, info -> new BoundedBody());
         try {
             // Bound the entire exchange, including a body stalled after successful headers.
             return pending.get(properties.responseTimeout().toNanos(), TimeUnit.NANOSECONDS);
@@ -114,9 +117,46 @@ public class OllamaClient {
             throw exception;
         } catch (ExecutionException exception) {
             if (exception.getCause() instanceof HttpTimeoutException timeout) throw timeout;
+            if (exception.getCause() instanceof ResponseTooLargeException oversized) throw oversized;
             throw new IOException("AI transport failed");
         }
     }
+
+    // Count actual received bytes, including chunked responses without Content-Length.
+    private static final class BoundedBody implements HttpResponse.BodySubscriber<String> {
+        private final HttpResponse.BodySubscriber<String> delegate =
+                HttpResponse.BodySubscribers.ofString(java.nio.charset.StandardCharsets.UTF_8);
+        private java.util.concurrent.Flow.Subscription subscription;
+        private int received;
+        private boolean finished;
+
+        public java.util.concurrent.CompletionStage<String> getBody() { return delegate.getBody(); }
+        public void onSubscribe(java.util.concurrent.Flow.Subscription value) {
+            subscription = value;
+            delegate.onSubscribe(value);
+        }
+        public void onNext(List<java.nio.ByteBuffer> buffers) {
+            if (finished) return;
+            for (var buffer : buffers) {
+                if (buffer.remaining() > 131072 - received) {
+                    finished = true;
+                    subscription.cancel();
+                    delegate.onError(new ResponseTooLargeException());
+                    return;
+                }
+                received += buffer.remaining();
+            }
+            delegate.onNext(buffers);
+        }
+        public void onError(Throwable error) {
+            if (!finished) { finished = true; delegate.onError(error); }
+        }
+        public void onComplete() {
+            if (!finished) { finished = true; delegate.onComplete(); }
+        }
+    }
+
+    private static final class ResponseTooLargeException extends IOException { }
 
     private ResponseStatusException unavailable() {
         return new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,

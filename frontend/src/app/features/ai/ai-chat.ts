@@ -41,6 +41,7 @@ export class AiChat implements AfterViewChecked, OnInit {
     if (this.historyLoading() || this.started()) return;
     this.historyLoading.set(true);
     this.historyError.set('');
+    if (this.open()) this.focusTarget = 'field';
     if (this.open()) this.announcement.set('Recuperando conversación.');
     this.service.currentConversation().pipe(takeUntilDestroyed(this.destroyRef),
       finalize(() => this.historyLoading.set(false))).subscribe({
@@ -50,7 +51,6 @@ export class AiChat implements AfterViewChecked, OnInit {
           { id: this.nextId++, role: 'assistant' as const, text: item.answer, historical: true },
         ])]);
         this.historyTruncated.set(page.hasNext);
-        if (this.open()) this.focusTarget = 'field';
         if (this.open()) this.announcement.set(page.content.length ? 'Conversación recuperada.' : 'Puedes iniciar una conversación.');
         this.scrollPending = true;
       },

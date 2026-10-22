@@ -12,6 +12,35 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 
 class OllamaHttpContractTest {
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(booleans = {true, false})
+    void boundsActualResponseBytesAndReleasesCapacity(boolean chunked) throws Exception {
+        var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        var calls = new java.util.concurrent.atomic.AtomicInteger();
+        server.createContext("/api/chat", exchange -> {
+            exchange.getRequestBody().readAllBytes();
+            // A small answer with oversized unrelated metadata must also be rejected.
+            byte[] result = (calls.getAndIncrement() == 0
+                    ? "{\"message\":{\"content\":\"ok\"},\"extra\":\"" + "x".repeat(140000) + "\"}"
+                    : "{\"message\":{\"content\":\"ok\"}}").getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, chunked ? 0 : result.length);
+            try (var output = exchange.getResponseBody()) { output.write(result); }
+            catch (java.io.IOException cancelled) { /* Client intentionally cancels oversized bodies. */ }
+        });
+        server.start();
+        try {
+            var properties = new AiProperties(URI.create("http://127.0.0.1:" + server.getAddress().getPort()),
+                    "test-model", Duration.ofSeconds(2), Duration.ofSeconds(5), 42, 1);
+            try (var http = new AiConfiguration().ollamaHttpClient(properties)) {
+                var client = new OllamaClient(http, JsonMapper.builder().build(), properties);
+                var failure = assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                        () -> client.chat("consulta"));
+                assertEquals(502, failure.getStatusCode().value());
+                assertEquals("ok", client.chat("consulta"));
+            }
+        } finally { server.stop(0); }
+    }
+
     @Test
     void sendsConfiguredJsonToChatEndpoint() throws Exception {
         var captured = new AtomicReference<String>();

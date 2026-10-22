@@ -40,14 +40,14 @@ class RoomServiceTest {
         when(room.getCurrency()).thenReturn("PEN");
         when(hotels.findActive(hotelId)).thenReturn(Optional.of(
                 new HotelView(hotelId, "Hotel Ica", "Centro", "Av. Principal", "Ica")));
-        when(rooms.findByHotelIdAndStatusOrderByNumberAscIdAsc(hotelId, "ACTIVE"))
+        when(rooms.findByHotelIdAndStatusOrderByNumberAscIdAsc(hotelId, "ACTIVE", org.springframework.data.domain.Pageable.unpaged()))
                 .thenReturn(List.of(room));
 
         Optional<List<RoomView>> response = new RoomService(rooms, hotels).listVisibleByActiveHotel(hotelId);
 
         assertEquals(Optional.of(List.of(new RoomView(roomId, "101", "Habitacion doble",
                 2, new BigDecimal("180.00"), "PEN"))), response);
-        verify(rooms).findByHotelIdAndStatusOrderByNumberAscIdAsc(hotelId, "ACTIVE");
+        verify(rooms).findByHotelIdAndStatusOrderByNumberAscIdAsc(hotelId, "ACTIVE", org.springframework.data.domain.Pageable.unpaged());
     }
 
     @Test
@@ -55,13 +55,13 @@ class RoomServiceTest {
         UUID hotelId = UUID.fromString("33333333-3333-3333-3333-333333333333");
         when(hotels.findActive(hotelId)).thenReturn(Optional.of(
                 new HotelView(hotelId, "Hotel Ica", "Centro", "Av. Principal", "Ica")));
-        when(rooms.findByHotelIdAndStatusOrderByNumberAscIdAsc(hotelId, "ACTIVE"))
+        when(rooms.findByHotelIdAndStatusOrderByNumberAscIdAsc(hotelId, "ACTIVE", org.springframework.data.domain.Pageable.unpaged()))
                 .thenReturn(List.of());
 
         Optional<List<RoomView>> response = new RoomService(rooms, hotels).listVisibleByActiveHotel(hotelId);
 
         assertEquals(Optional.of(List.of()), response);
-        verify(rooms).findByHotelIdAndStatusOrderByNumberAscIdAsc(hotelId, "ACTIVE");
+        verify(rooms).findByHotelIdAndStatusOrderByNumberAscIdAsc(hotelId, "ACTIVE", org.springframework.data.domain.Pageable.unpaged());
     }
 
     @Test

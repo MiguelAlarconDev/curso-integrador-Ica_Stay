@@ -34,7 +34,19 @@ public class RoomService {
 
     @Transactional(readOnly = true)
     public Optional<List<RoomView>> available(UUID hotelId, String checkIn, String checkOut, Integer guests) {
-        if (checkIn == null && checkOut == null && guests == null) return listVisibleByActiveHotel(hotelId);
+        return available(hotelId, checkIn, checkOut, guests, org.springframework.data.domain.Pageable.unpaged());
+    }
+
+    /** Same public availability rules, with a database-level bound for the AI tool. */
+    @Transactional(readOnly = true)
+    public Optional<List<RoomView>> availableLimited(UUID hotelId, String checkIn, String checkOut, Integer guests, int limit) {
+        if (limit < 1 || limit > 3) throw invalid("limite invalido");
+        return available(hotelId, checkIn, checkOut, guests, org.springframework.data.domain.PageRequest.of(0, limit));
+    }
+
+    private Optional<List<RoomView>> available(UUID hotelId, String checkIn, String checkOut, Integer guests,
+            org.springframework.data.domain.Pageable pageable) {
+        if (checkIn == null && checkOut == null && guests == null) return listVisibleByActiveHotel(hotelId, pageable);
         if (checkIn == null || checkOut == null || guests == null || guests <= 0) throw invalid("indique fechas y huespedes positivos");
         java.time.LocalDate start, end;
         java.time.Instant now = clock.instant();
@@ -45,14 +57,18 @@ public class RoomService {
         } catch (java.time.DateTimeException | IllegalArgumentException exception) { throw invalid("fechas invalidas"); }
         if (start.isBefore(now.atZone(java.time.ZoneOffset.UTC).toLocalDate()) || !end.isAfter(start)) throw invalid("rango de fechas invalido");
         if (hotels.findActive(hotelId).isEmpty()) return Optional.empty();
-        return Optional.of(rooms.findAvailable(hotelId, start, end, guests, now).stream().map(this::toView).toList());
+        return Optional.of(rooms.findAvailable(hotelId, start, end, guests, now, pageable).stream().map(this::toView).toList());
     }
 
     public Optional<List<RoomView>> listVisibleByActiveHotel(UUID hotelId) {
+        return listVisibleByActiveHotel(hotelId, org.springframework.data.domain.Pageable.unpaged());
+    }
+
+    private Optional<List<RoomView>> listVisibleByActiveHotel(UUID hotelId, org.springframework.data.domain.Pageable pageable) {
         if (hotels.findActive(hotelId).isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(rooms.findByHotelIdAndStatusOrderByNumberAscIdAsc(hotelId, ACTIVE_STATUS).stream()
+        return Optional.of(rooms.findByHotelIdAndStatusOrderByNumberAscIdAsc(hotelId, ACTIVE_STATUS, pageable).stream()
                 .map(this::toView)
                 .toList());
     }

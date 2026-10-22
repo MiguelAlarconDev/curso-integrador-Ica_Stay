@@ -9,11 +9,14 @@ public class AiChatService {
     private final OllamaClient ollama;
     private final pe.edu.utp.icastay.ai.history.AiHistoryService history;
     private final AiProperties properties;
+    private final pe.edu.utp.icastay.ai.catalog.AiCatalogTool catalog;
 
-    public AiChatService(OllamaClient ollama, pe.edu.utp.icastay.ai.history.AiHistoryService history, AiProperties properties) {
+    public AiChatService(OllamaClient ollama, pe.edu.utp.icastay.ai.history.AiHistoryService history, AiProperties properties,
+            pe.edu.utp.icastay.ai.catalog.AiCatalogTool catalog) {
         this.ollama = ollama;
         this.history = history;
         this.properties = properties;
+        this.catalog = catalog;
     }
 
     public AiChatResponse chat(AiChatRequest request, AiSessionService.Session session) {
@@ -23,8 +26,12 @@ public class AiChatService {
                     "message debe contener entre 1 y 1000 caracteres y no estar en blanco");
         }
         checkInterrupted();
+        var verified = catalog.answer(request.message());
+        checkInterrupted();
+        if (verified.isPresent()) return new AiChatResponse(verified.get(), "icastay-public-catalog-v1");
         var previous = history.findActive(session.conversationId(), session.secret(), 0, 5);
         var turns = previous.available() ? previous.content().stream()
+                .filter(item -> !"icastay-public-catalog-v1".equals(item.model()))
                 .filter(item -> AiHistoryPrivacy.mayStore(item.question(), item.answer()))
                 .map(item -> new OllamaContextTurn(item.question(), item.answer())).toList() : java.util.List.<OllamaContextTurn>of();
         checkInterrupted();
@@ -36,7 +43,8 @@ public class AiChatService {
 
     public void completed(AiChatRequest request, AiChatResponse response, AiSessionService.Session session) {
         if (Thread.currentThread().isInterrupted() || !AiHistoryPrivacy.mayStore(request.message(), response.answer())) return;
-        history.storeCompleted(session.conversationId(), session.secret(), request.message().strip(), response.answer(), properties.model());
+        history.storeCompleted(session.conversationId(), session.secret(), request.message().strip(), response.answer(),
+                response.source() == null ? properties.model() : response.source());
     }
 
     private void checkInterrupted() {

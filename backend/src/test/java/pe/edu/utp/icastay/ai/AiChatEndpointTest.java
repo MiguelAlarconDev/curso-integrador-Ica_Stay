@@ -34,6 +34,7 @@ class AiChatEndpointTest {
     @Import({SecurityConfig.class, AiChatController.class, AiChatService.class, AiSessionService.class})
     static class Config {
         @Bean OllamaClient ollamaClient() { return mock(OllamaClient.class); }
+        @Bean pe.edu.utp.icastay.ai.catalog.AiCatalogTool catalog() { return mock(pe.edu.utp.icastay.ai.catalog.AiCatalogTool.class); }
         @Bean JwtTokenService jwtTokenService() { return mock(JwtTokenService.class); }
         @Bean UserService userService() { return mock(UserService.class); }
         @Bean pe.edu.utp.icastay.ai.history.AiHistoryService history() { return mock(pe.edu.utp.icastay.ai.history.AiHistoryService.class); }

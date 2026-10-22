@@ -51,7 +51,7 @@ class AiContextAndCancellationTest {
 
     @Test void interruptedRequestDoesNotPersist() {
         var history = mock(AiHistoryService.class);
-        var service = new AiChatService(mock(OllamaClient.class), history, OllamaClientTest.properties());
+        var service = new AiChatService(mock(OllamaClient.class), history, OllamaClientTest.properties(), mock(pe.edu.utp.icastay.ai.catalog.AiCatalogTool.class));
         Thread.currentThread().interrupt();
         try { service.completed(new AiChatRequest("Pregunta"), new AiChatResponse("Respuesta"), null); }
         finally { Thread.interrupted(); }

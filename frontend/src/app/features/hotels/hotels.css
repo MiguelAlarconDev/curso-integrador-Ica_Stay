@@ -14,3 +14,36 @@ dt { color: var(--ica-muted); margin-top: 1rem; }
 dd { margin: .5rem 0; }
 .back { display: inline-block; margin-bottom: 2rem; }
 @media (max-width: 600px) { form { grid-template-columns: minmax(0, 1fr); } }
+
+/* 2.0.7 · Detalle editorial y disponibilidad */
+.detail-top { padding-top: 1.5rem; }
+.detail-top .back { margin-bottom: 1rem; }
+.detail-header { margin-bottom: 1rem; }
+.detail-title { color: var(--ica-green); margin: .25rem 0 .5rem; }
+.detail-address { color: var(--ica-muted); margin: 0; }
+.detail-gallery { margin-block: 1.25rem 2rem; }
+.detail-skeleton { aspect-ratio: 16 / 9; border-radius: var(--radius-lg); background: var(--ica-arena); margin: 1.5rem 0; }
+.detail-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3rem); align-items: start; margin-bottom: 2.5rem; }
+.detail-about { border: 0; padding: 0; }
+.detail-about h2 { color: var(--ica-green); }
+.detail-facts { position: sticky; top: 96px; }
+.detail-facts .btn { width: 100%; }
+app-availability.panel { display: block; margin-bottom: 4rem; }
+.availability-form { display: block; padding: 1rem 0 0; }
+.result-count { font-weight: 600; color: var(--ica-green); }
+.room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 1.5rem; margin-top: 1rem; }
+.room-card { display: flex; flex-direction: column; border: 1px solid var(--ica-line); border-radius: var(--radius-lg); overflow: hidden; padding: 0; background: var(--ica-white); }
+.room-card.selected { border-color: var(--ica-green); box-shadow: 0 0 0 2px var(--ica-green); }
+.room-card .room-photos { max-width: none; margin: 0; }
+.room-body { display: flex; flex-direction: column; gap: .5rem; padding: 1.1rem 1.25rem 1.4rem; flex: 1; }
+.room-body h3 { color: var(--ica-green); }
+.room-body p { margin: 0; line-height: 1.5; }
+.room-body .select-room { margin-top: auto; }
+@media (max-width: 860px) { .detail-layout { grid-template-columns: minmax(0, 1fr); } .detail-facts { position: static; } }
+.booking { margin-top: 2rem; }
+.booking .summary-list { margin-top: .5rem; }
+.booking-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; padding: 1rem 0 0; }
+.check { display: flex; gap: .65rem; align-items: flex-start; line-height: 1.5; cursor: pointer; }
+.check input { width: 20px; height: 20px; margin-top: .15rem; accent-color: var(--ica-green); flex: none; }
+.booking-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
+@media (min-width: 1000px) { .detail-gallery { --carousel-ratio: 21 / 9; } }

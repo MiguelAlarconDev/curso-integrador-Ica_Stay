@@ -1,0 +1,25 @@
+:host { display: block; margin-block: 1.5rem; }
+.carousel { position: relative; overflow: hidden; border-radius: var(--radius-lg); background: var(--ica-arena); aspect-ratio: var(--carousel-ratio, 16 / 9); margin: 0; }
+.carousel:focus-visible { outline: 3px solid var(--ica-gold); outline-offset: 4px; }
+.viewport { height: 100%; overflow: hidden; }
+.track { display: flex; height: 100%; margin: 0; padding: 0; list-style: none; transition: transform .45s ease; }
+.slide { flex: 0 0 100%; min-width: 0; height: 100%; }
+img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.carousel-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / .6); background: rgb(16 63 53 / .72); color: var(--ica-cream); font-size: 1.6rem; line-height: 1; cursor: pointer; }
+.carousel-nav:hover { background: var(--ica-green); }
+.carousel-prev { left: .75rem; }
+.carousel-next { right: .75rem; }
+.carousel-nav:focus-visible, .dot:focus-visible { outline: 3px solid var(--ica-gold); outline-offset: 2px; }
+.dots { position: absolute; bottom: .5rem; left: 50%; transform: translateX(-50%); display: flex; gap: .1rem; max-width: calc(100% - 7rem); flex-wrap: wrap; justify-content: center; }
+/* 24px hit area around a small visual dot. */
+.dot { width: 24px; height: 24px; padding: 0; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; }
+.dot::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: rgb(250 247 242 / .55); border: 1px solid rgb(16 63 53 / .5); }
+.dot[aria-current='true']::before { background: var(--ica-gold); width: 11px; height: 11px; }
+.counter { position: absolute; top: .75rem; right: .75rem; margin: 0; padding: .2rem .6rem; border-radius: 1rem;
+  background: rgb(16 63 53 / .72); color: var(--ica-cream); font-size: .8rem; line-height: 1.5; }
+.placeholder { background: linear-gradient(110deg, var(--ica-arena) 30%, var(--ica-cream) 50%, var(--ica-arena) 70%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+figcaption { position: absolute; left: .75rem; bottom: .75rem; padding: .2rem .6rem; border-radius: 1rem; background: rgb(250 247 242 / .9); color: var(--ica-green); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+@media (max-width: 600px) { .carousel { aspect-ratio: 4 / 3; } }
+@media (prefers-reduced-motion: reduce) { .track { transition: none; } .placeholder { animation: none; } }

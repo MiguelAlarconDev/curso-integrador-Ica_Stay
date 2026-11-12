@@ -5,6 +5,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { AdminHotelService } from '../../../../core/services/admin-hotel.service';
 import { HotelView, UpdateHotelRequest } from '../../../../core/models/hotel';
+import { PhotoGalleryManager } from '../../../../shared/photo-gallery-manager/photo-gallery-manager';
 
 // Match Java String.strip / Character.isWhitespace, including its NBSP exclusions.
 function strip(value: string): string {
@@ -18,7 +19,7 @@ function textValidator(max: number, required = true): ValidatorFn {
 }
 
 @Component({
-  selector: 'app-hotel-profile', imports: [ReactiveFormsModule],
+  selector: 'app-hotel-profile', imports: [ReactiveFormsModule, PhotoGalleryManager],
   templateUrl: './profile.html', styleUrl: './profile.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

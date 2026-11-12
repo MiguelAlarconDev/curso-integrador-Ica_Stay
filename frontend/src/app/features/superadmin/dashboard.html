@@ -1,4 +1,5 @@
 <app-site-header />
+<app-superadmin-nav />
 <main id="contenido" class="container" tabindex="-1" [attr.aria-busy]="loading()">
   <span class="eyebrow">Administración de Ica Stay</span>
   <h1>Resumen de la plataforma</h1>
@@ -7,7 +8,7 @@
   @if (loading()) {
     <p role="status">Cargando estadísticas…</p>
   } @else if (error()) {
-    <div role="alert"><p>{{ error() }}</p><button type="button" (click)="load()">Reintentar</button></div>
+    <div role="alert"><p>{{ error() }}</p><button class="btn btn-outline" type="button" (click)="load()">Reintentar</button></div>
   } @else if (data(); as d) {
     <p class="updated">Actualizado: {{ d.generatedAt | date:'dd/MM/yyyy HH:mm:ss' }}</p>
     @if (empty()) { <p role="status">Todavía no hay datos registrados en la plataforma.</p> }

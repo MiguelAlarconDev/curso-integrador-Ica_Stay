@@ -1,5 +1,5 @@
 <app-site-header />
-<main id="contenido" class="container login-layout section" tabindex="-1">
+<main id="contenido" class="auth-page" tabindex="-1"><div class="container login-layout">
   <section class="introduction" aria-labelledby="login-title">
     <span class="eyebrow">ICA STAY · UN LUGAR PARA VOLVER</span>
     <h1 id="login-title">Qué bueno<br>tenerte <em>de vuelta.</em></h1>
@@ -9,7 +9,7 @@
       <figcaption>Huacachina · Ica, Perú</figcaption>
     </figure>
   </section>
-  <section class="login-form" aria-labelledby="form-title">
+  <section class="login-form panel" aria-labelledby="form-title">
     <span class="eyebrow">TU CUENTA</span>
     <h2 id="form-title">Iniciar sesión</h2>
     <p>Ingresa tu correo y contraseña.</p>
@@ -29,11 +29,11 @@
       </div>
       <p class="form-message" role="alert">{{ error() }}</p>
       <button class="btn btn-primary" type="submit" [disabled]="sending()">{{ sending() ? 'Ingresando…' : 'Iniciar sesión' }}</button>
-      <span class="text-muted" role="status">{{ sending() ? 'Estamos comprobando tus datos.' : '' }}</span>
+      <span class="text-muted sending-status" role="status">{{ sending() ? 'Estamos comprobando tus datos.' : '' }}</span>
     </form>
     <nav class="auth-links" aria-label="Opciones de acceso">
       <a class="back-link" routerLink="/register">Crear cuenta</a>
       <a class="back-link" routerLink="/">Volver a explorar Ica <span aria-hidden="true">↗</span></a>
     </nav>
   </section>
-</main>
+</div></main>

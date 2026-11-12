@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
@@ -8,8 +8,10 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
   templateUrl: './search-bar.html',
   styleUrl: './search-bar.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.home-search]': 'home()' },
 })
 export class SearchBar {
+  readonly home = input(false);
   private readonly router = inject(Router);
   protected readonly form = new FormGroup({
     name: new FormControl('', { nonNullable: true, validators: Validators.maxLength(180) }),

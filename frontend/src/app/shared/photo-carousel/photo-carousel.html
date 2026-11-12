@@ -1,0 +1,34 @@
+@if (total()) {
+  <section class="carousel" aria-roledescription="carrusel" [attr.aria-label]="'Fotografías de ' + label()"
+    tabindex="0" (keydown)="key($event)">
+    <div class="viewport">
+      <ul class="track" [style.transform]="'translateX(' + (-index() * 100) + '%)'">
+        @for (photo of photos(); track photo.id; let i = $index) {
+          <li class="slide" aria-roledescription="diapositiva" [attr.aria-label]="(i + 1) + ' de ' + total()"
+            [attr.aria-hidden]="i !== index()" [attr.inert]="i !== index() ? '' : null">
+            <img [src]="service.imageUrl(photo)" [alt]="alt(photo, i)" [attr.width]="photo.width" [attr.height]="photo.height"
+              [attr.loading]="i === 0 ? 'eager' : 'lazy'" decoding="async">
+          </li>
+        }
+      </ul>
+    </div>
+    @if (total() > 1) {
+      <button type="button" class="carousel-nav carousel-prev" (click)="go(index() - 1)" aria-label="Fotografía anterior"><span aria-hidden="true">‹</span></button>
+      <button type="button" class="carousel-nav carousel-next" (click)="go(index() + 1)" aria-label="Fotografía siguiente"><span aria-hidden="true">›</span></button>
+      <div class="dots" role="group" aria-label="Elegir fotografía">
+        @for (photo of photos(); track photo.id; let i = $index) {
+          <button type="button" class="dot" (click)="go(i)" [attr.aria-label]="'Ver fotografía ' + (i + 1) + ' de ' + total()"
+            [attr.aria-current]="i === index() ? 'true' : null"></button>
+        }
+      </div>
+    }
+    <p class="counter" aria-live="polite">{{ index() + 1 }} / {{ total() }}</p>
+  </section>
+} @else if (!loaded()) {
+  <div class="carousel placeholder" aria-hidden="true"></div>
+} @else if (fallback(); as image) {
+  <figure class="carousel fallback">
+    <img [src]="image.src" [alt]="image.alt" loading="lazy" decoding="async">
+    <figcaption>Imagen referencial</figcaption>
+  </figure>
+}

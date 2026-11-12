@@ -9,7 +9,11 @@ describe('Availability', () => {
   const room = { id: 'room', number: '101', description: null, capacity: 2, pricePerNight: 100, currency: 'PEN' };
   const date = (days: number) => new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
   beforeEach(() => { sessionStorage.clear(); TestBed.configureTestingModule({ imports: [Availability], providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] }); });
-  afterEach(() => TestBed.inject(HttpTestingController).verify());
+  // Room carousels read each room's public gallery; empty galleries render nothing.
+  afterEach(() => {
+    const http = TestBed.inject(HttpTestingController);
+    http.match(request => request.url.endsWith('/photos')).forEach(request => { if (!request.cancelled) request.flush([]); }); http.verify();
+  });
   function setup() {
     const fixture = TestBed.createComponent(Availability); fixture.componentRef.setInput('hotelId', 'own'); fixture.detectChanges();
     const page: HTMLElement = fixture.nativeElement;
@@ -25,6 +29,8 @@ describe('Availability', () => {
   it('invalidates selected room and its confirmation when criteria change', () => {
     const { valid, submit, http, fixture, page, fill } = setup(); valid(); submit();
     http.expectOne(r => r.url === api).flush([room]); fixture.detectChanges();
+    http.expectOne(`${api}/${room.id}/photos`).flush([]); fixture.detectChanges();
+    expect(page.querySelector('app-photo-carousel')).not.toBeNull();
     page.querySelector<HTMLButtonElement>('.select-room')!.click(); fixture.detectChanges();
     expect(page.querySelector('app-booking')).not.toBeNull();
     expect(page.textContent).toContain('2 noches');

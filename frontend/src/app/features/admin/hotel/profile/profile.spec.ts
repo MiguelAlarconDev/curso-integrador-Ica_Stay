@@ -153,4 +153,12 @@ describe('Hotel profile', () => {
     expect(Object.keys(request.request.body).sort()).toEqual(['address', 'city', 'description', 'name']);
     request.flush(hotel);
   });
+
+  it('opens the gallery for the current hotel without altering profile data', () => {
+    const { page, fixture, http, field } = setup();
+    page.querySelector<HTMLButtonElement>('app-photo-gallery-manager button')!.click(); fixture.detectChanges();
+    http.expectOne('http://localhost:8080/api/v1/admin/hotel/photos').flush([]); fixture.detectChanges();
+    expect(page.querySelector('app-photo-gallery-manager')!.textContent).toContain('0 / 15');
+    expect(field('name').value).toBe(hotel.name);
+  });
 });

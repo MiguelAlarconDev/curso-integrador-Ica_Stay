@@ -159,6 +159,41 @@ describe('AiChat', () => {
     expect(page.querySelector('[aria-live="polite"]')!.textContent).toBe('');
   });
 
+  it('exposes a labelled non-modal dialog and a decorative typing indicator only while a real request is pending', () => {
+    const { page, fixture, toggle, fill, submit, http } = setup(); toggle();
+    const panel = page.querySelector<HTMLElement>('.chat-panel')!;
+    expect(panel.getAttribute('role')).toBe('dialog'); expect(panel.getAttribute('aria-modal')).toBe('false');
+    expect(page.querySelector('#' + panel.getAttribute('aria-labelledby'))!.textContent).toBe('IcaStay AI');
+    expect(page.querySelector('#' + panel.getAttribute('aria-describedby'))!.textContent).toContain('generadas por IA');
+    expect(page.querySelector('.chat-launcher')!.getAttribute('aria-expanded')).toBe('true');
+    expect(page.querySelector('.typing')).toBeNull();
+    fill('Hoteles en Ica'); submit();
+    expect(page.querySelector('.chat-loading .typing')!.getAttribute('aria-hidden')).toBe('true');
+    http.expectOne(api).flush({}, { status: 503, statusText: 'Unavailable' }); fixture.detectChanges();
+    expect(page.querySelector('.typing')).toBeNull();
+    expect(page.querySelector('.message-error')!.getAttribute('role')).toBe('alert');
+    expect(page.querySelector('.message-error .retry-chat')).not.toBeNull();
+  });
+
+  it.each([[true, true], [false, false]])('cycles Tab inside the full-screen phone panel (phone=%s)', (phone, trapped) => {
+    const original = window.matchMedia;
+    window.matchMedia = vi.fn(() => ({ matches: phone }) as MediaQueryList);
+    try {
+      const { page, toggle } = setup(); toggle();
+      const close = page.querySelector<HTMLButtonElement>('.close-chat')!;
+      const send = page.querySelector<HTMLButtonElement>('.send-chat')!;
+      send.focus();
+      const tab = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+      send.dispatchEvent(tab);
+      expect(tab.defaultPrevented).toBe(trapped);
+      expect(document.activeElement).toBe(trapped ? close : send);
+      if (trapped) {
+        const back = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true });
+        close.dispatchEvent(back); expect(document.activeElement).toBe(send);
+      }
+    } finally { window.matchMedia = original; }
+  });
+
   it('posts anonymously, renders text safely and blocks duplicate sends while loading', () => {
     const { page, fixture, toggle, fill, submit, http } = setup(); toggle(); fill('  Hola Ica  '); submit(); submit();
     const request = http.expectOne(api);

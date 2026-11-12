@@ -1,4 +1,5 @@
 :host { display: block; border-bottom: 1px solid var(--ica-line); }
+.navigation { display: contents; }
 .header { min-height: 112px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
 .wordmark { font-size: 1.65rem; letter-spacing: .12em; font-weight: 700; white-space: nowrap; }
 .wordmark span { display: block; font-size: .55rem; letter-spacing: .15em; margin-top: 2px; color: var(--ica-clay); }
@@ -19,3 +20,23 @@ small { display: block; font-size: .65rem; }
   .session { margin-left: auto; padding-left: 16px; max-width: 45%; }
 }
 @media (max-width: 380px) { .wordmark { font-size: 1.3rem; } nav a, nav button { font-size: .8rem; } }
+
+:host(.home-header) { background: var(--ica-paper); }
+:host(.home-header) .header { min-height: 104px; gap: 40px; }
+:host(.home-header) .wordmark { color: var(--ica-green); font-family: var(--font-display); font-size: 2.5rem; font-weight: 500; letter-spacing: -.055em; }
+:host(.home-header) .wordmark span { font-family: var(--font-body); font-size: .6rem; letter-spacing: .16em; margin-top: 4px; }
+:host(.home-header) nav { gap: 32px; }
+:host(.home-header) nav a { min-height: 44px; }
+:host(.home-header) .session a { border-bottom: 1px solid var(--ica-gold); color: var(--ica-green); font-weight: 600; }
+:host(.home-header) .session button { display: block; min-height: 44px; }
+.menu-toggle { display: none; }
+@media (max-width: 1000px) {
+  :host(.home-header) .header { flex-wrap: wrap; min-height: 88px; gap: 0; padding-block: 18px; }
+  :host(.home-header) .wordmark { font-size: 2rem; }
+  :host(.home-header) .wordmark span { font-size: .5rem; }
+  :host(.home-header) .menu-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-left: auto; padding: 10px; min-height: 44px; border: 1px solid var(--ica-line); border-radius: var(--radius-sm); color: var(--ica-green); cursor: pointer; }
+  :host(.home-header) .navigation { display: none; width: 100%; }
+  :host(.home-header.menu-open) .navigation { display: grid; gap: 16px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--ica-line); }
+  :host(.home-header) nav { order: initial; flex-direction: column; align-items: stretch; gap: 0; margin: 0; }
+  :host(.home-header) .session { margin: 0; max-width: none; padding: 16px 0 0; border-left: 0; border-top: 1px solid var(--ica-line); }
+}

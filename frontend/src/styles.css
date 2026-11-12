@@ -6,6 +6,13 @@
 /* ---------- Variables ---------- */
 
 :root {
+  /* Frontend 2.0: base disponible para adopción por pantalla. */
+  --ica-green: #103F35;
+  --ica-gold: #B88950;
+  --ica-arena: #EAD8BE;
+  --ica-cream: #FAF7F2;
+  --ica-text: #26342F;
+
   /* Colores */
   --ica-ink: #24211d;
   --ica-sand: #f3eee5;
@@ -35,6 +42,25 @@
 
   /* Transiciones */
   --transition: 180ms ease;
+}
+
+/* Incremento 2.0.1: los alias históricos cambian solo dentro del Home.
+   Header, buscador y footer heredan el tema; las demás rutas y el chat
+   montado en App conservan sus colores. Dorado reservado para acentos,
+   verde para texto interactivo y botones con texto blanco. */
+app-home {
+  --ica-ink: var(--ica-text);
+  --ica-sand: var(--ica-arena);
+  --ica-paper: var(--ica-cream);
+  --ica-clay: var(--ica-green);
+  --ica-clay-dark: #0b3028;
+  --ica-olive: var(--ica-green);
+  --ica-olive-light: var(--ica-cream);
+  --ica-muted: #526159;
+  --ica-line: var(--ica-gold);
+
+  background: var(--ica-paper);
+  color: var(--ica-ink);
 }
 
 
@@ -287,3 +313,93 @@ p {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; }
 }
+
+/* ---------- Frontend 2.0 · UI kit compartido (detalle, reservas, auth y paneles) ---------- */
+.page-hero {
+  background: linear-gradient(160deg, var(--ica-cream) 0%, var(--ica-arena) 100%);
+  border-bottom: 1px solid var(--ica-line);
+  padding: clamp(2rem, 5vw, 3.5rem) 0 clamp(1.5rem, 3vw, 2.25rem);
+}
+.page-hero h1 { color: var(--ica-green); font-size: clamp(2.2rem, 5vw, 3.8rem); margin: .4rem 0; }
+.page-hero .lead { color: var(--ica-muted); max-width: 62ch; }
+.page-body { padding: clamp(1.5rem, 4vw, 3rem) 0 4rem; }
+.panel {
+  background: var(--ica-white);
+  border: 1px solid var(--ica-line);
+  border-top: 3px solid var(--ica-gold);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.1rem, 3vw, 1.75rem);
+  box-shadow: 0 18px 40px -32px rgb(16 63 53 / .5);
+  min-width: 0;
+}
+.panel + .panel { margin-top: 1.5rem; }
+.panel-title { font-size: clamp(1.4rem, 3vw, 2rem); color: var(--ica-green); margin-bottom: .75rem; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 1rem; align-items: end; }
+.form-grid .full, .form-grid .actions { grid-column: 1 / -1; }
+.field-error { color: var(--ica-clay-dark); font-size: .85rem; }
+.field input[aria-invalid="true"], .field select[aria-invalid="true"], .field textarea[aria-invalid="true"],
+.field input.ng-invalid.ng-touched, .field select.ng-invalid.ng-touched, .field textarea.ng-invalid.ng-touched { border-color: var(--ica-clay-dark); }
+.alert { border-radius: var(--radius-md); padding: .85rem 1rem; border: 1px solid; margin: 1rem 0; }
+.alert-error, [role="alert"].alert { background: #fbeee9; border-color: #e3b7a6; color: #7a2f1c; }
+.alert-info { background: var(--ica-cream); border-color: var(--ica-gold); color: var(--ica-green); }
+.alert-success { background: #e9f2ee; border-color: #9cc2b3; color: var(--ica-green); }
+.badge {
+  display: inline-flex; align-items: center; gap: .35rem; padding: .2rem .7rem; border-radius: 999px;
+  font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap;
+  background: var(--ica-cream); color: var(--ica-green); border: 1px solid var(--ica-gold);
+}
+.badge-success, .badge-active, .badge-confirmed { background: #e3efe9; border-color: #8bb8a6; color: #0d3a2f; }
+.badge-warning, .badge-pending_payment { background: #fbf1df; border-color: #d9b47a; color: #6b4614; }
+.badge-danger, .badge-inactive, .badge-cancelled, .badge-expired { background: #f7e7e2; border-color: #d9a594; color: #7a2f1c; }
+.summary-list { display: grid; grid-template-columns: minmax(0, max-content) minmax(0, 1fr); gap: .55rem 1.5rem; margin: 1rem 0; }
+.summary-list dt { color: var(--ica-muted); font-size: .8rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; margin: 0; }
+.summary-list dd { margin: 0; overflow-wrap: anywhere; }
+.price { font-family: var(--font-display); color: var(--ica-green); font-size: 1.6rem; line-height: 1.1; }
+.price small { font-family: var(--font-body); font-size: .8rem; color: var(--ica-muted); }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 1rem; }
+.stat-card { background: var(--ica-white); border: 1px solid var(--ica-line); border-left: 4px solid var(--ica-gold); border-radius: var(--radius-md); padding: 1rem 1.15rem; }
+.stat-card dt, .stat-card .stat-label { color: var(--ica-muted); font-size: .78rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.stat-card dd, .stat-card .stat-value { margin: .3rem 0 0; font-family: var(--font-display); font-size: 2rem; color: var(--ica-green); }
+.table-wrap { width: 100%; overflow-x: auto; border: 1px solid var(--ica-line); border-radius: var(--radius-md); background: var(--ica-white); }
+.data-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.data-table caption { text-align: left; padding: .75rem 1rem; color: var(--ica-muted); }
+.data-table th { background: var(--ica-cream); color: var(--ica-green); text-align: left; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; }
+.data-table th, .data-table td { padding: .75rem 1rem; border-bottom: 1px solid var(--ica-arena); vertical-align: middle; }
+.data-table tbody tr:hover { background: rgb(234 216 190 / .25); }
+/* Tablas como tarjetas en pantallas pequeñas: cada celda muestra su encabezado mediante data-label. */
+@media (max-width: 720px) {
+  .data-table.stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .data-table.stack tr { display: block; border-bottom: 1px solid var(--ica-line); padding: .5rem 0; }
+  .data-table.stack td { display: grid; grid-template-columns: minmax(0, 40%) minmax(0, 1fr); gap: .75rem; border: 0; padding: .4rem 1rem; }
+  .data-table.stack td::before { content: attr(data-label); color: var(--ica-muted); font-size: .72rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+}
+.toolbar-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
+.empty-state { text-align: center; padding: 2.5rem 1rem; border: 1px dashed var(--ica-gold); border-radius: var(--radius-lg); background: var(--ica-cream); color: var(--ica-muted); }
+.card-list { display: grid; gap: 1rem; list-style: none; margin: 0; padding: 0; }
+.item-card { background: var(--ica-white); border: 1px solid var(--ica-line); border-radius: var(--radius-lg); padding: 1.1rem 1.25rem; min-width: 0; }
+.item-card:hover { box-shadow: 0 16px 34px -30px rgb(16 63 53 / .7); }
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.btn-sm { min-height: 40px; padding: 6px 14px; font-size: .88rem; }
+.btn-danger { border-color: var(--ica-clay-dark); color: var(--ica-clay-dark); background: transparent; }
+.btn-danger:hover { background: var(--ica-clay-dark); color: var(--ica-white); }
+.auth-shell { min-height: calc(100vh - 160px); display: grid; place-items: center; padding: clamp(1.5rem, 5vw, 4rem) 16px;
+  background: radial-gradient(circle at 15% 10%, rgb(184 137 80 / .18), transparent 45%), linear-gradient(160deg, var(--ica-cream), var(--ica-arena)); }
+.auth-card { width: min(100%, 460px); }
+.auth-card h1 { color: var(--ica-green); font-size: clamp(2rem, 6vw, 2.8rem); margin-bottom: .5rem; }
+.auth-card form { display: grid; gap: 1rem; margin-top: 1.5rem; }
+.auth-card .btn-primary { width: 100%; }
+.auth-switch { margin-top: 1.25rem; text-align: center; color: var(--ica-muted); }
+.auth-switch a, .link { color: var(--ica-green); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.help-text { font-size: .85rem; color: var(--ica-muted); margin: .5rem 0 0; }
+fieldset.form-grid { border: 0; padding: 0; margin: 0; min-width: 0; }
+/* 2.0.13 · QA móvil: listas de resumen apiladas y paneles anidados más compactos. */
+@media (max-width: 520px) {
+  .summary-list { grid-template-columns: minmax(0, 1fr); gap: .15rem; }
+  .summary-list dd { margin-bottom: .6rem; }
+  .panel .panel { padding: 1rem; margin-inline: -.25rem; box-shadow: none; }
+}
+/* 2.0.13 · Contraste AA sobre degradados arena (texto auxiliar y eyebrows pequeños). */
+.page-hero, .catalog-hero, .auth-page { --ica-muted: #5a554e; }
+.page-hero .eyebrow, .catalog-hero .eyebrow, .auth-page .eyebrow { color: var(--ica-clay-dark); }

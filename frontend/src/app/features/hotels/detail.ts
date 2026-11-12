@@ -7,9 +7,10 @@ import { HotelView } from '../../core/models/hotel';
 import { SiteHeader } from '../../shared/site-header/site-header';
 import { SiteFooter } from '../../shared/site-footer/site-footer';
 import { Availability } from './availability';
+import { PhotoCarousel } from '../../shared/photo-carousel/photo-carousel';
 
 @Component({
-  selector: 'app-hotel-detail', imports: [RouterLink, SiteHeader, SiteFooter, Availability],
+  selector: 'app-hotel-detail', imports: [RouterLink, SiteHeader, SiteFooter, Availability, PhotoCarousel],
   templateUrl: './detail.html', styleUrl: './hotels.css', changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HotelDetail implements OnInit {

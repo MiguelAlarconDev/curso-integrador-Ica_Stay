@@ -7,6 +7,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, Subscription } from 'rxjs';
 import { RoomService } from '../../core/services/room.service';
 import { AvailabilityQuery, RoomView } from '../../core/models/room';
+import { PhotoCarousel } from '../../shared/photo-carousel/photo-carousel';
 
 const validQuery: ValidatorFn = control => {
   const { checkIn, checkOut, guests } = control.value;
@@ -15,7 +16,7 @@ const validQuery: ValidatorFn = control => {
     && Number.isInteger(guests) && guests > 0 && guests <= 2147483647 ? null : { availability: true };
 };
 @Component({
-  selector: 'app-availability', imports: [ReactiveFormsModule, DecimalPipe, Booking],
+  selector: 'app-availability', imports: [ReactiveFormsModule, DecimalPipe, Booking, PhotoCarousel],
   templateUrl: './availability.html', styleUrl: './hotels.css', changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Availability implements OnInit {

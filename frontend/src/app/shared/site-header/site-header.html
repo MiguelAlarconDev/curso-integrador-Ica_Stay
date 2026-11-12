@@ -1,6 +1,13 @@
 <a class="skip-link" href="#contenido">Saltar al contenido</a>
-<header class="container header">
-  <a class="wordmark" routerLink="/" aria-label="Ica Stay, inicio">ICA STAY<span>ALOJARSE. EXPLORAR. VOLVER.</span></a>
+<header class="container header" (keydown.escape)="closeMenu()">
+  <a class="wordmark" routerLink="/" aria-label="Ica Stay, inicio">{{ home() ? 'IcaStay' : 'ICA STAY' }}<span>ALOJARSE. EXPLORAR. VOLVER.</span></a>
+  @if (home()) {
+    <button #menuButton class="menu-toggle" type="button" aria-controls="home-navigation"
+      [attr.aria-expanded]="menuOpen()" (click)="menuOpen.set(!menuOpen())">
+      <span aria-hidden="true">{{ menuOpen() ? '−' : '+' }}</span> {{ menuOpen() ? 'Cerrar menú' : 'Menú' }}
+    </button>
+  }
+  <div class="navigation" [attr.id]="home() ? 'home-navigation' : null" (click)="onNavigationClick($event)">
   <nav aria-label="Navegación principal">
     <a routerLink="/" fragment="alojamientos">Alojamientos</a>
     <a routerLink="/" fragment="explorar">Explorar Ica</a>
@@ -19,5 +26,6 @@
     } @else {
       <a routerLink="/login">Iniciar sesión</a>
     }
+  </div>
   </div>
 </header>

@@ -4,13 +4,14 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, distinctUntilChanged, map, merge, of, Subject, switchMap, tap } from 'rxjs';
 import { SiteHeader } from '../../shared/site-header/site-header';
+import { SuperadminNav } from './superadmin-nav';
 import { AuthService } from '../../core/services/auth.service';
 import { SuperadminUserService } from '../../core/services/superadmin-user.service';
 import { SuperadminUserPage } from '../../core/models/superadmin-user';
 
 @Component({
-  selector: 'app-superadmin-users', imports: [SiteHeader, RouterLink, ReactiveFormsModule],
-  templateUrl: './users.html', styleUrls: ['./hotels.css', './users.css'], changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-superadmin-users', imports: [SiteHeader, SuperadminNav, RouterLink, ReactiveFormsModule],
+  templateUrl: './users.html', styleUrls: ['./superadmin-shell.css', './hotels.css', './users.css'], changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SuperadminUsers implements OnInit {
   private readonly service = inject(SuperadminUserService);

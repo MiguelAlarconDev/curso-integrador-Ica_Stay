@@ -1,6 +1,9 @@
-.table-scroll { overflow-x: auto; margin-block: 1rem; }
-table { width: 100%; border-collapse: collapse; text-align: left; }
-caption { text-align: left; font-weight: 600; padding-block: .75rem; }
-th, td { padding: .8rem; border-bottom: 1px solid var(--ica-line); overflow-wrap: anywhere; }
-th { color: var(--ica-clay-dark); }
+.table-scroll { overflow-x: auto; margin-block: 1rem; background: var(--ica-white); border: 1px solid var(--ica-line); border-radius: var(--radius-md); }
+.table-scroll:focus-visible { outline: 3px solid rgb(184 137 80 / .55); }
+table { width: 100%; border-collapse: collapse; text-align: left; font-size: .92rem; }
+caption { text-align: left; font-weight: 600; padding: .75rem 1rem; color: var(--ica-green); }
+th, td { padding: .75rem 1rem; border-bottom: 1px solid var(--ica-arena); overflow-wrap: anywhere; }
+th { background: var(--ica-cream); color: var(--ica-green); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; }
+tbody tr:hover { background: rgb(234 216 190 / .25); }
+td a { color: var(--ica-green); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 600px) { table { min-width: 520px; } }

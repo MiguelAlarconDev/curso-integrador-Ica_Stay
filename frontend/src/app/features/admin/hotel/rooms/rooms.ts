@@ -7,9 +7,10 @@ import { AdminRoomService } from '../../../../core/services/admin-room.service';
 import { AdminRoomView } from '../../../../core/models/admin-room';
 import { RoomForm } from './room-form';
 import { roomMutationError } from './room-mutation-error';
+import { PhotoGalleryManager } from '../../../../shared/photo-gallery-manager/photo-gallery-manager';
 
 @Component({
-  selector: 'app-hotel-rooms', imports: [DecimalPipe, RoomForm],
+  selector: 'app-hotel-rooms', imports: [DecimalPipe, RoomForm, PhotoGalleryManager],
   templateUrl: './rooms.html', styleUrl: './rooms.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

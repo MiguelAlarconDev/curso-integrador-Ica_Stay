@@ -1,28 +1,55 @@
 <app-site-header />
-<main class="container section" id="contenido" tabindex="-1">
-  <span class="eyebrow">DESCUBRE ICA</span><h1>Encuentra tu hotel</h1>
-  <p>Explora establecimientos por nombre y ciudad. Esta búsqueda no comprueba disponibilidad.</p>
-  <form [formGroup]="form" (ngSubmit)="apply()" aria-label="Buscar hoteles">
-    <div class="field"><label for="hotel-name">Nombre del hotel</label><input id="hotel-name" formControlName="name" maxlength="180" aria-describedby="filter-help"></div>
-    <div class="field"><label for="hotel-city">Ciudad</label><input id="hotel-city" formControlName="city" maxlength="120" aria-describedby="filter-help"></div>
-    <div class="actions"><button class="btn btn-primary" [disabled]="form.invalid">Aplicar filtros</button><button type="button" class="btn btn-outline" (click)="clear()">Limpiar filtros</button></div>
-  </form>
-  <p id="filter-help">Nombre parcial (máximo 180 caracteres) y ciudad exacta (máximo 120), sin distinguir mayúsculas.</p>
-  <section aria-label="Resultados" [attr.aria-busy]="loading()">
-    @if (loading()) { <p role="status">Cargando hoteles…</p> }
-    @else if (error()) { <p role="alert">{{ error() }}</p><button class="btn btn-outline retry" (click)="retry()">Reintentar</button> }
-    @else if (result(); as result) {
-      <p role="status">{{ result.totalElements }} hoteles encontrados.</p>
-      @if (!result.content.length) { <p>No hay hoteles para esta búsqueda.</p> }
-      @for (hotel of result.content; track hotel.id) {
-        <article><span class="eyebrow">{{ hotel.city }}</span><h2><a [routerLink]="['/hotels', hotel.id]" [queryParams]="query()">{{ hotel.name }}</a></h2>
-          <p>{{ hotel.address }}</p><p class="description">{{ hotel.description || 'Sin descripción disponible.' }}</p>
-          <a class="text-link" [routerLink]="['/hotels', hotel.id]" [queryParams]="query()" [attr.aria-label]="'Ver detalles de ' + hotel.name">Ver detalles</a>
-        </article>
+<main id="contenido" tabindex="-1" class="catalog">
+  <section class="catalog-hero" aria-labelledby="catalog-title">
+    <div class="container">
+      <span class="eyebrow">DESCUBRE ICA</span><h1 id="catalog-title">Encuentra tu hotel</h1>
+      <p class="lead">Explora establecimientos por nombre y ciudad. Esta búsqueda no comprueba disponibilidad.</p>
+      <form class="filters" [formGroup]="form" (ngSubmit)="apply()" aria-label="Buscar hoteles">
+        <div class="field"><label for="hotel-name">Nombre del hotel</label><input id="hotel-name" formControlName="name" maxlength="180" placeholder="Ej. Oasis" aria-describedby="filter-help"></div>
+        <div class="field"><label for="hotel-city">Ciudad</label><input id="hotel-city" formControlName="city" maxlength="120" placeholder="Ej. Ica" aria-describedby="filter-help"></div>
+        <div class="filter-actions"><button class="btn btn-primary" [disabled]="form.invalid">Aplicar filtros</button><button type="button" class="btn btn-outline" (click)="clear()">Limpiar filtros</button></div>
+      </form>
+      <p id="filter-help" class="help">Nombre parcial (máximo 180 caracteres) y ciudad exacta (máximo 120), sin distinguir mayúsculas.</p>
+    </div>
+  </section>
+  <section class="container results" aria-label="Resultados" [attr.aria-busy]="loading()">
+    @if (loading()) {
+      <p role="status" class="summary">Cargando hoteles…</p>
+      <div class="grid" aria-hidden="true">@for (slot of skeletons; track slot) { <div class="card skeleton"></div> }</div>
+    } @else if (error()) {
+      <div class="notice"><p role="alert">{{ error() }}</p><button class="btn btn-outline retry" (click)="retry()">Reintentar</button></div>
+    } @else if (result(); as result) {
+      <div class="toolbar">
+        <p role="status" class="summary">{{ result.totalElements }} hoteles encontrados.</p>
+        @if (query().name || query().city) {
+          <ul class="chips" aria-label="Filtros aplicados">
+            @if (query().name) { <li>Nombre: {{ query().name }}</li> }
+            @if (query().city) { <li>Ciudad: {{ query().city }}</li> }
+          </ul>
+        }
+      </div>
+      @if (!result.content.length) {
+        <div class="notice"><p>No hay hoteles para esta búsqueda.</p><p class="help">Prueba con otro nombre o revisa la ciudad.</p></div>
       }
+      <div class="grid">
+        @for (hotel of result.content; track hotel.id; let i = $index) {
+          <article class="card">
+            <a class="cover-link" [routerLink]="['/hotels', hotel.id]" [queryParams]="query()" tabindex="-1" aria-hidden="true">
+              <app-hotel-cover class="cover" [hotelId]="hotel.id" [name]="hotel.name" [fallback]="fallback(i)" />
+            </a>
+            <div class="card-body">
+              <span class="eyebrow">{{ hotel.city }}</span>
+              <h2><a [routerLink]="['/hotels', hotel.id]" [queryParams]="query()">{{ hotel.name }}</a></h2>
+              <p class="address">{{ hotel.address }}</p>
+              <p class="description">{{ hotel.description || 'Sin descripción disponible.' }}</p>
+              <a class="text-link" [routerLink]="['/hotels', hotel.id]" [queryParams]="query()" [attr.aria-label]="'Ver detalles de ' + hotel.name">Ver detalles</a>
+            </div>
+          </article>
+        }
+      </div>
       @if (result.totalPages > 0) {
-        <nav class="actions" aria-label="Paginación de hoteles"><button class="btn btn-outline previous" [disabled]="result.page === 0" (click)="page(result.page - 1)">Anterior</button>
-          <span>Página {{ result.page + 1 }} de {{ result.totalPages }}</span>
+        <nav class="pagination" aria-label="Paginación de hoteles"><button class="btn btn-outline previous" [disabled]="result.page === 0" (click)="page(result.page - 1)">Anterior</button>
+          <span aria-current="page">Página {{ result.page + 1 }} de {{ result.totalPages }}</span>
           <button class="btn btn-outline next" [disabled]="result.page + 1 >= result.totalPages" (click)="page(result.page + 1)">Siguiente</button></nav>
       }
     }

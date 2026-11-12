@@ -17,7 +17,9 @@ describe('App', () => {
       .compileComponents();
   });
 
-  afterEach(() => TestBed.inject(HttpTestingController).verify());
+  afterEach(() => { flushPhotos(); TestBed.inject(HttpTestingController).verify(); });
+  const flushPhotos = (body: unknown[] = []) => TestBed.inject(HttpTestingController)
+    .match(request => request.url.endsWith('/photos')).forEach(request => { if (!request.cancelled) request.flush(body); });
 
   function requestHotels() {
     const request = TestBed.inject(HttpTestingController).expectOne(
@@ -42,6 +44,12 @@ describe('App', () => {
     expect(page.querySelector('#alojamientos')).not.toBeNull();
     expect(page.querySelector('#explorar')).not.toBeNull();
     expect(page.querySelector('footer')).not.toBeNull();
+    expect(page.querySelector('app-site-header.home-header')).not.toBeNull();
+    expect(page.querySelector('app-site-footer.home-footer')).not.toBeNull();
+    expect(page.querySelector('.hero app-search-bar.home-search form')).not.toBeNull();
+    const heroPhoto = page.querySelector<HTMLImageElement>('.hero img');
+    expect(heroPhoto?.getAttribute('src')).toBe('/images/home/hero-ica.webp');
+    expect(heroPhoto?.alt).toContain('Huacachina');
     expect(page.textContent).not.toContain('Hello, frontend');
   });
 
@@ -66,7 +74,7 @@ describe('App', () => {
       address: `Calle ${i}`, city: 'Ica',
     }));
     requestHotels().flush({ content, page: 0, size: 20, totalElements: 4, totalPages: 1 });
-    harness.detectChanges();
+    harness.detectChanges(); flushPhotos(); harness.detectChanges();
     const page = harness.routeNativeElement!;
     expect(page.querySelectorAll('.stay').length).toBe(3);
     expect(page.querySelectorAll('.stay-main').length).toBe(1);
@@ -77,6 +85,20 @@ describe('App', () => {
     expect(Array.from(page.querySelectorAll('.stay img')).map(img => img.getAttribute('src'))).toEqual([
       '/images/home/hotel-vinedos.webp', '/images/home/hotel-dunas.webp', '/images/home/hotel-ciudad.webp',
     ]);
+  });
+
+  it('replaces the referential image with the real public cover when it exists', async () => {
+    const harness = await RouterTestingHarness.create('/');
+    const content = [{ id: 'hotel-0', name: 'Hotel Real', description: null, address: 'Calle 0', city: 'Ica' }];
+    requestHotels().flush({ content, page: 0, size: 20, totalElements: 1, totalPages: 1 });
+    harness.detectChanges();
+    TestBed.inject(HttpTestingController).expectOne(`${TestBed.inject(API_BASE_URL)}/api/v1/hotels/hotel-0/photos`)
+      .flush([{ id: 'p', url: '/api/v1/hotels/hotel-0/photos/p/content', isCover: true, position: 0, altText: 'Fachada', width: 4, height: 3 }]);
+    harness.detectChanges();
+    const image = harness.routeNativeElement!.querySelector<HTMLImageElement>('.stay img')!;
+    expect(image.getAttribute('src')).toBe(`${TestBed.inject(API_BASE_URL)}/api/v1/hotels/hotel-0/photos/p/content`);
+    expect(image.alt).toBe('Fachada');
+    expect(harness.routeNativeElement!.querySelector('.stay')!.textContent).not.toContain('Imagen referencial');
   });
 
   it('shows an empty state after a successful empty response', async () => {

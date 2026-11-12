@@ -52,6 +52,14 @@ describe('Hotel rooms', () => {
     expect(page.querySelector('.rooms button')).toBeNull();
   });
 
+  it('opens the selected room gallery through the owner-only API', () => {
+    const { fixture, page, http, details } = setup(); details();
+    http.expectOne(`${api}/${room.id}`).flush(room); fixture.detectChanges();
+    page.querySelector<HTMLButtonElement>('app-photo-gallery-manager button')!.click(); fixture.detectChanges();
+    http.expectOne('http://localhost:8080/api/v1/admin/hotel/rooms/room-own/photos').flush([]); fixture.detectChanges();
+    expect(page.querySelector('app-photo-gallery-manager')!.textContent).toContain('0 / 10');
+  });
+
   it('fetches fresh detail with Bearer and renders all fields, including nullable description', () => {
     const { fixture, page, http, details } = setup(); details(); details();
     expect(page.textContent).toContain('Cargando detalle');

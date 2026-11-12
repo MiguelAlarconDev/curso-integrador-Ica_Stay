@@ -1,14 +1,18 @@
 :host { display: block; margin: 1.5rem 0; min-width: 0; }
-form { border-top: 2px solid var(--ica-clay); padding: 1.5rem; background: var(--ica-sand); overflow-wrap: anywhere; }
-h2 { font-family: var(--font-display); }
-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
-legend { margin-bottom: 1rem; }
-label { display: block; margin-top: 1rem; font-weight: 700; }
-input, textarea { display: block; width: 100%; min-height: 44px; padding: .75rem; border: 1px solid var(--ica-line); background: var(--ica-paper); color: var(--ica-ink); font: inherit; }
+form { background: var(--ica-white); border: 1px solid var(--ica-line); border-top: 3px solid var(--ica-gold); border-radius: var(--radius-lg);
+  padding: clamp(1.1rem, 3vw, 1.75rem); overflow-wrap: anywhere; }
+h2 { font-family: var(--font-display); color: var(--ica-green); }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 1.5rem; }
+legend { margin-bottom: .5rem; color: var(--ica-muted); }
+/* Each label/input/help trio is laid out by the grid; description spans both columns. */
+label { display: block; margin-top: 1rem; color: var(--ica-muted); font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; grid-column: 1 / -1; }
+input, textarea { display: block; width: 100%; min-height: 46px; padding: .7rem; border: 1px solid var(--ica-line); border-radius: var(--radius-sm); background: var(--ica-white); color: var(--ica-ink); font: inherit; grid-column: 1 / -1; }
+input:focus-visible, textarea:focus-visible { outline: 3px solid rgb(184 137 80 / .5); border-color: var(--ica-green); }
 textarea { resize: vertical; }
 p { line-height: 1.5; }
-fieldset p { color: var(--ica-muted); font-size: .875rem; margin-top: .4rem; }
+fieldset p { color: var(--ica-muted); font-size: .85rem; margin-top: .35rem; grid-column: 1 / -1; }
 fieldset p.invalid { color: var(--ica-clay-dark); font-weight: 700; }
 [aria-invalid="true"] { border-color: var(--ica-clay-dark); }
-.actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; }
-.btn { min-height: 44px; white-space: normal; }
+.actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; grid-column: 1 / -1; }
+.btn { white-space: normal; }
+[role="alert"] { color: var(--ica-clay-dark); }

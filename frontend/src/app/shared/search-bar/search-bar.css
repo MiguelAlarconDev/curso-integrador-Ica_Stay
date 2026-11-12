@@ -11,3 +11,14 @@ form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
 #search-note { color: var(--ica-muted); font-size: .75rem; margin-top: 16px; }
 @media (max-width: 1000px) { form { grid-template-columns: 1fr 1fr; } .btn { grid-column: 1 / -1; } }
 @media (max-width: 600px) { section { padding: 24px 20px; } .search-heading { flex-direction: column; gap: 8px; } form { grid-template-columns: minmax(0, 1fr); } }
+
+:host(.home-search) section { background: var(--ica-paper); border: 1px solid var(--ica-line); border-top: 3px solid var(--ica-gold); border-radius: var(--radius-md); padding: 28px 36px; box-shadow: 0 12px 28px color-mix(in srgb, var(--ica-green) 8%, transparent); }
+:host(.home-search) h2 { color: var(--ica-green); font-size: clamp(1.4rem, 2.5vw, 1.8rem); }
+:host(.home-search) .search-heading { margin-bottom: 20px; }
+:host(.home-search) input { min-height: 54px; border-color: var(--ica-muted); }
+:host(.home-search) input:focus { border-color: var(--ica-green); }
+:host(.home-search) .btn { min-height: 54px; padding-inline: 32px; }
+@media (max-width: 600px) {
+  :host(.home-search) section { padding: 24px 20px; }
+  :host(.home-search) .btn { width: 100%; }
+}

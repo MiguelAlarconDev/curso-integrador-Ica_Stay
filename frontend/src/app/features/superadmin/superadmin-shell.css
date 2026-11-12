@@ -1,0 +1,12 @@
+/* Shared SUPER_ADMIN page shell (Desert Luxury). Page-specific rules live in each component stylesheet. */
+:host { display: block; background: var(--ica-cream); min-height: 100vh; }
+main { padding-block: 32px 80px; min-height: 60vh; overflow-wrap: anywhere; }
+main > .back, main > a:first-child { display: inline-block; margin-bottom: 20px; color: var(--ica-green); font-weight: 600; }
+h1 { font-size: clamp(2rem, 5vw, 3.2rem); color: var(--ica-green); margin-block: 8px 16px; }
+h2 { color: var(--ica-green); }
+main form { background: var(--ica-white); border: 1px solid var(--ica-line); border-top: 3px solid var(--ica-gold); border-radius: var(--radius-lg); padding: clamp(1rem, 3vw, 1.5rem); }
+main label { color: var(--ica-muted); font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+main input, main select, main textarea { border-radius: var(--radius-sm); background: var(--ica-white); }
+main input:focus-visible, main select:focus-visible, main textarea:focus-visible { outline: 3px solid rgb(184 137 80 / .5); border-color: var(--ica-green); }
+[role="alert"] { color: var(--ica-clay-dark); }
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }

@@ -4,13 +4,14 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, finalize, map, merge, Observable, of, skip, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { SiteHeader } from '../../shared/site-header/site-header';
+import { SuperadminNav } from './superadmin-nav';
 import { AuthService } from '../../core/services/auth.service';
 import { SuperadminHotelService } from '../../core/services/superadmin-hotel.service';
 import { SuperadminHotelDetail } from '../../core/models/superadmin-hotel';
 
 @Component({
-  selector: 'app-superadmin-hotel-detail', imports: [SiteHeader, RouterLink, ReactiveFormsModule],
-  templateUrl: './hotel-detail.html', styleUrls: ['./create-hotel.css', './hotel-detail.css'],
+  selector: 'app-superadmin-hotel-detail', imports: [SiteHeader, SuperadminNav, RouterLink, ReactiveFormsModule],
+  templateUrl: './hotel-detail.html', styleUrls: ['./superadmin-shell.css', './create-hotel.css', './hotel-detail.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SuperadminHotelDetailPage {

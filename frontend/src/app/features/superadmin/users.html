@@ -1,4 +1,5 @@
 <app-site-header />
+<app-superadmin-nav />
 <main class="container" id="contenido" tabindex="-1">
   <a class="back" routerLink="/superadmin/dashboard">Volver al resumen</a>
   <span class="eyebrow">Administración de Ica Stay</span>
@@ -28,7 +29,7 @@
       @if (result.content.length) {
         <div class="table-scroll" tabindex="0" role="region" aria-label="Cuentas registradas">
           <table><caption>Usuarios de la plataforma</caption><thead><tr><th scope="col">Nombre</th><th scope="col">Correo</th><th scope="col">Rol</th><th scope="col">Estado</th></tr></thead>
-            <tbody>@for (user of result.content; track user.id) {<tr><td><a [routerLink]="['/superadmin/users', user.id]" [queryParams]="query()">{{ user.name }}</a></td><td>{{ user.email }}</td><td>{{ user.role }}</td><td>{{ user.status === 'ACTIVE' ? 'Activo' : 'Inactivo' }}</td></tr>}</tbody>
+            <tbody>@for (user of result.content; track user.id) {<tr><td><a [routerLink]="['/superadmin/users', user.id]" [queryParams]="query()">{{ user.name }}</a></td><td>{{ user.email }}</td><td><span class="badge">{{ user.role }}</span></td><td><span class="badge" [class.badge-active]="user.status === 'ACTIVE'" [class.badge-inactive]="user.status !== 'ACTIVE'">{{ user.status === 'ACTIVE' ? 'Activo' : 'Inactivo' }}</span></td></tr>}</tbody>
           </table>
         </div>
       }

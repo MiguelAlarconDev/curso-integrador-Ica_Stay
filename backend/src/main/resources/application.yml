@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   application:
     name: ica-stay-backend
   mongodb:
@@ -20,6 +24,9 @@ spring:
     enabled: true
 
 icastay:
+  photos:
+    root: ${PHOTO_STORAGE_ROOT:${user.home}/.icastay/photos}
+    webp-decoder: ${PHOTO_WEBP_DECODER:ffmpeg}
   ai:
     session:
       signing-key: ${AI_SESSION_SIGNING_KEY:}

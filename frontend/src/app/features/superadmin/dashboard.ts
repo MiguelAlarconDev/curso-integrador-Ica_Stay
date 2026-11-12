@@ -5,14 +5,15 @@ import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { SiteHeader } from '../../shared/site-header/site-header';
+import { SuperadminNav } from './superadmin-nav';
 import { AuthService } from '../../core/services/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { DashboardView } from '../../core/models/dashboard';
 
 @Component({
   selector: 'app-superadmin-dashboard',
-  imports: [SiteHeader, DatePipe, DecimalPipe, KeyValuePipe, RouterLink],
-  templateUrl: './dashboard.html', styleUrl: './dashboard.css',
+  imports: [SiteHeader, SuperadminNav, DatePipe, DecimalPipe, KeyValuePipe, RouterLink],
+  templateUrl: './dashboard.html', styleUrls: ['./superadmin-shell.css', './dashboard.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Dashboard {

@@ -6,10 +6,11 @@ import { RouterLink } from '@angular/router';
 import { SiteHeader } from '../../shared/site-header/site-header';
 import { SiteFooter } from '../../shared/site-footer/site-footer';
 import { SearchBar } from '../../shared/search-bar/search-bar';
+import { HotelCover } from '../../shared/hotel-cover/hotel-cover';
 
 @Component({
   selector: 'app-home',
-  imports: [SiteHeader, SiteFooter, SearchBar, RouterLink],
+  imports: [SiteHeader, SiteFooter, SearchBar, RouterLink, HotelCover],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,7 +21,7 @@ export class Home implements OnInit {
   protected readonly hotels = signal<HotelView[]>([]);
   protected readonly loading = signal(true);
   protected readonly error = signal(false);
-  // Editorial imagery is temporary and does not depict the returned hotels.
+  // Referential fallback shown only while a hotel has no public cover photo.
   private readonly editorialImages = [
     { photo: '/images/home/hotel-vinedos.webp', alt: 'Botellas de vino sobre una barrica entre hileras de vides', width: 474, height: 316, type: 'principal' },
     { photo: '/images/home/hotel-dunas.webp', alt: 'Piscina rodeada de palmeras y tumbonas, con dunas al fondo', width: 474, height: 316, type: 'secondary' },

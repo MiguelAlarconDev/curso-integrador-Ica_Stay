@@ -1,5 +1,5 @@
-<p>Consulta las reservas de tu hotel. Las fechas filtran estancias que coinciden con el intervalo.</p>
-<form [formGroup]="form" (ngSubmit)="apply()" aria-label="Filtros de reservas">
+<p class="intro">Consulta las reservas de tu hotel. Las fechas filtran estancias que coinciden con el intervalo.</p>
+<form class="panel" [formGroup]="form" (ngSubmit)="apply()" aria-label="Filtros de reservas">
   <div class="filters">
     <div class="field"><label for="reservation-status">Estado</label>
       <select id="reservation-status" formControlName="status"><option value="">Todos</option>
@@ -9,28 +9,39 @@
     <div class="field"><label for="reservation-from">Estancias desde</label><input id="reservation-from" type="date" min="0001-01-01" max="9999-12-31" formControlName="from" aria-describedby="dates-help" [attr.aria-invalid]="form.invalid"></div>
     <div class="field"><label for="reservation-to">Estancias hasta</label><input id="reservation-to" type="date" min="0001-01-01" max="9999-12-31" formControlName="to" aria-describedby="dates-help" [attr.aria-invalid]="form.invalid"></div>
   </div>
-  <p id="dates-help">La salida debe ser posterior a «desde» y la entrada anterior o igual a «hasta».</p>
-  @if (form.invalid) { <p role="alert">Introduce fechas válidas; «desde» no puede ser posterior a «hasta».</p> }
+  <p id="dates-help" class="help-text">La salida debe ser posterior a «desde» y la entrada anterior o igual a «hasta».</p>
+  @if (form.invalid) { <p role="alert" class="alert alert-error">Introduce fechas válidas; «desde» no puede ser posterior a «hasta».</p> }
   <div class="actions"><button class="btn btn-primary" type="submit" [disabled]="form.invalid">Aplicar filtros</button>
     <button class="btn btn-outline" type="button" (click)="clear()">Limpiar filtros</button></div>
 </form>
 <section #listRegion tabindex="-1" aria-label="Listado de reservas" [attr.aria-busy]="loading()">
   @if (loading()) { <p role="status">Cargando reservas…</p> }
-  @else if (error()) { <p role="alert">{{ error() }}</p><button class="btn btn-outline retry" (click)="retry()">Reintentar</button> }
+  @else if (error()) { <p role="alert" class="alert alert-error">{{ error() }}</p><button class="btn btn-outline retry" (click)="retry()">Reintentar</button> }
   @else if (result(); as result) {
-    <p role="status">{{ result.totalElements }} reservas encontradas.</p>
-    @if (result.content.length === 0) { <p>No hay reservas para esta consulta.</p> }
-    <ul class="reservations">
-      @for (reservation of result.content; track reservation.id) {
-        <li><h2>Habitación {{ reservation.roomNumber }}</h2><p>{{ reservation.guestName }} · {{ labels[reservation.status] }}</p>
-          <p>Entrada: {{ reservation.checkIn }} · Salida: {{ reservation.checkOut }}</p>
-          <p>{{ reservation.totalAmount | number:'1.2-2' }} {{ reservation.currency }}</p>
-          <button class="btn btn-outline details" (click)="showDetail(reservation.id)" [attr.aria-label]="'Ver reserva ' + reservation.id" [attr.aria-expanded]="selectedId() === reservation.id" aria-controls="reservation-detail">Ver detalles</button>
-        </li>
-      }
-    </ul>
+    <p role="status" class="count">{{ result.totalElements }} reservas encontradas.</p>
+    @if (result.content.length === 0) { <p class="empty-state">No hay reservas para esta consulta.</p> }
+    @else {
+      <div class="table-wrap">
+        <table class="data-table stack reservations">
+          <caption class="visually-hidden">Reservas del hotel</caption>
+          <thead><tr><th scope="col">Habitación</th><th scope="col">Huésped</th><th scope="col">Estancia</th><th scope="col">Estado</th><th scope="col">Total</th><th scope="col"><span class="visually-hidden">Acciones</span></th></tr></thead>
+          <tbody>
+            @for (reservation of result.content; track reservation.id) {
+              <tr>
+                <td data-label="Habitación"><strong>Habitación {{ reservation.roomNumber }}</strong></td>
+                <td data-label="Huésped">{{ reservation.guestName }}</td>
+                <td data-label="Estancia">Entrada: {{ reservation.checkIn }} · Salida: {{ reservation.checkOut }}</td>
+                <td data-label="Estado"><span class="badge" [class]="'badge-' + reservation.status.toLowerCase()">{{ labels[reservation.status] }}</span></td>
+                <td data-label="Total">{{ reservation.totalAmount | number:'1.2-2' }} {{ reservation.currency }}</td>
+                <td data-label="Acciones"><button class="btn btn-outline btn-sm details" (click)="showDetail(reservation.id)" [attr.aria-label]="'Ver reserva ' + reservation.id" [attr.aria-expanded]="selectedId() === reservation.id" aria-controls="reservation-detail">Ver detalles</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
     @if (result.totalPages > 0) {
-      <nav class="actions" aria-label="Paginación de reservas">
+      <nav class="pager" aria-label="Paginación de reservas">
         <button class="btn btn-outline previous" (click)="page(result.page - 1)" [disabled]="result.page === 0">Anterior</button>
         <span>Página {{ result.page + 1 }} de {{ result.totalPages }}</span>
         <button class="btn btn-outline next" (click)="page(result.page + 1)" [disabled]="result.page + 1 >= result.totalPages">Siguiente</button>
@@ -40,16 +51,16 @@
 </section>
 <section id="reservation-detail" aria-label="Detalle de reserva" aria-live="polite" [attr.aria-busy]="detailLoading()">
   @if (selectedId(); as id) {
-    <div class="detail"><h2>Detalle de reserva</h2>
-      <button class="btn btn-outline back" (click)="closeDetail(true)">Volver al listado</button>
+    <div class="detail panel"><div class="toolbar-row"><h2>Detalle de reserva</h2>
+      <button class="btn btn-outline btn-sm back" (click)="closeDetail(true)">Volver al listado</button></div>
       @if (detailLoading()) { <p role="status">Cargando detalle…</p> }
-      @else if (detailError()) { <p role="alert">{{ detailError() }}</p><button class="btn btn-outline" (click)="showDetail(id)">Reintentar detalle</button> }
+      @else if (detailError()) { <p role="alert" class="alert alert-error">{{ detailError() }}</p><button class="btn btn-outline" (click)="showDetail(id)">Reintentar detalle</button> }
       @else if (detail(); as reservation) {
         <dl>
           <div><dt>Identificador</dt><dd>{{ reservation.id }}</dd></div>
           <div><dt>Habitación</dt><dd>{{ reservation.roomNumber }} ({{ reservation.roomId }})</dd></div>
           <div><dt>Entrada</dt><dd>{{ reservation.checkIn }}</dd></div><div><dt>Salida</dt><dd>{{ reservation.checkOut }}</dd></div>
-          <div><dt>Huéspedes</dt><dd>{{ reservation.guests }}</dd></div><div><dt>Estado</dt><dd>{{ labels[reservation.status] }}</dd></div>
+          <div><dt>Huéspedes</dt><dd>{{ reservation.guests }}</dd></div><div><dt>Estado</dt><dd><span class="badge" [class]="'badge-' + reservation.status.toLowerCase()">{{ labels[reservation.status] }}</span></dd></div>
           <div><dt>Importe total</dt><dd>{{ reservation.totalAmount | number:'1.2-2' }} {{ reservation.currency }}</dd></div>
           <div><dt>Precio por noche al reservar</dt><dd>{{ reservation.nightlyPriceSnapshot | number:'1.2-2' }} {{ reservation.currency }}</dd></div>
           <div><dt>Huésped titular</dt><dd>{{ reservation.guestName }} · {{ reservation.guestEmail }}</dd></div>

@@ -1,13 +1,35 @@
-<app-site-header /><main class="container section" id="contenido" tabindex="-1">
-  <a class="text-link back" routerLink="/hotels" [queryParams]="route.snapshot.queryParams">Volver al catálogo</a>
-  <section [attr.aria-busy]="loading()" aria-label="Detalle del hotel">
-    @if (loading()) { <h1>Tu próxima estancia</h1><p role="status">Cargando hotel…</p> }
-    @else if (error()) { <h1>Información del hotel</h1><p role="alert">{{ error() }}</p><button class="btn btn-outline retry" (click)="retry()">Reintentar</button> }
+<app-site-header /><main id="contenido" tabindex="-1" class="hotel-detail">
+  <div class="container detail-top">
+    <a class="text-link back" routerLink="/hotels" [queryParams]="route.snapshot.queryParams">← Volver al catálogo</a>
+  </div>
+  <section class="container" [attr.aria-busy]="loading()" aria-label="Detalle del hotel">
+    @if (loading()) {
+      <h1 class="detail-title">Tu próxima estancia</h1><p role="status" class="text-muted">Cargando hotel…</p>
+      <div class="detail-skeleton" aria-hidden="true"></div>
+    }
+    @else if (error()) {
+      <h1 class="detail-title">Información del hotel</h1>
+      <div class="alert alert-error"><p role="alert">{{ error() }}</p></div>
+      <button class="btn btn-outline retry" (click)="retry()">Reintentar</button>
+    }
     @else if (hotel(); as hotel) {
-      <span class="eyebrow">{{ hotel.city }}</span><h1>{{ hotel.name }}</h1>
-      <p class="description">{{ hotel.description || 'Sin descripción disponible.' }}</p>
-      <dl><dt>Dirección</dt><dd>{{ hotel.address }}</dd><dt>Ciudad</dt><dd>{{ hotel.city }}</dd></dl>
-      <app-availability [hotelId]="hotel.id" [hotelName]="hotel.name" />
+      <header class="detail-header">
+        <span class="eyebrow">{{ hotel.city }} · Perú</span><h1 class="detail-title">{{ hotel.name }}</h1>
+        <p class="detail-address"><span aria-hidden="true">⌖</span> {{ hotel.address }}</p>
+      </header>
+      <app-photo-carousel class="detail-gallery" [hotelId]="hotel.id" [label]="hotel.name"
+        [fallback]="{ src: '/images/home/hotel-dunas.webp', alt: 'Imagen referencial: piscina con palmeras y dunas al fondo' }" />
+      <div class="detail-layout">
+        <article class="detail-about">
+          <h2>Sobre el alojamiento</h2>
+          <p class="description">{{ hotel.description || 'Sin descripción disponible.' }}</p>
+        </article>
+        <aside class="panel detail-facts" aria-label="Datos del hotel">
+          <dl class="summary-list"><dt>Dirección</dt><dd>{{ hotel.address }}</dd><dt>Ciudad</dt><dd>{{ hotel.city }}</dd></dl>
+          <a class="btn btn-primary" href="#availability-title">Ver disponibilidad</a>
+        </aside>
+      </div>
+      <app-availability class="panel" [hotelId]="hotel.id" [hotelName]="hotel.name" />
     }
   </section>
 </main><app-site-footer />

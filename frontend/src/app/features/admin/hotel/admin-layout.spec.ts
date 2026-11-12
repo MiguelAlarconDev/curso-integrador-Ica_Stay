@@ -21,7 +21,7 @@ describe('Hotel administration routes', () => {
   });
   afterEach(() => { TestBed.inject(HttpTestingController).verify(); sessionStorage.clear(); });
 
-  it('renders a single header, session, four honest metrics and no HTTP requests', async () => {
+  it('renders a single header, session, real shortcuts without invented metrics and no HTTP requests', async () => {
     sessionStorage.setItem(AUTH_STORAGE_KEY, token('HOTEL_ADMIN'));
     const harness = await RouterTestingHarness.create(paths[0]);
     const page = harness.routeNativeElement!;
@@ -29,8 +29,10 @@ describe('Hotel administration routes', () => {
     expect(page.querySelector('h1')?.textContent).toBe('Resumen');
     expect(page.textContent).toContain('admin@example.test');
     expect(page.textContent).toContain('HOTEL_ADMIN');
-    expect(page.querySelectorAll('article').length).toBe(4);
-    page.querySelectorAll('article').forEach(card => expect(card.textContent).toContain('Próximamente'));
+    expect(page.querySelectorAll('article').length).toBe(3);
+    expect(Array.from(page.querySelectorAll('article a')).map(link => link.getAttribute('href')))
+      .toEqual(['/admin/hotel/profile', '/admin/hotel/rooms', '/admin/hotel/reservations']);
+    expect(page.textContent).not.toMatch(/\d+ (reservas|habitaciones)/);
     expect(page.querySelector('a[href="/"]')).not.toBeNull();
     expect(page.querySelector('main')?.getAttribute('tabindex')).toBe('-1');
     TestBed.inject(HttpTestingController).expectNone(() => true);

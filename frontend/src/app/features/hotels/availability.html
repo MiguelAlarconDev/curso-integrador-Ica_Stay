@@ -1,26 +1,38 @@
-<section aria-labelledby="availability-title">
-  <h2 id="availability-title">Habitaciones disponibles</h2>
-  <form [formGroup]="form" (ngSubmit)="search()" aria-describedby="availability-help">
-    <fieldset [disabled]="bookingBusy() || bookingTerminal()" style="border:0; padding:0; margin:0; min-width:0; display:contents">
-    <div class="field"><label for="check-in">Entrada</label><input id="check-in" type="date" formControlName="checkIn"></div>
-    <div class="field"><label for="check-out">Salida</label><input id="check-out" type="date" formControlName="checkOut"></div>
-    <div class="field"><label for="guests">Huéspedes</label><input id="guests" type="number" min="1" max="2147483647" step="1" formControlName="guests"></div>
-    <div class="actions"><button class="btn btn-primary" [disabled]="loading()">Consultar disponibilidad</button></div>
+<section aria-labelledby="availability-title" class="availability">
+  <span class="eyebrow">Planifica tu estancia</span>
+  <h2 id="availability-title" class="panel-title">Habitaciones disponibles</h2>
+  <form [formGroup]="form" (ngSubmit)="search()" aria-describedby="availability-help" class="availability-form">
+    <fieldset [disabled]="bookingBusy() || bookingTerminal()" class="form-grid">
+      <legend class="visually-hidden">Fechas y huéspedes</legend>
+      <div class="field"><label for="check-in">Entrada</label><input id="check-in" type="date" formControlName="checkIn"></div>
+      <div class="field"><label for="check-out">Salida</label><input id="check-out" type="date" formControlName="checkOut"></div>
+      <div class="field"><label for="guests">Huéspedes</label><input id="guests" type="number" min="1" max="2147483647" step="1" formControlName="guests"></div>
+      <div class="field"><button class="btn btn-primary" [disabled]="loading()">{{ loading() ? 'Consultando…' : 'Consultar disponibilidad' }}</button></div>
     </fieldset>
   </form>
-  <p id="availability-help">Entrada desde hoy (UTC), salida posterior y huéspedes enteros positivos. Consultar no retiene una habitación.</p>
-  @if (form.invalid && form.touched) { <p role="alert">Revisa las fechas y el número de huéspedes.</p> }
+  <p id="availability-help" class="help-text">Entrada desde hoy (UTC), salida posterior y huéspedes enteros positivos. Consultar no retiene una habitación.</p>
+  @if (form.invalid && form.touched) { <p role="alert" class="alert alert-error">Revisa las fechas y el número de huéspedes.</p> }
   <div [attr.aria-busy]="loading()">
-    @if (loading()) { <p role="status">Consultando habitaciones…</p> }
-    @else if (error()) { <p role="alert">{{ error() }}</p><button class="btn btn-outline retry-rooms" (click)="search()">Reintentar disponibilidad</button> }
+    @if (loading()) { <p role="status" class="text-muted">Consultando habitaciones…</p> }
+    @else if (error()) { <div class="alert alert-error"><p role="alert">{{ error() }}</p></div><button class="btn btn-outline retry-rooms" (click)="search()">Reintentar disponibilidad</button> }
     @else if (rooms(); as rooms) {
-      <p role="status">{{ rooms.length }} habitaciones disponibles.</p>
-      @if (!rooms.length) { <p>No hay habitaciones disponibles para esta consulta.</p> }
-      @for (room of rooms; track room.id) {
-        <article><h3>Habitación {{ room.number }}</h3><p>{{ room.description || 'Sin descripción disponible.' }}</p>
-          <p>Capacidad: {{ room.capacity }} huéspedes</p><p>{{ room.pricePerNight | number:'1.2-2' }} {{ room.currency }} por noche</p>
-          <button class="btn btn-outline select-room" (click)="select(room)" [disabled]="bookingBusy() || bookingTerminal()">Seleccionar habitación {{ room.number }}</button></article>
-      }
+      <p role="status" class="result-count">{{ rooms.length }} habitaciones disponibles.</p>
+      @if (!rooms.length) { <p class="empty-state">No hay habitaciones disponibles para esta consulta.</p> }
+      <div class="room-grid">
+        @for (room of rooms; track room.id) {
+          <article class="room-card" [class.selected]="selected()?.id === room.id">
+            <app-photo-carousel class="room-photos" [hotelId]="hotelId()" [roomId]="room.id" [label]="'Habitación ' + room.number" />
+            <div class="room-body">
+              <h3>Habitación {{ room.number }}</h3>
+              <p class="text-muted">{{ room.description || 'Sin descripción disponible.' }}</p>
+              <p class="room-capacity"><span class="badge">Capacidad: {{ room.capacity }} huéspedes</span></p>
+              <p class="price">{{ room.pricePerNight | number:'1.2-2' }} {{ room.currency }} <small>por noche</small></p>
+              <button class="btn btn-outline select-room" (click)="select(room)" [disabled]="bookingBusy() || bookingTerminal()"
+                [attr.aria-pressed]="selected()?.id === room.id">Seleccionar habitación {{ room.number }}</button>
+            </div>
+          </article>
+        }
+      </div>
     }
   </div>
   @if (selected(); as room) {

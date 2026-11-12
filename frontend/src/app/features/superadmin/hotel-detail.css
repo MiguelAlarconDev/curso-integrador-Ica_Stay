@@ -1,5 +1,6 @@
 main { overflow-wrap: anywhere; }
-.state { margin-top: 40px; border-top: 1px solid var(--ica-line); padding-top: 24px; }
-.confirmation { margin-top: 20px; padding: 20px; border: 1px solid var(--ica-line); border-radius: 12px; }
+section[aria-label="Datos administrativos"] > h2 { font-size: clamp(1.7rem, 3vw, 2.4rem); }
+.state { margin-top: 32px; background: var(--ica-white); border: 1px solid var(--ica-line); border-left: 4px solid var(--ica-gold); border-radius: var(--radius-md); padding: 20px 24px; }
+.confirmation { margin-top: 18px; padding: 18px; background: var(--ica-cream); border: 1px dashed var(--ica-gold); border-radius: var(--radius-md); }
 h2, h3 { margin-block: 12px; }
 p { margin-block: 12px; }

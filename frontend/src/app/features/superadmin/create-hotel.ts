@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { SiteHeader } from '../../shared/site-header/site-header';
+import { SuperadminNav } from './superadmin-nav';
 import { AuthService } from '../../core/services/auth.service';
 import { SuperadminHotelService } from '../../core/services/superadmin-hotel.service';
 
@@ -14,8 +15,8 @@ function passwordBytes(control: AbstractControl) {
 }
 
 @Component({
-  selector: 'app-create-hotel', imports: [SiteHeader, RouterLink, ReactiveFormsModule],
-  templateUrl: './create-hotel.html', styleUrl: './create-hotel.css', changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-create-hotel', imports: [SiteHeader, SuperadminNav, RouterLink, ReactiveFormsModule],
+  templateUrl: './create-hotel.html', styleUrls: ['./superadmin-shell.css', './create-hotel.css'], changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CreateHotel {
   private readonly api = inject(SuperadminHotelService);

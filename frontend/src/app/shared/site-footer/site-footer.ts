@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -7,5 +7,8 @@ import { RouterLink } from '@angular/router';
   templateUrl: './site-footer.html',
   styleUrl: './site-footer.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.home-footer]': 'home()' },
 })
-export class SiteFooter {}
+export class SiteFooter {
+  readonly home = input(false);
+}

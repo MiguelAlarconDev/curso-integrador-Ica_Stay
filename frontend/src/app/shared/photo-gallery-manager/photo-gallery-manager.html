@@ -1,0 +1,60 @@
+<section class="gallery" [attr.aria-label]="'Fotografías de ' + label" [attr.aria-busy]="busy()">
+  <header><div><span class="eyebrow">Colección de imágenes</span><h2>Fotografías · {{ label }}</h2></div>
+    <span class="count">{{ ready() ? photos().length : '—' }} / {{ limit }}</span>
+  </header>
+  @if (!opened()) {
+    <button type="button" (click)="load()">Gestionar fotografías</button>
+  } @else {
+    <p>JPG, PNG o WebP · Máximo 5 MB por foto. La portada y el orden se guardan por separado.</p>
+    <label class="upload">Seleccionar fotografías
+      <input type="file" multiple accept="image/jpeg,image/png,image/webp"
+        [disabled]="busy() || !ready() || photos().length >= limit || !!pendingDelete()" (change)="choose($event)" />
+    </label>
+    <button type="button" (click)="reload()" [disabled]="busy() || !!pendingDelete()">Actualizar galería</button>
+    @if (busy()) { <p role="status">Procesando fotografías…</p> }
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+    @if (notice()) { <p role="status">{{ notice() }}</p> }
+    @if (ready() && !photos().length) { <p class="empty">Todavía no hay fotografías. La primera será la portada.</p> }
+    @if (ready() && photos().length >= limit) { <p role="status">Límite alcanzado. Elimina una fotografía antes de añadir otra.</p> }
+    <ol class="photos">
+      @for (photo of photos(); track photo.id; let i = $index) {
+        <li>
+          @if (images()[photo.id]; as src) {
+            <img [src]="src" [alt]="photo.altText || label + ', fotografía ' + (i + 1)" />
+          } @else { <div class="image-placeholder" role="img" [attr.aria-label]="'Cargando fotografía ' + (i + 1)"></div> }
+          <div class="caption"><strong>Fotografía {{ i + 1 }}</strong>@if (photo.isCover) { <span class="cover">Portada</span> }</div>
+          <div class="controls">
+            <button type="button" [disabled]="busy() || !ready() || photo.isCover || !!pendingDelete()" (click)="cover(photo)"
+              [attr.aria-label]="'Establecer fotografía ' + (i + 1) + ' como portada'">Elegir portada</button>
+            <button type="button" [disabled]="busy() || !ready() || i === 0 || !!pendingDelete()" (click)="move(i, -1)"
+              [attr.aria-label]="'Mover fotografía ' + (i + 1) + ' antes'">← Antes</button>
+            <button type="button" [disabled]="busy() || !ready() || i === photos().length - 1 || !!pendingDelete()" (click)="move(i, 1)"
+              [attr.aria-label]="'Mover fotografía ' + (i + 1) + ' después'">Después →</button>
+            <button type="button" [disabled]="busy() || !ready() || !!pendingDelete()" (click)="askDelete(photo)"
+              [attr.aria-label]="'Eliminar fotografía ' + (i + 1)">Eliminar</button>
+          </div>
+          @if (pendingDelete() === photo.id) {
+            <div class="confirmation" role="group" aria-label="Confirmar eliminación">
+              <p>¿Eliminar esta fotografía? Si es portada, la primera restante ocupará su lugar.</p>
+              <button type="button" [disabled]="busy()" (click)="remove()">Confirmar eliminación</button>
+              <button type="button" [disabled]="busy()" (click)="cancelDelete()">Conservar fotografía</button>
+            </div>
+          }
+        </li>
+      }
+    </ol>
+    @if (uploads().length) {
+      <h3>Estado de la selección</h3>
+      <ul class="uploads" aria-live="polite">
+        @for (item of uploads(); track $index) {
+          <li>
+            @if (item.preview) { <img [src]="item.preview" alt="Vista previa del archivo seleccionado" /> }
+            <div><strong>{{ item.file.name }}</strong><p [class.error]="item.error">{{ item.state }}</p>
+              @if (item.progress !== null) { <progress max="100" [value]="item.progress" [attr.aria-label]="'Progreso de ' + item.file.name"></progress> }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  }
+</section>

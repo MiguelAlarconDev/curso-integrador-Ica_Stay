@@ -10,7 +10,7 @@ interface ChatMessage { id: number; role: 'user' | 'assistant'; text: string; er
 
 @Component({
   selector: 'app-ai-chat', imports: [ReactiveFormsModule, AiCatalogCards],
-  templateUrl: './ai-chat.html', styleUrl: './ai-chat.css', changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './ai-chat.html', styleUrls: ['./ai-chat.css', './ai-chat-messages.css'], changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AiChat implements AfterViewChecked, OnInit {
   private readonly service = inject(AiChatService);
@@ -83,6 +83,17 @@ export class AiChat implements AfterViewChecked, OnInit {
   protected close(event?: Event): void {
     event?.stopPropagation();
     if (this.open()) this.toggle();
+  }
+
+  /** On phones the panel covers the page (see ai-chat.css), so Tab cycles inside it instead of reaching hidden content. */
+  protected keepFocusInside(event: KeyboardEvent): void {
+    if (event.key !== 'Tab' || !window.matchMedia?.('(max-width: 480px)').matches) return;
+    const panel = event.currentTarget as HTMLElement;
+    const focusable = Array.from(panel.querySelectorAll<HTMLElement>('button:not([disabled]), textarea, a[href], summary, [tabindex="0"]'));
+    if (!focusable.length) return;
+    const [first, last] = [focusable[0], focusable[focusable.length - 1]];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   }
 
   protected onKeydown(event: KeyboardEvent): void {

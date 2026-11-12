@@ -3,12 +3,13 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, finalize, skip, takeUntil, distinctUntilChanged, map, merge, of, Subject, switchMap, tap } from 'rxjs';
 import { SiteHeader } from '../../shared/site-header/site-header';
+import { SuperadminNav } from './superadmin-nav';
 import { AuthService } from '../../core/services/auth.service';
 import { SuperadminUserService } from '../../core/services/superadmin-user.service';
 import { SuperadminUserDetail } from '../../core/models/superadmin-user';
 @Component({
-  selector: 'app-superadmin-user-detail', imports: [SiteHeader, RouterLink],
-  templateUrl: './user-detail.html', styleUrl: './hotels.css', changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-superadmin-user-detail', imports: [SiteHeader, SuperadminNav, RouterLink],
+  templateUrl: './user-detail.html', styleUrls: ['./superadmin-shell.css', './hotels.css'], changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SuperadminUserDetailPage implements OnInit {
   private readonly service = inject(SuperadminUserService);

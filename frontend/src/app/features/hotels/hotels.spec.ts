@@ -13,9 +13,10 @@ describe('Public hotel catalog', () => {
     sessionStorage.clear();
     TestBed.configureTestingModule({ providers: [provideRouter(routes), provideHttpClient(), provideHttpClientTesting()] });
   });
-  afterEach(() => { TestBed.inject(HttpTestingController).verify(); sessionStorage.clear(); });
+  afterEach(() => { photos(); TestBed.inject(HttpTestingController).verify(); sessionStorage.clear(); });
   const http = () => TestBed.inject(HttpTestingController);
   const list = () => http().expectOne(request => request.url === api);
+  const photos = (body: unknown[] = []) => http().match(request => request.url.endsWith('/photos')).forEach(request => { if (!request.cancelled) request.flush(body); });
   const page = (h: RouterTestingHarness) => h.routeNativeElement!;
   async function click(h: RouterTestingHarness, selector: string) {
     page(h).querySelector<HTMLElement>(selector)!.click(); await h.fixture.whenStable(); h.detectChanges();
@@ -49,6 +50,23 @@ describe('Public hotel catalog', () => {
     expect(page(h).textContent).toContain('No hay hoteles');
   });
 
+  it('shows real covers in catalog cards, referential fallback otherwise, and reuses the read in detail', async () => {
+    const other = { ...hotel, id: 'hotel-two', name: 'Hotel Duna' };
+    const h = await RouterTestingHarness.create('/hotels');
+    list().flush({ ...result, content: [hotel, other], totalElements: 2, totalPages: 1 }); h.detectChanges();
+    expect(page(h).querySelectorAll('article.card').length).toBe(2);
+    const cover = { id: 'p1', url: `/api/v1/hotels/${hotel.id}/photos/p1/content`, isCover: true, position: 0, altText: '', width: 4, height: 3 };
+    http().expectOne(`${api}/${hotel.id}/photos`).flush([cover]);
+    http().expectOne(`${api}/${other.id}/photos`).flush({}, { status: 404, statusText: 'Not Found' }); h.detectChanges();
+    const covers = page(h).querySelectorAll<HTMLImageElement>('app-hotel-cover img');
+    expect(covers[0].getAttribute('src')).toBe(`${api}/${hotel.id}/photos/p1/content`); expect(covers[0].alt).toBe('Portada de Hotel Oasis');
+    expect(covers[1].getAttribute('src')).toContain('/images/home/'); expect(page(h).textContent).toContain('Imagen referencial');
+    expect(page(h).textContent).not.toMatch(/S\/|PEN|estrellas|valoraci/i);
+    await click(h, '.card-body h2 a'); http().expectOne(`${api}/${hotel.id}`).flush(hotel); h.detectChanges();
+    http().expectNone(`${api}/${hotel.id}/photos`);
+    expect(page(h).querySelector<HTMLImageElement>('app-photo-carousel img')!.getAttribute('src')).toBe(`${api}/${hotel.id}/photos/p1/content`);
+  });
+
   it('cancels obsolete detail and handles null description', async () => {
     const h = await RouterTestingHarness.create('/hotels/old'); const old = http().expectOne(`${api}/old`);
     await h.navigateByUrl('/hotels/new'); expect(old.cancelled).toBe(true);
@@ -74,6 +92,16 @@ describe('Public hotel catalog', () => {
     expect(page(h).querySelector('a[href="/hotels"]')).not.toBeNull();
     expect(page(h).querySelector(`a[href="/hotels/${hotel.id}"]`)).not.toBeNull();
     expect(page(h).querySelectorAll('.stay-main').length).toBe(1);
-    await click(h, 'form button'); list().flush(result); expect(TestBed.inject(Router).url).toContain('/hotels');
+    for (const [control, value] of [['name', ' Oasis '], ['city', ' Ica ']]) {
+      const input = page(h).querySelector<HTMLInputElement>(`[formControlName="${control}"]`)!;
+      input.value = value; input.dispatchEvent(new Event('input'));
+    }
+    await click(h, 'form button');
+    const searchRequest = list();
+    expect(searchRequest.request.params.get('name')).toBe('Oasis');
+    expect(searchRequest.request.params.get('city')).toBe('Ica');
+    expect(searchRequest.request.params.get('page')).toBe('0');
+    searchRequest.flush(result);
+    expect(TestBed.inject(Router).url).toBe('/hotels?name=Oasis&city=Ica&page=0');
   });
 });

@@ -1,12 +1,14 @@
-<section id="icastay-ai-panel" class="chat-panel" [hidden]="!open()" aria-labelledby="icastay-ai-title" (keydown.escape)="close($event)">
+<section id="icastay-ai-panel" class="chat-panel" [hidden]="!open()" role="dialog" aria-modal="false" aria-labelledby="icastay-ai-title" aria-describedby="icastay-ai-subtitle" (keydown.escape)="close($event)" (keydown)="keepFocusInside($event)">
   <header class="chat-header">
-    <div><span class="chat-eyebrow">Tu guía en Ica</span><h2 id="icastay-ai-title">IcaStay AI</h2></div>
+    <span class="chat-avatar" aria-hidden="true">✦</span>
+    <div class="chat-title"><span class="chat-eyebrow">Tu guía en Ica</span><h2 id="icastay-ai-title">IcaStay AI</h2>
+      <span class="chat-subtitle" id="icastay-ai-subtitle">Respuestas generadas por IA · verifica precios y fechas</span></div>
     <button type="button" class="close-chat" aria-label="Cerrar IcaStay AI" (click)="close()">×</button>
   </header>
   <div class="chat-history" #history tabindex="0" aria-label="Historial de conversación" aria-live="off">
-    @if (historyLoading()) { <p class="chat-loading history-loading">Recuperando conversación…</p> }
+    @if (historyLoading()) { <p class="chat-loading history-loading"><span class="typing" aria-hidden="true"><i></i><i></i><i></i></span> Recuperando conversación…</p> }
     @if (historyError()) {
-      <div class="history-error"><p>{{ historyError() }}</p>
+      <div class="history-error" role="alert"><p>{{ historyError() }}</p>
         @if (!started()) {
           <button type="button" class="retry-chat retry-history" [disabled]="historyLoading()" (click)="loadHistory()">Reintentar historial</button>
         } @else { <p>Podrás intentar recuperar el historial al volver a cargar la página.</p> }
@@ -22,13 +24,13 @@
           <details><summary>Ver respuesta completa</summary><p>{{ item.text }}</p></details>
         } @else { <p>{{ item.text }}</p> }
         @if (item.error) {
-          <div class="message-error"><p>{{ item.error }}</p>
+          <div class="message-error" role="alert"><p>{{ item.error }}</p>
             <button type="button" class="retry-chat" [disabled]="loading()" (click)="retry(item)" aria-label="Reintentar esta pregunta">Reintentar</button>
           </div>
         }
       </div>
     }
-    @if (loading()) { <p class="chat-loading">Preparando una respuesta…</p> }
+    @if (loading()) { <p class="chat-loading message assistant-message"><span class="typing" aria-hidden="true"><i></i><i></i><i></i></span> Preparando una respuesta…</p> }
     <div class="suggestions" aria-label="Preguntas sugeridas">
       <span class="chat-help">Prepara una pregunta y revísala antes de enviar:</span>
       <button type="button" class="retry-chat" [disabled]="loading() || historyLoading()" (click)="suggest('hotels')">Hoteles en Ica</button>
@@ -54,5 +56,5 @@
 </section>
 <button #launcher type="button" class="btn btn-primary chat-launcher" aria-controls="icastay-ai-panel"
   [attr.aria-expanded]="open()" [attr.aria-label]="open() ? 'Cerrar IcaStay AI' : 'Abrir IcaStay AI'" (click)="toggle()">
-  <span aria-hidden="true">✦</span> IcaStay AI
+  <span aria-hidden="true">{{ open() ? '×' : '✦' }}</span> <span class="launcher-text">IcaStay AI</span>
 </button>

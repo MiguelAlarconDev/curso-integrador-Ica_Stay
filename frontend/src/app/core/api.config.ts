@@ -1,7 +1,8 @@
 import { InjectionToken } from '@angular/core';
+import { environment } from '../../environments/environment';
 
-// Override this token at bootstrap when deploying to another environment.
+// Resolved per build configuration via fileReplacements in angular.json.
 export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL', {
   providedIn: 'root',
-  factory: () => 'http://localhost:8080',
+  factory: () => environment.apiBaseUrl,
 });

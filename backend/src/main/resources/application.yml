@@ -54,3 +54,6 @@ management:
   endpoint:
     health:
       show-details: never
+
+server:
+  port: ${PORT:8080}
